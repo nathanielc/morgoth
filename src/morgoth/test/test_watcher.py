@@ -65,7 +65,7 @@ class WatcherTestCase(unittest.TestCase):
             timedelta(minutes=60),
             training_windows,
             handler,
-            5
+            2
         )
 
         try:
