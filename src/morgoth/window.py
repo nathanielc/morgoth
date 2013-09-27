@@ -3,6 +3,7 @@ from mongo_client_factory import MongoClientFactory
 from bson.code import Code
 from bson.son import SON
 from datetime import datetime
+from morgoth.error import MorgothError
 import os
 
 __dir__ = os.path.dirname(__file__)
@@ -21,6 +22,7 @@ class Window(object):
         self._trainer = False
         self.__id = None
         self._anomalous = None
+        self._prob_dist = None
 
         # Initialize js code
         if self.map is None:
@@ -43,6 +45,9 @@ class Window(object):
 
     @property
     def anomalous(self):
+        """ Return whether the window is anomalous
+            NOTE: this property is `None` if it has not been determined
+        """
         return self._anomalous
 
     @anomalous.setter
@@ -50,22 +55,35 @@ class Window(object):
         self._anomalous = value
 
     @property
+    def prob_dist(self):
+        """
+        The probability distribution of the window
+
+        @return (list of probabalities for each discete value,
+                    number of data points)
+        """
+        if self._prob_dist is None:
+            data = self._db.windows.find_one({'_id': self._id})
+            meta = self._db.meta.find_one({'_id' : self._metric})
+            if data is None or data['value']['version'] != meta['version']:
+                self._update()
+                data = self._db.windows.find_one({'_id': self._id})
+                if data is None:
+                    return [0] * self._n_bins, 0
+            self._prob_dist = data['value']['P'], data['value']['count']
+        return self._prob_dist
+
+    @property
     def range(self):
         return self._start, self._end
-
-    def get_P(self):
-        data = self._db.windows.find_one({'_id': self._id})
-        meta = self._db.meta.find_one({'_id' : self._metric})
-        if data is None or data['value']['version'] != meta['version']:
-            self._update()
-            data = self._db.windows.find_one({'_id': self._id})
-        return data['value']['P'], data['value']['count']
 
     def _update(self):
         """
         Updates the window data
         """
         meta = self._db.meta.find_one({'_id' : self._metric})
+        if meta is None:
+            raise MorgothError("No such metric '%s'" % self._metric)
         m_max = meta['max']
         m_min = meta['min']
         version = meta['version']
@@ -110,3 +128,8 @@ class Window(object):
             finalize=self.finalize
         )
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "Window [%s:%s] anomalous: %s" % (self._start, self._end, self.anomalous)

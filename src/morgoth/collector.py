@@ -38,7 +38,6 @@ class Collector(object):
             if meta is None:
                 meta = {
                     '_id' : metric,
-                    'n_bins' : 10,
                     'version': 0,
                     'max' : value,
                     'min' : value,

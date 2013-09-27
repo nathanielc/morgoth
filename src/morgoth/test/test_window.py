@@ -27,7 +27,7 @@ class WindowTestCase(unittest.TestCase):
         c = Collector()
         c.delete_metric(metric)
 
-    def calc_P(self, data, n_bins):
+    def calc_prob_distr(self, data, n_bins):
         d_min = min(data)
         d_max = max(data) * 1.01
         step = (d_max - d_min) / float(n_bins)
@@ -49,10 +49,10 @@ class WindowTestCase(unittest.TestCase):
         for n_bins in range(10,100,10):
             print n_bins
 
-            expected_P = self.calc_P(data, n_bins)
+            expected_P = self.calc_prob_distr(data, n_bins)
 
             w = Window(metric, datetime(2013, 9 ,21, 0), datetime(2013, 9, 21, 3), n_bins)
-            P, count = w.get_P()
+            P, count = w.get_prob_distr()
 
             self.assertEqual(len(data), count)
             self.assertAlmostEqual(1, sum(P))
