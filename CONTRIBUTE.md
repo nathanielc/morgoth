@@ -16,7 +16,11 @@ Metrics Configuration
 ---------------------
 Every metric will be tagged with several configurations.
 
-Each metrics will be associated with one or more anomaly detection alogrithim.
+Each metric will be associated with one or more anomaly detection alogrithim.
+
+Each metric will have a type:
+* Number
+* Text
 
 Input plugins
 -------------

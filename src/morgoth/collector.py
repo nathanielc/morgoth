@@ -1,70 +1,47 @@
 
-from mongo_client_factory import MongoClientFactory
-from Queue import Queue
+from config import Config
+from mongo_clients import MongoClients
+from metric_meta import MetricMeta
 from datetime import datetime
+from gevent.queue import JoinableQueue
+from gevent.event import Event
+import gevent
+
+import logging
+logger = logging.getLogger(__name__)
 
 class Collector(object):
     __time_fmt = "%Y%m%d%H"
     def __init__(self):
-        self._db = MongoClientFactory.create().morgoth
+        # Write optimized MongoClient
+        self._db = MongoClients.Normal.morgoth
+        self._queue = JoinableQueue(maxsize=Config.get(['write_queue', 'max_size'], 1000))
+        self._worker_count = Config.get(['write_queue', 'worker_count'], 2)
+        self._running = Event()
+        self._closing = False
+        for i in xrange(self._worker_count):
+            gevent.spawn(self._worker)
 
 
-    def delete_metric(self, metric):
-        self._db.metrics.remove({'metric' : metric})
-        self._db.meta.remove({'_id' : metric})
-        self._db.windows.remove({'value.metric' : metric})
+    def _worker(self):
+        while True:
+            self._running.wait()
+            while not self._queue.empty():
+                dt_utc, metric, value = self._queue.get()
+                self._db[metric].insert({'_id' : dt_utc, 'value' : value})
+                MetricMeta.update(metric, value)
+                self._queue.task_done()
+            self._running.clear()
 
     def insert(self, dt_utc, metric, value):
-        value = float(value)
-        id = self._get_id(dt_utc, metric)
-        time = datetime(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour)
-        h = dt_utc.hour
-        m = dt_utc.minute
-        s = dt_utc.second
-        query = {'_id' : id}
-        update = { '$set' : {
-                'hour' : h,
-                'time' : time,
-                'metric' : metric,
-                'data.%d.%d' % (m, s) : value,
-                }
-            }
-        self._db.metrics.update(query, update, upsert=True)
+        if self._closing:
+            logger.debug("Collector is closed")
+            return
+        self._queue.put((dt_utc, metric, value))
+        self._running.set()
 
-        # Update meta information
-        success = False
-        while not success:
-            meta = self._db.meta.find_one({'_id': metric})
-            if meta is None:
-                meta = {
-                    '_id' : metric,
-                    'version': 0,
-                    'max' : value,
-                    'min' : value,
-                    'count' : 0,
-                }
-                self._db.meta.insert(meta)
-            if value > meta['max'] or value < meta['min']:
-                set_cmd = {}
-                if value > meta['max']:
-                    set_cmd = { 'max' : value }
-                else:
-                    set_cmd = { 'min' : value }
-                ret = self._db.meta.update(
-                    {
-                        '_id' : metric,
-                        'version' : meta['version']
-                    }, {
-                        '$set' : set_cmd,
-                        '$inc' : { 'version' : 1}
-                    })
-                success = ret['updatedExisting']
-            else:
-                success = True
-
-        self._db.meta.update({'_id' : metric}, { '$inc' : { 'count' : 1 } })
-
-
-    def _get_id(self, dt_utc, metric):
-        time = dt_utc.strftime(self.__time_fmt)
-        return "%s:%s" % (time, metric)
+    def close(self):
+        self._closing = True
+        self._queue.join()
+        logger.debug("Collector queue is empty")
+        MetricMeta.finish()
