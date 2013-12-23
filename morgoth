@@ -1,0 +1,10 @@
+#!/usr/bin/python
+
+import morgoth.app
+import sys
+
+def main(args):
+    return morgoth.app.main(args)
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

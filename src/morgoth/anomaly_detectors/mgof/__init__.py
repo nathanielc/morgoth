@@ -1,0 +1,2 @@
+
+from multi_good_of_fit_ad import MultiGoodOfFitAD
