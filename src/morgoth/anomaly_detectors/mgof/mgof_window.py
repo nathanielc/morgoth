@@ -1,29 +1,22 @@
 
-from mongo_client_factory import MongoClientFactory
 from bson.code import Code
 from bson.son import SON
 from datetime import datetime
 from morgoth.error import MorgothError
+from morgoth.window import Window
 import os
 
 __dir__ = os.path.dirname(__file__)
 
 class MGOFWindow(Window):
     map = None
-    reduce = None
+    reduce_code = None
     finalize = None
 
     def __init__(self, metric,  start, end, n_bins, trainer=False):
         super(MGOFWindow, self).__init__(metric, start, end, trainer)
-
-        # Initialize js code
-        if self.map is None:
-            with open(os.path.join(__dir__, 'window.map.js')) as f:
-                self.map = f.read()
-            with open(os.path.join(__dir__, 'window.reduce.js')) as f:
-                self.reduce = Code(f.read())
-            with open(os.path.join(__dir__, 'window.finalize.js')) as f:
-                self.finalize = Code(f.read())
+        self._prob_dist = None
+        self._n_bins = n_bins
 
     @property
     def prob_dist(self):
@@ -62,36 +55,34 @@ class MGOFWindow(Window):
             'step_size' : step_size,
             'm_min' : m_min,
             'n_bins' :self._n_bins,
-            'version': version,
-            'start_h' : self._start.hour,
-            'start_m' : self._start.minute,
-            'start_s' : self._start.second,
-            'end_h' : self._end.hour,
-            'end_m' : self._end.minute,
-            'end_s' : self._end.second,
         }
 
-        map = Code(self.map % map_values)
+        finalize_values = {
+            'start' : self._start.isoformat(),
+            'end' : self._end.isoformat(),
+            'version': version,
+            'metric' : self._metric,
+        }
 
-        start_hour = datetime(
-            self._start.year,
-            self._start.month,
-            self._start.day,
-            self._start.hour)
-
-        end_hour = datetime(
-            self._end.year,
-            self._end.month,
-            self._end.day,
-            self._end.hour)
+        map_code = Code(self.map % map_values)
+        finalize_code = Code(self.finalize % finalize_values)
 
 
-        self._db.metrics.map_reduce(map, self.reduce,
+        self._db.metrics.map_reduce(map_code, self.reduce_code,
             out=SON([('merge', 'windows'), ('db', 'morgoth')]),
             query={
                 'metric' : self._metric,
-                'time' : { '$gte' : start_hour, '$lte' : end_hour},
+                'time' : { '$gte' : self._start, '$lte' : self._end},
             },
-            finalize=self.finalize
+            finalize=finalize_code
         )
+
+# Initialize js code
+if MGOFWindow.map is None:
+    with open(os.path.join(__dir__, 'window.map.js')) as f:
+        MGOFWindow.map = f.read()
+    with open(os.path.join(__dir__, 'window.reduce.js')) as f:
+        MGOFWindow.reduce_code = Code(f.read())
+    with open(os.path.join(__dir__, 'window.finalize.js')) as f:
+        MGOFWindow.finalize = f.read()
 

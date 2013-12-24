@@ -28,7 +28,7 @@ class MGOF(AnomalyDetector):
 
         @param metric: the name of the metric to analyze
         @param windows: list of (timedelta, timedelta) tuples
-            The first element is the period of the window
+            The first element is the offset of the window
             The second element is the duration of the window
         @param n_bins: the number of discrete values to use in analyzing
             the metric data
@@ -48,6 +48,7 @@ class MGOF(AnomalyDetector):
             "%d doesn't allow for any bad training windows"
             % (self._count_threshold, len(self._windows)))
 
+
     def _relative_entropy(self, q, p):
         assert len(q) == len(p)
         return numpy.sum(q * numpy.log(q / p))
@@ -56,8 +57,8 @@ class MGOF(AnomalyDetector):
 
         windows = []
 
-        for period, duration in self._windows:
-            s = start - period
+        for offset, duration in self._windows:
+            s = start - offset
             e = s + duration
             w = Window(self._metric, s, e, self._n_bins, trainer=True)
             windows.append(w)

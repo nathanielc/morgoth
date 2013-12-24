@@ -1,10 +1,11 @@
 
-from mongo_client_factory import MongoClientFactory
 from datetime import datetime, timedelta
+from mongo_clients import MongoClients
+from morgoth.data import get_col_for_metric
 
 class Reader(object):
     def __init__(self):
-        self._db = MongoClientFactory.create().morgoth
+        self._db = MongoClients.Normal.morgoth
 
     def get_data(self, metric, dt_start=None, dt_end=None):
         time_query = {}
@@ -12,7 +13,8 @@ class Reader(object):
             time_query['$gte'] = dt_start
         if dt_end:
             time_query['$lte'] = dt_end
-        data = self._db.metrics.find({
+        col = get_col_for_metric(self._db, metric)
+        data = col.find({
                 'time' : time_query,
                 'metric' : metric
             })

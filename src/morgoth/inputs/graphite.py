@@ -2,7 +2,7 @@
 import socket
 from morgoth.config import Config
 from morgoth.utc import utc
-from morgoth.collector import Collector
+from morgoth.data.writer import Writer
 from input_plugin import InputPlugin
 from gevent.server import StreamServer
 from datetime import datetime
@@ -18,7 +18,7 @@ class Graphite(InputPlugin):
         self._host = Config.get(['inputs', 'graphite', 'host'], '')
         self._stop_timeout = Config.get(['inputs', 'graphite', 'stop_timeout'], 10)
         self._max_pool_size = Config.get(['inputs', 'graphite', 'max_pool_size'], 1000)
-        self._collector = Collector()
+        self._writer = Writer()
 
 
     def start(self):
@@ -35,7 +35,7 @@ class Graphite(InputPlugin):
     def stop(self):
         self._server.stop(self._stop_timeout)
         logger.debug("Server stopped")
-        self._collector.close()
+        self._writer.close()
         logger.debug("Graphite is stopped")
 
     def _process(self, socket, address):
@@ -53,7 +53,7 @@ class Graphite(InputPlugin):
             metric, value, timestamp = line.split()
             value = float(value)
             dt_utc = datetime.fromtimestamp(int(timestamp), utc)
-            self._collector.insert(dt_utc, metric, value)
+            self._writer.insert(dt_utc, metric, value)
             #logger.debug("%s %f %s" % (metric, float(value), dt_utc))
         socket.close()
 

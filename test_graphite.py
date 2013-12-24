@@ -16,7 +16,7 @@ def t_worker(name, thread):
 
 def worker(name):
     ts = []
-    for i in xrange(100):
+    for i in xrange(10):
         t = Thread(target=t_worker, args=(name, i))
         t.start()
         ts.append(t)

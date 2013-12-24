@@ -1,9 +1,6 @@
 
-from mongo_client_factory import MongoClientFactory
-from bson.code import Code
-from bson.son import SON
-from datetime import datetime
-from morgoth.error import MorgothError
+from morgoth.data.mongo_clients import MongoClients
+from bson.objectid import ObjectId
 import os
 
 __dir__ = os.path.dirname(__file__)
@@ -11,7 +8,7 @@ __dir__ = os.path.dirname(__file__)
 class Window(object):
 
     def __init__(self, metric,  start, end, trainer=False):
-        self._db = MongoClientFactory.create().morgoth
+        self._db = MongoClients.Normal.morgoth
         self._metric = metric
         self._start = start
         self._end = end
@@ -22,7 +19,7 @@ class Window(object):
     @property
     def _id(self):
         if self.__id is None:
-            self.__id = "%s:%d:%s:%s" % (self._metric, self._n_bins, self._start.isoformat(), self._end.isoformat())
+            self.__id = ObjectId()
         return self.__id
 
     @property
