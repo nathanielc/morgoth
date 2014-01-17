@@ -13,7 +13,7 @@ class App(object):
 
 
     def _initialize_db(self):
-        from config import Config
+        from morgoth.config import Config
         from morgoth.data.mongo_clients import MongoClients
         from pymongo.errors import OperationFailure
         from pymongo import HASHED
@@ -72,16 +72,18 @@ class App(object):
 
 
         # Initialize notifiers
-        from notifiers import Notifier
+        from morgoth.notifiers import Notifier
         notifier = Notifier()
 
-        # Initialize watchers
-        #watcher = Watcher()
 
-        # Initialize anomaly detectors - we may do this lazily not sure
+        # Initialize the meta data
+        from morgoth.data.meta import Meta
+        Meta.load()
+
+
 
         # Start input plugins
-        from inputs import Graphite
+        from morgoth.inputs import Graphite
         in_g = Graphite()
         self._inputs = []
         t = gevent.spawn(in_g.start)
@@ -97,7 +99,7 @@ def main(args):
     import logger
     logger.init()
 
-    from config import Config
+    from morgoth.config import Config
     Config.load()
 
     app = App()

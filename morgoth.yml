@@ -1,7 +1,7 @@
 mongo:
     use_sharding: false
 metrics:
-    test.*:
+    test_graphite1.*:
         type: number
         detectors:
             MGOF:
@@ -23,6 +23,11 @@ metrics:
                     -
                         offset: 1y
                         duration: 1h
+    test.*:
+        type: number
+        detectors:
+            Turkey:
+                asdf: 1
 
 inputs:
     graphite:

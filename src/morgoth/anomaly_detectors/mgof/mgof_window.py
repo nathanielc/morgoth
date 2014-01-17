@@ -14,9 +14,14 @@ class MGOFWindow(Window):
     finalize = None
 
     def __init__(self, metric,  start, end, n_bins, trainer=False):
-        super(MGOFWindow, self).__init__(metric, start, end, trainer)
-        self._prob_dist = None
+        super(MGOFWindow, self).__init__(metric, start, end)
         self._n_bins = n_bins
+        self._trainer = False
+        self._prob_dist = None
+
+    @property
+    def trainer(self):
+        return self._trainer
 
     @property
     def prob_dist(self):

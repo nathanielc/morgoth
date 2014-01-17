@@ -11,10 +11,11 @@ class AnomalyDetector(object):
         """ Called when a given metric receives data """
 
 
-    def is_anomalous(self, start, end):
+    def is_anomalous(self, metric, start, end):
         """
         Return whether the given time range is anomalous
 
+        @param metric: the name of the metric to analyze
         @param start: datetime - marks the start time to analyze
         @param end: datetime - marks the end time to analyze
         @return window - a window object indicating whether it is anomalous

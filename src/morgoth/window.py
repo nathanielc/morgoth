@@ -7,12 +7,11 @@ __dir__ = os.path.dirname(__file__)
 
 class Window(object):
 
-    def __init__(self, metric,  start, end, trainer=False):
+    def __init__(self, metric,  start, end):
         self._db = MongoClients.Normal.morgoth
         self._metric = metric
         self._start = start
         self._end = end
-        self._trainer = False
         self.__id = None
         self._anomalous = None
 
@@ -21,10 +20,6 @@ class Window(object):
         if self.__id is None:
             self.__id = ObjectId()
         return self.__id
-
-    @property
-    def trainer(self):
-        return self._trainer
 
     @property
     def anomalous(self):

@@ -106,3 +106,32 @@ class Config(object):
         return object.__getattribute__(self, attr)
 
 
+    ### Iterable methods ###
+
+    def __iter__(self):
+        for attr in self._attrs:
+            yield attr
+
+    def itervalues(self):
+        return self.values()
+
+    def values(self):
+        for attr in self._attrs:
+            yield self.get(attr, None)
+
+    def iterkeys(self):
+        return self.keys()
+
+    def keys(self):
+        for attr in self._attrs:
+            yield attr
+
+    def iteritems(self):
+        return self.items()
+
+    def items(self):
+        for attr in self._attrs:
+            yield attr, self.get(attr, None)
+
+
+
