@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from morgoth.ads.anomaly_detector import AnomalyDetector
+from morgoth.ads import register_ad
 from morgoth.utils import timedelta_from_str
 from morgoth.window import Window
 from scipy.stats import chi2
@@ -128,4 +129,4 @@ class MGOF(AnomalyDetector):
         return window
 
 
-
+register_ad('MGOF', MGOF)
