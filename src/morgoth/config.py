@@ -11,9 +11,11 @@ _conf = None
 class ConfigType(type):
     """ Metaclass for Config """
     def __getattr__(cls, key):
-        return getattr(_conf, key)
+        return _conf[key]
+    def __getitem(cls, key):
+        return _conf[key]
 
-class Config(object):
+class Config(dict):
     """
     Static config class that provides easy access to the morogth config
     """
@@ -26,18 +28,24 @@ class Config(object):
         _conf = Config(conf_data)
 
     def __init__(self, data={}):
+        super(Config, self).__init__()
         self._accessed = {}
-        self._attrs = data.keys()
+        for k, v in data.iteritems():
+            self._accessed[k] = False
+            value_type = type(v)
+            if value_type == DictType:
+                self[k] = Config(v)
+            elif value_type == ListType:
+                dict_v = {}
+                for i in range(len(v)):
+                    dict_v[i] = v[i]
+                self[k] = Config(dict_v)
+            else:
+                self[k] = v
         # Rebind methods as instance methods
         self.get = self._get
         self.enumerate = self._enumerate
         self.get_ignored_conf= self._get_ignored_conf
-        for k, v in data.iteritems():
-            self._accessed[k] = False
-            if type(v) != DictType:
-                setattr(self, k, v)
-            else:
-                setattr(self, k, Config(v))
 
     @classmethod
     def get(cls, attr, default):
@@ -50,31 +58,6 @@ class Config(object):
         """
         return _conf.get(attr, default)
 
-    def _get(self, attr, default):
-        """
-        Get conf value
-
-        NOTE: If value is not found then the default will be set
-        so that future calls can use the same default
-        """
-        if type(attr) == ListType:
-            conf = self
-            while len(attr) > 0:
-                try:
-                    conf = getattr(conf, attr[0])
-                    attr = attr[1:]
-                except AttributeError:
-                    if len(attr) > 1:
-                        setattr(conf, attr[0], Config())
-                    else:
-                        setattr(conf, attr[0], default)
-            return conf
-        else:
-            try:
-                return getattr(self, attr)
-            except AttributeError:
-                setattr(self, attr, default)
-                return default
 
     @classmethod
     def enumerate(self):
@@ -94,44 +77,42 @@ class Config(object):
         ignored = {}
         for attr, accessed in self._accessed.iteritems():
             if not accessed:
-                a = getattr(self, attr)
-                if type(a) == Config:
+                a = self[attr]
+                if isinstance(a, Config):
                     ignored[attr] = a.get_ignored_conf()
                 else:
                     ignored[attr] = True
         return ignored
 
-    def __getattribute__(self, attr):
-        object.__getattribute__(self, '_accessed')[attr] = True
-        return object.__getattribute__(self, attr)
 
+    def __getattr__(self, attr):
+        return self[attr]
 
-    ### Iterable methods ###
+    def __getitem__(self, attr):
+        self._accessed[attr] = True
+        return super(Config, self).__getitem__(attr)
 
-    def __iter__(self):
-        for attr in self._attrs:
-            yield attr
+    def _get(self, attr, default):
+        """
+        Get conf value
 
-    def itervalues(self):
-        return self.values()
-
-    def values(self):
-        for attr in self._attrs:
-            yield self.get(attr, None)
-
-    def iterkeys(self):
-        return self.keys()
-
-    def keys(self):
-        for attr in self._attrs:
-            yield attr
-
-    def iteritems(self):
-        return self.items()
-
-    def items(self):
-        for attr in self._attrs:
-            yield attr, self.get(attr, None)
-
-
+        NOTE: If value is not found then the default will be set
+        so that future calls can use the same default
+        """
+        if type(attr) == ListType:
+            if not attr[0] in self:
+                if len(attr) > 1:
+                    self[attr[0]] = Config()
+                else:
+                    self[attr[0]] = default
+            value = self[attr[0]]
+            if isinstance(value, Config):
+                return value.get(attr[1:], default)
+            else:
+                return value
+        else:
+            if not attr in self:
+                logger.info('Setting default conf "%s" on %s' % (default, self))
+                self[attr] = default
+            return self[attr]
 

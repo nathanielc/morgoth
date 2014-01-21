@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
+from morgoth.ads.anomaly_detector import AnomalyDetector
+from morgoth.utils import timedelta_from_str
 from morgoth.window import Window
-from morgoth.anomaly_detectors import AnomalyDetector
 from scipy.stats import chi2
 import numpy
 
@@ -13,7 +14,6 @@ class MGOF(AnomalyDetector):
     Multinomial Goodness Of Fit
     """
     def __init__(self,
-            metric,
             windows,
             n_bins=20,
             count_threshold=1,
@@ -37,8 +37,7 @@ class MGOF(AnomalyDetector):
         @param chi2_percentage: a value between 0-1 used to determine the
             statistical probalility of a window matching a given pattern
         """
-        super(MultiGoodOfFitAD, self).__init__()
-        self._metric = metric
+        super(MGOF, self).__init__()
         self._windows = windows
         self._n_bins = n_bins
         self._count_threshold = count_threshold
@@ -48,6 +47,20 @@ class MGOF(AnomalyDetector):
             "%d doesn't allow for any bad training windows"
             % (self._count_threshold, len(self._windows)))
 
+    @classmethod
+    def from_conf(cls, conf):
+        windows = []
+        for window in conf.windows.values():
+            windows.append((
+                timedelta_from_str(window.offset),
+                timedelta_from_str(window.duration),
+            ))
+        return MGOF(
+                windows,
+                conf.get(['n_bins'], 20),
+                conf.get(['count_threshold'], 1),
+                conf.get(['chi2_percentage'], 0.95)
+            )
 
     def _relative_entropy(self, q, p):
         assert len(q) == len(p)

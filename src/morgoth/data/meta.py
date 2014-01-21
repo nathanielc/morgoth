@@ -1,6 +1,7 @@
 
 from morgoth.data.mongo_clients import MongoClients
 from morgoth.config import Config
+from morgoth.ads import ADS
 
 import gevent
 import re
@@ -33,7 +34,7 @@ class Meta(object):
     @classmethod
     def update(cls, metric, value):
         """
-        Update a metrics meta data
+        Update a metrics meta datac
 
         A metric's meta data will be only eventually consistent
         """
@@ -68,7 +69,7 @@ class Meta(object):
 
     @classmethod
     def finish(cls):
-        logger.debug("Finishing MetricMeta")
+        logger.debug("Finishing Meta")
         if not cls._finishing:
             cls._finishing = True
             for metric in cls._needs_updating:
@@ -148,6 +149,13 @@ class Meta(object):
         for pattern, conf in Config.metrics.items():
             if re.match(pattern, metric):
                 logger.debug("Metric %s matched %s" % (metric, pattern))
+                for ad_name, dconf in conf.detectors.items():
+                    #try:
+                        ad_class = ADS[ad_name]
+                        ad = ad_class.from_conf(dconf)
+                    #except Exception as e:
+                    #    logger.error('Could not create AD "%s" from conf: %s' % (ad_name, str(e)))
+
                 break
 
 
