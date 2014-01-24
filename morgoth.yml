@@ -1,36 +1,27 @@
 mongo:
-    use_sharding: false
+  use_sharding: false
 metrics:
-    test.*:
-        type: number
-        detectors:
-            MGOF:
-                n_bins: 25
-                count_threshold: 1
-                windows:
-                    -
-                        offset: 1d
-                        duration: 1h
-                    -
-                        offset: 1w
-                        duration: 1h
-                    -
-                        offset: 2w
-                        duration: 1h
-                    -
-                        offset: 3w
-                        duration: 1h
-                    -
-                        offset: 1y
-                        duration: 1h
-    test_asdf.*:
-        type: number
-        detectors:
-            Turkey:
-                asdf: 1
+  test.*:
+    type: number
+    detectors:
+      MGOF:
+        n_bins: 25
+        count_threshold: 1
+        windows:
+          - {offset: 1d, duration: 1h}
+          - {offset: 1w, duration: 1h}
+          - {offset: 2w, duration: 1h}
+          - {offset: 3w, duration: 1h}
+          - {offset: 4w, duration: 1h}
+          - {offset: 1y, duration: 1h}
+  test_asdf.*:
+    type: number
+    detectors:
+      Turkey:
+        asdf: 1
 
 inputs:
-    graphite:
-        port: 4200
-    unix:
-        path: /tmp/jim
+  graphite:
+    port: 4200
+  unix:
+    path: /tmp/jim
