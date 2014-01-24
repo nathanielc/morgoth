@@ -4,11 +4,13 @@ class AnomalyDetector(object):
     def __init__(self):
         pass
 
-    def new_metric(self, metric):
-        """ Called when a new metric is just created """
+    def add_metric(self, metric):
+        """ Called when a this AD should watch a new metric """
+        raise NotImplementedError("%s.add_metric is not implemented" % self.__class__.__name__)
 
     def new_value(self, metric, value):
         """ Called when a given metric receives data """
+        pass
 
 
     def is_anomalous(self, metric, start, end):

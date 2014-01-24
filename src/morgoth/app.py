@@ -70,6 +70,9 @@ class App(object):
         import signal
         gevent.signal(signal.SIGINT, self.handler)
 
+        # Load the ADs
+        from morgoth.ads import load_ads
+        load_ads()
 
         # Initialize notifiers
         from morgoth.notifiers import Notifier
