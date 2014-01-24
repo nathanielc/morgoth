@@ -25,3 +25,7 @@ inputs:
     port: 4200
   unix:
     path: /tmp/jim
+
+anomaly_detectors:
+  auto_load_dirs:
+    - /tmp/morgoth

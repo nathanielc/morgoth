@@ -100,7 +100,9 @@ class Config(dict):
         so that future calls can use the same default
         """
         if type(attr) == ListType:
-            if not attr[0] in self:
+            if len(attr) == 0:
+                return self
+            if attr[0] not in self:
                 if len(attr) > 1:
                     self[attr[0]] = Config()
                 else:

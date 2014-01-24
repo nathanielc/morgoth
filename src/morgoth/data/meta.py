@@ -1,7 +1,7 @@
 
 from morgoth.data.mongo_clients import MongoClients
 from morgoth.config import Config
-from morgoth.ads import ADS
+from morgoth.ads import get_ad
 
 import gevent
 import re
@@ -18,6 +18,7 @@ class Meta(object):
     _needs_updating = {}
     _refresh_interval = Config.get(['metric_meta', 'refresh_interval'], 60)
     _finishing = False
+    _ads = {}
 
 
     @classmethod
@@ -25,10 +26,11 @@ class Meta(object):
         """
         Loads the existing meta data
         """
+        cls._start_ads()
         for meta in cls._db.meta.find():
             metric = meta['_id']
             cls._meta[metric] = meta
-            cls._start_ads(metric)
+
 
 
     @classmethod
@@ -140,23 +142,21 @@ class Meta(object):
 
 
     @classmethod
-    def _start_ads(cls, metric):
+    def _start_ads(cls):
         """
-        Start the appropriate Anomaly Detectors for the given metric
+        Start the configured Anomaly Detectors
 
-        @param metric: the name of the metric
         """
         for pattern, conf in Config.metrics.items():
-            if re.match(pattern, metric):
-                logger.debug("Metric %s matched %s" % (metric, pattern))
-                for ad_name, dconf in conf.detectors.items():
-                    #try:
-                        ad_class = ADS[ad_name]
-                        ad = ad_class.from_conf(dconf)
-                    #except Exception as e:
-                    #    logger.error('Could not create AD "%s" from conf: %s' % (ad_name, str(e)))
+            cls._ads[pattern] = []
+            for ad_name, ad_conf in conf.detectors.items():
+                try:
+                    ad_class = get_ad(ad_name)
+                    ad = ad_class.from_conf(ad_conf)
+                    cls._ads[pattern].append(ad)
+                except Exception as e:
+                    logger.error('Could not create AD "%s" from conf: %s' % (ad_name, str(e)))
 
-                break
 
 
 
