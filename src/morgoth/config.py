@@ -39,7 +39,7 @@ class Config(dict):
                 dict_v = {}
                 for i in range(len(v)):
                     dict_v[i] = v[i]
-                self[k] = Config(dict_v)
+                self[k] = ConfigList(dict_v)
             else:
                 self[k] = v
         # Rebind methods as instance methods
@@ -117,4 +117,16 @@ class Config(dict):
                 logger.info('Setting default conf "%s" on %s' % (default, self))
                 self[attr] = default
             return self[attr]
+
+
+class ConfigList(Config):
+    """
+    Config object that make a dict behave like a list for iteration
+    """
+    def __init__(self, *args, **kwargs):
+        super(ConfigList, self).__init__(*args, **kwargs)
+
+    def __iter__(self):
+        return self.itervalues()
+
 

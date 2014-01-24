@@ -3,6 +3,10 @@ from morgoth.config import Config
 from morgoth.plugin_loader import PluginLoader
 import os
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 _ADS = {}
 
 def register_ad(name, ad_class):
@@ -31,15 +35,17 @@ def load_ads():
     """ Load the configured ADs """
     from morgoth.ads.anomaly_detector import AnomalyDetector
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(Config.get(['anomaly_detectors', 'auto_load_dirs'], []).values())
+    dirs.extend(Config.get(['anomaly_detectors', 'plugin_dirs'], []))
 
     pl = PluginLoader()
     mods = pl.find_modules(dirs)
 
-    print mods
     classes = pl.find_subclasses(mods, AnomalyDetector)
 
-    print classes
-
-
+    for ad_name, ad_class in classes:
+        logger.debug("Found AD %s", ad_name)
+        try:
+            register_ad(ad_name, ad_class)
+        except ValueError as e:
+            logger.warning("Found duplicate ADs with name %s", ad_name)
 

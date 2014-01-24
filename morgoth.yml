@@ -27,5 +27,5 @@ inputs:
     path: /tmp/jim
 
 anomaly_detectors:
-  auto_load_dirs:
+  plugin_dirs:
     - /tmp/morgoth
