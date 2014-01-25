@@ -75,25 +75,28 @@ class App(object):
         load_ads()
 
         # Initialize notifiers
-        from morgoth.notifiers import Notifier
-        notifier = Notifier()
+        from morgoth.notifiers import load_notifiers
+        load_notifiers()
 
 
         # Initialize the meta data
-        from morgoth.data.meta import Meta
+        from morgoth.meta import Meta
         Meta.load()
 
-
-
         # Start input plugins
-        from morgoth.inputs import Graphite
-        in_g = Graphite()
-        self._inputs = []
-        t = gevent.spawn(in_g.start)
-        self._inputs.append(in_g)
+        from morgoth.inputs import load_inputs
+        self._inputs = load_inputs()
+
+        spawned = []
+        for input in self._inputs:
+            self._logger.info("Staring input '%s'...", input)
+            spawn = gevent.spawn(input.start)
+            spawned.append(spawn)
+
+        for spawn in spawned:
+            spawn.join()
 
 
-        t.join()
         self._logger.info("All inputs have stopped")
         self._finish_event.wait()
         self._logger.info("Finished event set")

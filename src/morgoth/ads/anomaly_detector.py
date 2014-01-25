@@ -1,15 +1,25 @@
 
 
 class AnomalyDetector(object):
-    def __init__(self):
-        pass
+    """
+    This class is responsible for dectecting anomalies in metrics
 
-    def add_metric(self, metric):
+    A single instance of this class will watch many metrics
+    """
+    def __init__(self):
+        self._metrics = []
+
+    def watch_metric(self, metric):
         """ Called when a this AD should watch a new metric """
-        raise NotImplementedError("%s.add_metric is not implemented" % self.__class__.__name__)
+        self._metrics.append(metric)
 
     def new_value(self, metric, value):
-        """ Called when a given metric receives data """
+        """
+        Called when a given metric receives data
+
+        NOTE: This method is not yet called. It will be supported
+        eventually
+        """
         pass
 
 

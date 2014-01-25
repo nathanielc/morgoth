@@ -3,6 +3,11 @@ import imp
 import sys
 import inspect
 
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 class PluginLoader(object):
     """
     A class to facilitate loading plugins dynamically
@@ -11,47 +16,59 @@ class PluginLoader(object):
         """
         """
 
-    def find_modules(self, search_dirs):
+    def find_modules(self, search_dirs, depth=1):
         """
-        Find all modules that exists under packages of the 
-        same name in the search_dirs
-
-        Example:
-        `search_dir`/
-                    foo/
-                        __init__.py
-                        foo.py
-                    bar/
-                        README.txt
-                    bob.py
-
-        Only module foo.foo will be imported
+        Find a modules in `search_dirs`
+        @param search_dirs: list of directories to search in
+        @param depth: the depth of subdirs to search
+        """
+        return self._find_modules(search_dirs, depth, None)
+    def _find_modules(self, search_dirs, depth, package):
+        """
+        Find modules recursively in search_dirs
 
         @param search_dirs: list of directories to search in
+        @param depth: the depth of subdirs to search
+        @param package: the name of the package to import modules into
         """
         mods = []
         for search_dir in search_dirs:
             if not os.path.isdir(search_dir): continue
-            for pkg_dir in os.listdir(search_dir):
-                pkg_path = os.path.join(search_dir, pkg_dir)
-                if not os.path.isdir(pkg_path): continue
+            for entry in os.listdir(search_dir):
+                path = os.path.join(search_dir, entry)
+                if os.path.isdir(path) and depth > 0:
 
-                #Found package importing
-                found_pkg = imp.find_module(pkg_dir, [search_dir])
-                if not found_pkg:
-                    continue
+                    #Find package
+                    found_pkg = imp.find_module(entry, [search_dir])
+                    if not found_pkg:
+                        continue
 
-                pkg = imp.load_module(pkg_dir, *found_pkg)
+                    if package:
+                        name = '%s.%s' % (package, entry)
+                    else:
+                        name = entry
+                    pkg = imp.load_module(name, *found_pkg)
+                    mods.append(pkg)
+                    mods.extend(self._find_modules(
+                        [path],
+                        depth - 1,
+                        name,
+                    ))
+                elif entry.endswith('.py'):
+                    entry = entry[:-3]
+                    if package:
+                        name = '%s.%s' % (package, entry)
+                    else:
+                        name = entry
 
-                # Find modules under package
-
-                name = "%s.%s" % (pkg_dir, pkg_dir)
-                found = imp.find_module(pkg_dir, [pkg_path])
-                if not found:
-                    continue
-                mod = imp.load_module(name, *found)
-                mods.append(mod)
+                    # Find modules under package
+                    found_mod = imp.find_module(entry, [search_dir])
+                    if not found_mod:
+                        continue
+                    mod = imp.load_module(name, *found_mod)
+                    mods.append(mod)
         return mods
+
     def find_subclasses(self, mods, parent_class):
         """
         Return all classes found in the list of modules `mods` that are subclasses

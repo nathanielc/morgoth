@@ -5,7 +5,7 @@ from gevent.event import Event
 from morgoth.data.mongo_clients import MongoClients
 from morgoth.config import Config
 from morgoth.data import get_col_for_metric
-from morgoth.data.meta import Meta
+from morgoth.meta import Meta
 import gevent
 import pymongo
 

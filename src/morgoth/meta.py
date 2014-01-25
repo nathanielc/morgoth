@@ -9,16 +9,22 @@ import re
 import logging
 logger = logging.getLogger(__name__)
 
+__all__ = ['Meta']
+
 class Meta(object):
     _db = MongoClients.Normal.morgoth
     _db_admin = MongoClients.Normal.admin
     _db_name = Config.mongo.database_name
     _use_sharding = Config.mongo.use_sharding
-    _meta = {}
     _needs_updating = {}
     _refresh_interval = Config.get(['metric_meta', 'refresh_interval'], 60)
     _finishing = False
+    """ Dict containg the meta data for each metric """
+    _meta = {}
+    """ Dict of AD classes mapped to metric patterns """
     _ads = {}
+    """ Dict of metrics to their matching pattern """
+    _metric_patterns = {}
 
 
     @classmethod
@@ -26,17 +32,32 @@ class Meta(object):
         """
         Loads the existing meta data
         """
-        cls._start_ads()
+        cls._load_ads()
         for meta in cls._db.meta.find():
             metric = meta['_id']
             cls._meta[metric] = meta
+            cls._match_metric(metric)
+            cls._start_ads(metric)
 
-
+    @classmethod
+    def _load_ads(cls):
+        """
+        Load the configured Anomaly Detectors
+        """
+        for pattern, conf in Config.metrics.items():
+            cls._ads[pattern] = []
+            for ad_name, ad_conf in conf.detectors.items():
+                try:
+                    ad_class = get_ad(ad_name)
+                    ad = ad_class.from_conf(ad_conf)
+                    cls._ads[pattern].append(ad)
+                except Exception as e:
+                    logger.error('Could not create AD "%s" from conf: %s' % (ad_name, str(e)))
 
     @classmethod
     def update(cls, metric, value):
         """
-        Update a metrics meta datac
+        Update a metrics meta data
 
         A metric's meta data will be only eventually consistent
         """
@@ -134,29 +155,42 @@ class Meta(object):
         @param metric: the name of the metric
         @param meta: the metadata about the metric
         """
-        # Insert the meta data for the metric
         cls._db.meta.insert(meta)
 
-        # Start anomaly dectectors
+        cls._match_metric(metric)
+
         cls._start_ads(metric)
+
+    @classmethod
+    def _match_metric(cls, metric):
+        """
+        Determine which pattern matches the given metric
+
+        @param metric: the name of the metric
+        """
+        for pattern, _ in Config.metrics.items():
+            if re.match(pattern, metric):
+                cls._metric_patterns[metric] = pattern
+                return
+
+        # No config for the metric
+        cls._metric_patterns[metric] = None
+        logger.warn("Metric '%s' has no matching configuration" % metric)
 
 
     @classmethod
-    def _start_ads(cls):
+    def _start_ads(cls, metric):
         """
-        Start the configured Anomaly Detectors
-
+        Tell the ADs to start monitoring a new metric
         """
-        for pattern, conf in Config.metrics.items():
-            cls._ads[pattern] = []
-            for ad_name, ad_conf in conf.detectors.items():
-                try:
-                    ad_class = get_ad(ad_name)
-                    ad = ad_class.from_conf(ad_conf)
-                    cls._ads[pattern].append(ad)
-                except Exception as e:
-                    logger.error('Could not create AD "%s" from conf: %s' % (ad_name, str(e)))
+        pattern = cls._metric_patterns[metric]
 
+        if not pattern:
+            return # No config for this metric ignore
+
+        ads = cls._ads[pattern]
+        for ad in ads:
+            ad.watch_metric(metric)
 
 
 
