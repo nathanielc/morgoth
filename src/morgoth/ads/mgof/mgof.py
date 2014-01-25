@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
 from morgoth.ads.anomaly_detector import AnomalyDetector
+from morgoth.ads.mgof.mgof_window import MGOFWindow
+from morgoth.schedule import Schedule
+from morgoth.utc import utc
 from morgoth.utils import timedelta_from_str
-from morgoth.window import Window
 from scipy.stats import chi2
 import numpy
+import gevent
 
 
 import logging
@@ -15,6 +18,8 @@ class MGOF(AnomalyDetector):
     """
     def __init__(self,
             windows,
+            period,
+            duration,
             n_bins=20,
             count_threshold=1,
             chi2_percentage=0.95):
@@ -26,10 +31,12 @@ class MGOF(AnomalyDetector):
         The algorithim is adapted from this paper:
             http://www.hpl.hp.com/techreports/2011/HPL-2011-8.html
 
-        @param metric: the name of the metric to analyze
         @param windows: list of (timedelta, timedelta) tuples
             The first element is the offset of the window
             The second element is the duration of the window
+        @param period: timedelta object of how much time to wait between
+            checking windows for anomalies
+        @param duration: the length of the window to analyze, timedelta object
         @param n_bins: the number of discrete values to use in analyzing
             the metric data
         @param count_threshold: the number of windows of a given pattern
@@ -39,6 +46,8 @@ class MGOF(AnomalyDetector):
         """
         super(MGOF, self).__init__()
         self._windows = windows
+        self._period = period
+        self._duration = duration
         self._n_bins = n_bins
         self._count_threshold = count_threshold
         self._chi2_percentage = chi2_percentage
@@ -46,6 +55,8 @@ class MGOF(AnomalyDetector):
             logger.warn("The count_threshold of %d and the number of windows "
             "%d doesn't allow for any bad training windows"
             % (self._count_threshold, len(self._windows)))
+
+        self._watch()
 
     @classmethod
     def from_conf(cls, conf):
@@ -55,28 +66,52 @@ class MGOF(AnomalyDetector):
                 timedelta_from_str(window.offset),
                 timedelta_from_str(window.duration),
             ))
+        period = timedelta_from_str(conf.get('period', '15m'))
+        duration = timedelta_from_str(conf.get('duration', '15m'))
         return MGOF(
                 windows,
+                period,
+                duration,
                 conf.get(['n_bins'], 20),
                 conf.get(['count_threshold'], 1),
                 conf.get(['chi2_percentage'], 0.95)
             )
 
+    def _watch(self):
+        """
+        Start watching
+        """
+        logger.debug("_watch")
+        self._sched = Schedule(self._period, self._check_metrics)
+        self._sched.start()
+
+    def _check_metrics(self):
+        """
+        Check if the metrics are anomalous
+        """
+        logger.debug("_check_metrics")
+        start = datetime.now(utc)
+        end = start + self._duration
+        for metric in self._metrics:
+            gevent.spawn(self.is_anomalous, metric, start, end)
+
+
+
     def _relative_entropy(self, q, p):
         assert len(q) == len(p)
         return numpy.sum(q * numpy.log(q / p))
 
-    def is_anomalous(self, start, end):
+    def is_anomalous(self, metric, start, end):
 
         windows = []
 
         for offset, duration in self._windows:
             s = start - offset
             e = s + duration
-            w = Window(self._metric, s, e, self._n_bins, trainer=True)
+            w = MGOFWindow(metric, s, e, self._n_bins, trainer=True)
             windows.append(w)
 
-        window = Window(self._metric, start, end, self._n_bins, trainer=False)
+        window = MGOFWindow(metric, start, end, self._n_bins, trainer=False)
         windows.append(window)
 
         threshold = chi2.ppf(self._chi2_percentage, self._n_bins - 1)

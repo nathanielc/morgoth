@@ -19,6 +19,20 @@ class MGOFWindow(Window):
         self._trainer = False
         self._prob_dist = None
 
+    @Window.id.getter
+    def id(self):
+        """
+        Return unique id for this window
+        """
+        if self._id is None:
+            self._id = "%s|%s|%s|%d|mgof" % (
+                    self._metric,
+                    self._start,
+                    self._end,
+                    self._n_bins
+                )
+        return self._id
+
     @property
     def trainer(self):
         return self._trainer
@@ -28,18 +42,20 @@ class MGOFWindow(Window):
         """
         The probability distribution of the window
 
-        @return (list of probabalities for each discete value,
-                    number of data points)
+        @return tuple (
+            list of probabalities for each discete value,
+            number of data points
+        )
         """
         if self._prob_dist is None:
-            data = self._db.windows.find_one({'_id': self._id})
+            data = self._db.windows.find_one({'_id': self.id})
             meta = self._db.meta.find_one({'_id' : self._metric})
             if data is None or data['value']['version'] != meta['version']:
                 self._update()
-                data = self._db.windows.find_one({'_id': self._id})
+                data = self._db.windows.find_one({'_id': self.id})
                 if data is None:
                     return [0] * self._n_bins, 0
-            self._prob_dist = data['value']['P'], data['value']['count']
+            self._prob_dist = data['value']['prob_dist'], data['value']['count']
         return self._prob_dist
 
     def _update(self):
@@ -56,7 +72,7 @@ class MGOFWindow(Window):
         step_size = ((m_max * 1.01) - m_min) / float(self._n_bins)
 
         map_values = {
-            'id' : self._id,
+            'id' : self.id,
             'step_size' : step_size,
             'm_min' : m_min,
             'n_bins' :self._n_bins,

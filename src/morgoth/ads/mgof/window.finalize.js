@@ -1,7 +1,7 @@
 function (key, value) {
-    var len = value.count * 10 + value.P.length;
-    for (var i = 0; i < value.P.length; i++) {
-        value.P[i] = (value.P[i] + 1) / len;
+    var len = value.count * 10 + value.prob_dist.length;
+    for (var i = 0; i < value.prob_dist.length; i++) {
+        value.prob_dist[i] = (value.prob_dist[i] + 1) / len;
     }
     delete value['discrete'];
     value.version = %(version)d;

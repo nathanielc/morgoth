@@ -12,14 +12,15 @@ class Window(object):
         self._metric = metric
         self._start = start
         self._end = end
-        self.__id = None
+        self._id = None
         self._anomalous = None
 
     @property
-    def _id(self):
-        if self.__id is None:
-            self.__id = ObjectId()
-        return self.__id
+    def id(self):
+        if self._id is None:
+            self._id = ObjectId()
+        return self._id
+
 
     @property
     def anomalous(self):

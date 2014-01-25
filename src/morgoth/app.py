@@ -89,7 +89,6 @@ class App(object):
 
         spawned = []
         for input in self._inputs:
-            self._logger.info("Staring input '%s'...", input)
             spawn = gevent.spawn(input.start)
             spawned.append(spawn)
 

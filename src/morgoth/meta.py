@@ -52,7 +52,8 @@ class Meta(object):
                     ad = ad_class.from_conf(ad_conf)
                     cls._ads[pattern].append(ad)
                 except Exception as e:
-                    logger.error('Could not create AD "%s" from conf: %s' % (ad_name, str(e)))
+                    logger.error('Could not create AD "%s" from conf',  ad_name )
+                    logger.exception(e)
 
     @classmethod
     def update(cls, metric, value):
