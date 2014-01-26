@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
 from morgoth.ads.anomaly_detector import AnomalyDetector
 from morgoth.ads.mgof.mgof_window import MGOFWindow
 from morgoth.schedule import Schedule
-from morgoth.utc import utc
+from morgoth.utc import utc, now
 from morgoth.utils import timedelta_from_str
 from scipy.stats import chi2
 import numpy
@@ -81,7 +80,6 @@ class MGOF(AnomalyDetector):
         """
         Start watching
         """
-        logger.debug("_watch")
         self._sched = Schedule(self._period, self._check_metrics)
         self._sched.start()
 
@@ -89,8 +87,7 @@ class MGOF(AnomalyDetector):
         """
         Check if the metrics are anomalous
         """
-        logger.debug("_check_metrics")
-        start = datetime.now(utc)
+        start = now()
         end = start + self._duration
         for metric in self._metrics:
             gevent.spawn(self.is_anomalous, metric, start, end)

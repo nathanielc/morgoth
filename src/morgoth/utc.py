@@ -1,4 +1,4 @@
-from datetime import timedelta, tzinfo
+from datetime import datetime, timedelta, tzinfo
 
 ZERO = timedelta(0)
 
@@ -16,3 +16,10 @@ class UTC(tzinfo):
         return ZERO
 
 utc = UTC()
+
+def now():
+    """
+    Return a datetime object representing the current time in UTC
+    """
+    return datetime.now(utc)
+

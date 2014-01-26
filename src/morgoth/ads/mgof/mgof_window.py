@@ -6,6 +6,9 @@ from morgoth.error import MorgothError
 from morgoth.window import Window
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+
 __dir__ = os.path.dirname(__file__)
 
 class MGOFWindow(Window):
@@ -16,7 +19,7 @@ class MGOFWindow(Window):
     def __init__(self, metric,  start, end, n_bins, trainer=False):
         super(MGOFWindow, self).__init__(metric, start, end)
         self._n_bins = n_bins
-        self._trainer = False
+        self._trainer = trainer
         self._prob_dist = None
 
     @Window.id.getter
@@ -62,6 +65,7 @@ class MGOFWindow(Window):
         """
         Updates the window data
         """
+        logger.debug("MGOF._update: %s", self)
         meta = self._db.meta.find_one({'_id' : self._metric})
         if meta is None:
             raise MorgothError("No such metric '%s'" % self._metric)
@@ -89,12 +93,13 @@ class MGOFWindow(Window):
         finalize_code = Code(self.finalize % finalize_values)
 
 
+        query = {
+            'metric' : self._metric,
+            'time' : { '$gte' : self._start, '$lt' : self._end},
+        }
         self._db.metrics.map_reduce(map_code, self.reduce_code,
-            out=SON([('merge', 'windows'), ('db', 'morgoth')]),
-            query={
-                'metric' : self._metric,
-                'time' : { '$gte' : self._start, '$lte' : self._end},
-            },
+            out=SON([('merge', 'windows')]),
+            query=query,
             finalize=finalize_code
         )
 

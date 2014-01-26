@@ -20,7 +20,6 @@ class Schedule(object):
         @param callback: callable action
         """
         self._period = period.total_seconds()
-        logger.debug("period %d" % self._period)
         self._callback = callback
         self._running = False
 
@@ -37,7 +36,6 @@ class Schedule(object):
         """
         Start the schedule now
         """
-        logger.debug("start")
         if self._running:
             raise ScheduleError("The schedule is already started")
         self._running = True
@@ -52,7 +50,6 @@ class Schedule(object):
         self._event = None
 
     def _next(self):
-        logger.debug("_next")
         gevent.spawn_later(self._period, self._next)
         gevent.spawn(self._callback)
 

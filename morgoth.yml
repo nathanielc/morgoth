@@ -7,14 +7,14 @@ metrics:
       MGOF:
         n_bins: 25
         count_threshold: 1
-        period: 10s
+        period: 15s
+        duration: 1m
         windows:
-          - {offset: 1d, duration: 1h}
-          - {offset: 1w, duration: 1h}
-          - {offset: 2w, duration: 1h}
-          - {offset: 3w, duration: 1h}
-          - {offset: 4w, duration: 1h}
-          - {offset: 1y, duration: 1h}
+          - {offset: 1m, duration: 1m}
+          - {offset: 2m, duration: 1m}
+          - {offset: 3m, duration: 1m}
+          - {offset: 4m, duration: 1m}
+          - {offset: 1h, duration: 1m}
 #  test_asdf.*:
 #    type: number
 #    detectors:
