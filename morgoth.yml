@@ -15,6 +15,8 @@ metrics:
           - {offset: 3m, duration: 1m}
           - {offset: 4m, duration: 1m}
           - {offset: 1h, duration: 1m}
+    notifiers:
+        LogNotifier:
 #  test_asdf.*:
 #    type: number
 #    detectors:
@@ -22,11 +24,15 @@ metrics:
 #        asdf: 1
 
 inputs:
-  graphite:
+  Graphite:
     port: 4200
   unix:
     path: /tmp/jim
 
-anomaly_detectors:
+outputs:
+    Rest:
+        port: 8001
+
+detectors:
   plugin_dirs:
     - /tmp/morgoth

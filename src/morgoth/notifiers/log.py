@@ -1,10 +1,11 @@
 
 
-import logging
+from morgoth.notifiers.notifier import Notifier
 
+import logging
 logger = logging.getLogger(__name__)
 
-class Notifier(object):
+class LogNotifier(Notifier):
     def __init___(self):
         pass
 
@@ -15,7 +16,7 @@ class Notifier(object):
 
         @param conf: a conf object
         """
-        return Notifier()
+        return LogNotifier()
 
 
     def notify(self, window):

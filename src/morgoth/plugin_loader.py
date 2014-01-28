@@ -69,15 +69,18 @@ class PluginLoader(object):
                     mods.append(mod)
         return mods
 
-    def find_subclasses(self, mods, parent_class):
+    def find_subclasses(self, mods, parent_class, ignored=set()):
         """
         Return all classes found in the list of modules `mods` that are subclasses
         of `parent_class`
 
         @param mods: list of module objects
         @param parent_class: a parent class
+        @param ignore: set of class names to ignore.
+            NOTE: `parent_class` is always ignored
         """
         classes = []
+        ignored.add(parent_class.__name__)
         for mod in mods:
             classes.extend(
                     inspect.getmembers(
@@ -85,7 +88,7 @@ class PluginLoader(object):
                         lambda x:
                             inspect.isclass(x)
                             and issubclass(x, parent_class)
-                            and not x == parent_class
+                            and x.__name__ not in ignored
                         )
                 )
         return classes

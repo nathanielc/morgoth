@@ -1,0 +1,121 @@
+from flask import Flask, request, jsonify, make_response, current_app
+from functools import update_wrapper
+
+from gevent import queue
+from gevent.pywsgi import WSGIServer
+
+from datetime import timedelta
+import dateutil.parser
+
+from morgoth.outputs.output import Output
+from morgoth.data.reader import Reader
+
+import logging
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+app.debug = True
+
+
+class Rest(Output):
+    def __init__(self, host, port):
+        super(Rest, self).__init__()
+        self._host = host
+        self._port = port
+
+
+    @classmethod
+    def from_conf(cls, conf):
+        host = ''
+        port = conf.get('port', 8080)
+        return Rest(host, port)
+
+
+    def start(self):
+        logger.info("Starting REST output plugin...")
+        self._server = WSGIServer((self._host, self._port), app)
+        self._server.serve_forever()
+
+    def stop(self):
+        self._server.stop()
+
+##############################
+# Flask methods
+##############################
+
+reader = Reader()
+
+
+
+def crossdomain(origin=None, methods=None, headers=None,
+                max_age=21600, attach_to_all=True,
+                automatic_options=True):
+    if methods is not None:
+        methods = ', '.join(sorted(x.upper() for x in methods))
+    if headers is not None and not isinstance(headers, basestring):
+        headers = ', '.join(x.upper() for x in headers)
+    if not isinstance(origin, basestring):
+        origin = ', '.join(origin)
+    if isinstance(max_age, timedelta):
+        max_age = max_age.total_seconds()
+
+    def get_methods():
+        if methods is not None:
+            return methods
+
+        options_resp = current_app.make_default_options_response()
+        return options_resp.headers['allow']
+
+    def decorator(f):
+        def wrapped_function(*args, **kwargs):
+            if automatic_options and request.method == 'OPTIONS':
+                resp = current_app.make_default_options_response()
+            else:
+                resp = make_response(f(*args, **kwargs))
+            if not attach_to_all and request.method != 'OPTIONS':
+                return resp
+
+            h = resp.headers
+
+            h['Access-Control-Allow-Origin'] = origin
+            h['Access-Control-Allow-Methods'] = get_methods()
+            h['Access-Control-Max-Age'] = str(max_age)
+            if headers is not None:
+                h['Access-Control-Allow-Headers'] = headers
+            return resp
+
+        f.provide_automatic_options = False
+        return update_wrapper(wrapped_function, f)
+    return decorator
+
+
+@app.route('/metrics')
+@crossdomain(origin='*')
+def metrics():
+    return jsonify({'metrics' : reader.get_metrics()})
+
+@app.route('/data/<metric>')
+@crossdomain(origin='*')
+def metric_data(metric):
+    start = None
+    stop = None
+    if 'start' in request.args:
+        try:
+            start = dateutil.parser.parse(request.args['start'])
+        except Exception as e:
+            return jsonify({
+                'error' : 'invalid start date format: %s' % str(e)
+                }), 400
+
+    if 'stop' in request.args:
+        try:
+            stop = dateutil.parser.parse(request.args['stop'])
+        except Exception as e:
+            return jsonify({
+                'error' : 'invalid stop date format: %s' % str(e)
+                }), 400
+
+    return jsonify({
+        'metric' : metric,
+        'data': reader.get_data(metric, start, stop)
+    })

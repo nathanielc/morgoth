@@ -18,14 +18,14 @@ def load_inputs():
 
     classes = pl.find_subclasses(mods, Input)
 
-    conf_inputs = [ k.lower() for k in Config.inputs.keys() if k != 'plugin_dirs']
+    conf_inputs = [ k for k in Config.inputs.keys() if k != 'plugin_dirs']
     inputs = []
     for input_name, input_class in classes:
-        if input_name.lower() not in conf_inputs:
+        if input_name not in conf_inputs:
             continue
         try:
             logger.debug("Found Input %s", input_name)
-            input = input_class.from_conf(Config.inputs.get(input_name.lower(), None))
+            input = input_class.from_conf(Config.inputs.get(input_name, None))
             inputs.append(input)
         except Exception as e:
             logger.warning("Error creating input '%s': %s", input_name, e)

@@ -58,6 +58,9 @@ class App(object):
         for i in self._inputs:
             i.stop()
         self._logger.debug("All inputs have been shutdown")
+        for o in self._outputs:
+            o.stop()
+        self._logger.debug("All outputs have been shutdown")
         self._finish_event.set()
 
     def run(self):
@@ -70,9 +73,9 @@ class App(object):
         import signal
         gevent.signal(signal.SIGINT, self.handler)
 
-        # Load the ADs
-        from morgoth.ads import load_ads
-        load_ads()
+        # Load the Detectors
+        from morgoth.detectors import load_detectors
+        load_detectors()
 
         # Initialize notifiers
         from morgoth.notifiers import load_notifiers
@@ -92,9 +95,17 @@ class App(object):
             spawn = gevent.spawn(input.start)
             spawned.append(spawn)
 
+
+        # Start output plugins
+        from morgoth.outputs import load_outputs
+        self._outputs = load_outputs()
+
+        for output in self._outputs:
+            spawn = gevent.spawn(output.start)
+            spawned.append(spawn)
+
         for spawn in spawned:
             spawn.join()
-
 
         self._logger.info("All inputs have stopped")
         self._finish_event.wait()

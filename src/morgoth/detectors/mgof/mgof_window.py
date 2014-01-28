@@ -65,7 +65,6 @@ class MGOFWindow(Window):
         """
         Updates the window data
         """
-        logger.debug("MGOF._update: %s", self)
         meta = self._db.meta.find_one({'_id' : self._metric})
         if meta is None:
             raise MorgothError("No such metric '%s'" % self._metric)

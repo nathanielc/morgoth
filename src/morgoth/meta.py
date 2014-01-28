@@ -1,7 +1,8 @@
 
 from morgoth.data.mongo_clients import MongoClients
 from morgoth.config import Config
-from morgoth.ads import get_ad
+from morgoth.detectors import get_detector
+from morgoth.notifiers import get_notifier
 
 import gevent
 import re
@@ -21,8 +22,10 @@ class Meta(object):
     _finishing = False
     """ Dict containg the meta data for each metric """
     _meta = {}
-    """ Dict of AD classes mapped to metric patterns """
-    _ads = {}
+    """ Dict of Detector classes mapped to metric patterns """
+    _detectors = {}
+    """ Dict of Notifier classes mapped to metric patterns """
+    _notifiers = {}
     """ Dict of metrics to their matching pattern """
     _metric_patterns = {}
 
@@ -32,28 +35,46 @@ class Meta(object):
         """
         Loads the existing meta data
         """
-        cls._load_ads()
+
+        # Load notifiers and ADs from conf
+        for pattern, conf in Config.metrics.items():
+            cls._detectors[pattern] = []
+            cls._notifiers[pattern] = []
+            # Load Detectors
+            detectors = conf.get('detectors', {})
+            if not detectors:
+                logger.warn('No Detectors defined for metric pattern "%s"' % pattern)
+            for d_name, d_conf in detectors.items():
+                try:
+                    d_class = get_detector(d_name)
+                    detector = d_class.from_conf(d_conf)
+                    cls._detectors[pattern].append(detector)
+                except Exception as e:
+                    logger.error('Could not create Detector "%s" from conf',  d_name )
+                    logger.exception(e)
+            # Load Notifiers
+            notifiers = conf.get('notifiers', {})
+            if not notifiers:
+                logger.warn('No notifiers defined for metric pattern "%s"' % pattern)
+            for n_name, n_conf in notifiers.items():
+                try:
+                    n_class = get_notifier(n_name)
+                    notifier = n_class.from_conf(n_conf)
+                    cls._notifiers[pattern].append(notifier)
+                except Exception as e:
+                    logger.error('Could not create notifier "%s" from conf',  n_name )
+                    logger.exception(e)
+
+
+        # Load metrics from database
         for meta in cls._db.meta.find():
             metric = meta['_id']
             cls._meta[metric] = meta
             cls._match_metric(metric)
-            cls._start_ads(metric)
+            cls._start_detectors(metric)
 
-    @classmethod
-    def _load_ads(cls):
-        """
-        Load the configured Anomaly Detectors
-        """
-        for pattern, conf in Config.metrics.items():
-            cls._ads[pattern] = []
-            for ad_name, ad_conf in conf.detectors.items():
-                try:
-                    ad_class = get_ad(ad_name)
-                    ad = ad_class.from_conf(ad_conf)
-                    cls._ads[pattern].append(ad)
-                except Exception as e:
-                    logger.error('Could not create AD "%s" from conf',  ad_name )
-                    logger.exception(e)
+
+
 
     @classmethod
     def update(cls, metric, value):
@@ -102,6 +123,23 @@ class Meta(object):
 
 
     @classmethod
+    def notify_anomalous(cls, window):
+        """
+        Notify that a given metric is anomalous for the given window
+
+        @param window: a window object representing the anomalous time frame
+        """
+        # Add the anomaly to the db
+        cls._db.anomalies.insert({
+            'metric' : window.metric,
+            'start' : window.start,
+            'end' : window.end,
+        })
+        pattern = cls._metric_patterns[window.metric]
+        for notifier in cls._notifiers[pattern]:
+            notifier.notify(window)
+
+    @classmethod
     def _update_eventually(cls, metric):
         gevent.sleep(cls._refresh_interval)
         if cls._finishing: return
@@ -126,7 +164,7 @@ class Meta(object):
                 cls._init_new_metric(metric, meta)
             else:
                 # Populate in memory meta with existing meta
-                logger.debug("Got existing meta %s" % str(existing_meta))
+                #logger.debug("Got existing meta %s" % str(existing_meta))
                 meta['version'] = existing_meta['version']
                 meta['min'] = min(existing_meta['min'], meta['min'])
                 meta['max'] = max(existing_meta['max'], meta['max'])
@@ -160,7 +198,7 @@ class Meta(object):
 
         cls._match_metric(metric)
 
-        cls._start_ads(metric)
+        cls._start_detectors(metric)
 
     @classmethod
     def _match_metric(cls, metric):
@@ -180,18 +218,18 @@ class Meta(object):
 
 
     @classmethod
-    def _start_ads(cls, metric):
+    def _start_detectors(cls, metric):
         """
-        Tell the ADs to start monitoring a new metric
+        Tell the Detectors to start monitoring a new metric
         """
         pattern = cls._metric_patterns[metric]
 
         if not pattern:
             return # No config for this metric ignore
 
-        ads = cls._ads[pattern]
-        for ad in ads:
-            ad.watch_metric(metric)
+        detectors = cls._detectors[pattern]
+        for detectors in detectors:
+            detectors.watch_metric(metric)
 
 
 

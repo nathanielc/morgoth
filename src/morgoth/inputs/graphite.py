@@ -48,7 +48,6 @@ class Graphite(Input):
 
     def stop(self):
         self._server.stop(self._stop_timeout)
-        logger.debug("Server stopped")
         self._writer.close()
         logger.debug("Graphite is stopped")
 

@@ -29,7 +29,7 @@ def get_notifier(name):
     @return Notifier class
     """
     if name not in _NOTIFIERS:
-        raise ValueError("Niotifier of name '%s' doesn't exist" % name)
+        raise ValueError("Notifier of name '%s' doesn't exist" % name)
     return _NOTIFIERS[name]
 
 def load_notifiers():
@@ -46,7 +46,7 @@ def load_notifiers():
     for n_name, n_class in classes:
         logger.debug("Found Notifier %s", n_name)
         try:
-            register_ad(n_name, n_class)
+            register_notifier(n_name, n_class)
         except ValueError as e:
             logger.warning("Found duplicate Notifiers with name %s", n_name)
 

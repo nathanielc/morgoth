@@ -1,17 +1,14 @@
-from morgoth.ads.anomaly_detector import AnomalyDetector
-from morgoth.ads.mgof.mgof_window import MGOFWindow
-from morgoth.schedule import Schedule
-from morgoth.utc import utc, now
+from morgoth.detectors.scheduled import Scheduled
+from morgoth.detectors.mgof.mgof_window import MGOFWindow
 from morgoth.utils import timedelta_from_str
 from scipy.stats import chi2
 import numpy
-import gevent
 
 
 import logging
 logger = logging.getLogger(__name__)
 
-class MGOF(AnomalyDetector):
+class MGOF(Scheduled):
     """
     Multinomial Goodness Of Fit
     """
@@ -43,10 +40,8 @@ class MGOF(AnomalyDetector):
         @param chi2_percentage: a value between 0-1 used to determine the
             statistical probalility of a window matching a given pattern
         """
-        super(MGOF, self).__init__()
+        super(MGOF, self).__init__(period, duration)
         self._windows = windows
-        self._period = period
-        self._duration = duration
         self._n_bins = n_bins
         self._count_threshold = count_threshold
         self._chi2_percentage = chi2_percentage
@@ -76,25 +71,10 @@ class MGOF(AnomalyDetector):
                 conf.get(['chi2_percentage'], 0.95)
             )
 
-    def _watch(self):
-        """
-        Start watching
-        """
-        self._sched = Schedule(self._period, self._check_metrics)
-        self._sched.start()
-
-    def _check_metrics(self):
-        """
-        Check if the metrics are anomalous
-        """
-        start = now()
-        end = start + self._duration
-        for metric in self._metrics:
-            gevent.spawn(self.is_anomalous, metric, start, end)
-
-
-
     def _relative_entropy(self, q, p):
+        """
+        Calculate the relative entropy of two probability distributions
+        """
         assert len(q) == len(p)
         return numpy.sum(q * numpy.log(q / p))
 
@@ -122,7 +102,7 @@ class MGOF(AnomalyDetector):
             p = numpy.array(p)
             if count < self._n_bins:
                 #Skip the window, too small
-                logger.debug("Skipped %s %d" % (w, count))
+                #logger.debug("Skipped %s %d" % (w, count))
                 if not w.trainer:
                     logger.warn("Skipped non training window %s" % w)
                 continue
@@ -155,7 +135,7 @@ class MGOF(AnomalyDetector):
                     prob_counts.append(1)
 
             w.anomalous = anomalous
-            logger.debug("Analyzed %s" % w)
+            #logger.debug("Analyzed %s" % w)
 
         return window
 

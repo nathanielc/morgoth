@@ -1,6 +1,6 @@
 
 
-class AnomalyDetector(object):
+class Detector(object):
     """
     This class is responsible for dectecting anomalies in metrics
 
@@ -8,6 +8,15 @@ class AnomalyDetector(object):
     """
     def __init__(self):
         self._metrics = []
+
+    @classmethod
+    def from_conf(cls, conf):
+        """
+        Create a AD from the given conf
+
+        @param conf: a conf object
+        """
+        raise NotImplementedError("%s.from_conf is not implemented" % cls.__name__)
 
     def watch_metric(self, metric):
         """ Called when a this AD should watch a new metric """
@@ -22,7 +31,6 @@ class AnomalyDetector(object):
         """
         pass
 
-
     def is_anomalous(self, metric, start, end):
         """
         Return whether the given time range is anomalous
@@ -33,4 +41,3 @@ class AnomalyDetector(object):
         @return window - a window object indicating whether it is anomalous
         """
         raise NotImplementedError("%s.is_anomalous is not implemented" % self.__class__.__name__)
-

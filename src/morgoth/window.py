@@ -16,6 +16,27 @@ class Window(object):
         self._anomalous = None
 
     @property
+    def metric(self):
+        """
+        Return the metric this window applies to
+        """
+        return self._metric
+
+    @property
+    def start(self):
+        """
+        Return the start time in UTC of the window
+        """
+        return self._start
+
+    @property
+    def end(self):
+        """
+        Return the end time in UTC of the window
+        """
+        return self._end
+
+    @property
     def id(self):
         if self._id is None:
             self._id = ObjectId()
@@ -41,4 +62,9 @@ class Window(object):
         return self.__str__()
 
     def __str__(self):
-        return "{Window[%s:%s]anomalous:%s}" % (self._start, self._end, self.anomalous)
+        return "{Window[%s|%s|%s|anomalous:%s]}" % (
+                self._metric,
+                self._start,
+                self._end,
+                self.anomalous,
+            )

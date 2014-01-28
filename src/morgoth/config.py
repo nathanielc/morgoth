@@ -47,6 +47,7 @@ class Config(dict):
         self.enumerate = self._enumerate
         self.get_ignored_conf= self._get_ignored_conf
 
+
     @classmethod
     def get(cls, attr, default):
         """
@@ -114,7 +115,6 @@ class Config(dict):
                 return value
         else:
             if not attr in self:
-                logger.info('Setting default conf "%s" on %s' % (default, self))
                 self[attr] = default
             return self[attr]
 
