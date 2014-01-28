@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Cubism Page Template</title>
+
+        <!-- Import Cubism and its dependency D3 -->
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script src="/cubism.v1.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="main.css">
+    </head>
+    <body>
+        <div id="demo"></div>
+
+        <script type="text/javascript">
+
+            var context = cubism.context()
+                                .step(1e3) // Distance between data points in milliseconds
+                                .size(800); // Number of data points
+
+            d3.select("body").append("div") // Add a vertical rule
+              .attr("class", "rule")        // to the graph
+              .call(context.rule());
+
+            function metric(name) {
+                return context.metric(function(start, stop, step, callback) {
+                    d3.json("http://localhost:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString(), function(rows) {
+                        values = [];
+                        for ( var i = 0; i < rows.data.length; i++) {
+                            values.push(rows.data[i][1]);
+                        }
+                        callback(null, values); });
+                }, name);
+            }
+
+
+            function draw_graph(metrics) {
+                d3.select("#demo")                 // Select the div on which we want to act
+                  .selectAll(".axis")              // This is a standard D3 mechanism to
+                  .data(["top"])                   // bind data to a graph. In this case
+                  .enter()                         // we're binding the axes "top" and "bottom".
+                  .append("div")                   // Create two divs and
+                  .attr("class", function(d) {     // give them the classes
+                    return d + " axis";            // top axis and bottom axis
+                  })                               // respectively
+                  .each(function(d) {              // For each of these axes,
+                    d3.select(this)                // draw the axes with 4 intervals
+                      .call(context.axis()         // and place them in their proper places
+                      .ticks(8).orient(d));
+                  });
+
+
+                d3.select("#demo")
+                  .selectAll(".horizon")
+                  .data(metrics.map(metric))
+                  .enter()
+                  .insert("div", ".bottom")        // Insert the graph in a div
+                  .attr("class", "horizon")        // Turn the div into
+                  .call(context.horizon()          // a horizon graph
+                  .format(d3.format("+,.2p")));    // Format the values to 2 floating-point decimals
+
+
+                context.on("focus", function(i) {
+                    d3.selectAll(".value").style("right",                  // Make the rule coincide
+                        i == null ? null : context.size() - i + "px"); // with the mouse
+                });
+            }
+
+            d3.json("http://localhost:8001/metrics", function(metrics) {
+                draw_graph(metrics.metrics );
+            });
+        </script>
+    </body>
+</html>
