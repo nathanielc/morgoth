@@ -3,8 +3,7 @@
 import subprocess
 import numpy
 import time
-from morgoth.collector import Collector
-from datetime import datetime
+import socket
 
 
 def get_stats():
@@ -13,21 +12,23 @@ def get_stats():
     lines = out.strip().split('\n')
     names = lines[-3].split()[3:]
     values = lines[-1].split()[2:]
-    print values
     stats = []
     for i in range(len(names)):
-        stats.append((names[i][1:], values[i]))
+        stats.append((names[i][1:], float(values[i])))
 
     return stats
 
 
 def main():
-    c = Collector()
     while True:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(('127.0.0.1', 4200))
         stats = get_stats()
         for metric, value in stats:
-            c.insert(datetime.utcnow(), metric, value)
-        time.sleep(1)
+            s.sendall("local.cpu.%s %f %d\n" % (metric, value, time.time()))
+        s.close()
+        time.sleep(10)
+
 
 if __name__ == '__main__':
     main()

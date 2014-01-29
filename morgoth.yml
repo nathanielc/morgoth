@@ -7,14 +7,15 @@ metrics:
       MGOF:
         n_bins: 25
         count_threshold: 1
-        period: 15s
-        duration: 1m
+        period: 15m
+        duration: 1h
         windows:
-          - {offset: 1m, duration: 1m}
-          - {offset: 2m, duration: 1m}
-          - {offset: 3m, duration: 1m}
-          - {offset: 4m, duration: 1m}
-          - {offset: 1h, duration: 1m}
+          - {offset: 1h, duration: 1h}
+          - {offset: 1w, duration: 1h}
+          - {offset: 2w, duration: 1h}
+          - {offset: 3w, duration: 1h}
+          - {offset: 4w, duration: 1h}
+          - {offset: 1y, duration: 1h}
     notifiers:
         LogNotifier:
 #  test_asdf.*:

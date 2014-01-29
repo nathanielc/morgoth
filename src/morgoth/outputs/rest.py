@@ -9,6 +9,7 @@ import dateutil.parser
 
 from morgoth.outputs.output import Output
 from morgoth.data.reader import Reader
+from morgoth.utils import timedelta_from_str
 
 import logging
 logger = logging.getLogger(__name__)
@@ -92,13 +93,17 @@ def crossdomain(origin=None, methods=None, headers=None,
 @app.route('/metrics')
 @crossdomain(origin='*')
 def metrics():
-    return jsonify({'metrics' : reader.get_metrics()})
+    pattern = None
+    if 'pattern' in request.args:
+        pattern = request.args['pattern']
+    return jsonify({'metrics' : reader.get_metrics(pattern)})
 
 @app.route('/data/<metric>')
 @crossdomain(origin='*')
 def metric_data(metric):
     start = None
     stop = None
+    step = None
     if 'start' in request.args:
         try:
             start = dateutil.parser.parse(request.args['start'])
@@ -115,7 +120,15 @@ def metric_data(metric):
                 'error' : 'invalid stop date format: %s' % str(e)
                 }), 400
 
+    if 'step' in request.args:
+        try:
+            step = timedelta_from_str(request.args['step'])
+        except Exception as e:
+            return jsonify({
+                'error' : 'invalid step format: %s' % str(e)
+                }), 400
+
     return jsonify({
         'metric' : metric,
-        'data': reader.get_data(metric, start, stop)
+        'data': reader.get_data(metric, start, stop, step)
     })

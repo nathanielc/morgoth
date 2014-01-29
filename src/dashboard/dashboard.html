@@ -2,10 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Cubism Page Template</title>
+        <title>Morgoth View</title>
 
         <!-- Import Cubism and its dependency D3 -->
-        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script src="/d3.v3.min.js" charset="utf-8"></script>
         <script src="/cubism.v1.min.js"></script>
 
         <link rel="stylesheet" type="text/css" href="main.css">
@@ -14,9 +14,10 @@
         <div id="demo"></div>
 
         <script type="text/javascript">
+            var step_sec = 10;
 
             var context = cubism.context()
-                                .step(1e3) // Distance between data points in milliseconds
+                                .step(step_sec * 1e3) // Distance between data points in milliseconds
                                 .size(800); // Number of data points
 
             d3.select("body").append("div") // Add a vertical rule
@@ -25,7 +26,7 @@
 
             function metric(name) {
                 return context.metric(function(start, stop, step, callback) {
-                    d3.json("http://localhost:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString(), function(rows) {
+                    d3.json("http://localhost:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString() + '&step=' + step_sec + 's', function(rows) {
                         values = [];
                         for ( var i = 0; i < rows.data.length; i++) {
                             values.push(rows.data[i][1]);
@@ -58,7 +59,7 @@
                   .insert("div", ".bottom")        // Insert the graph in a div
                   .attr("class", "horizon")        // Turn the div into
                   .call(context.horizon()          // a horizon graph
-                  .format(d3.format("+,.2p")));    // Format the values to 2 floating-point decimals
+                  .format(d3.format("+,.2")));    // Format the values to 2 floating-point decimals
 
 
                 context.on("focus", function(i) {
@@ -67,7 +68,7 @@
                 });
             }
 
-            d3.json("http://localhost:8001/metrics", function(metrics) {
+            d3.json("http://localhost:8001/metrics?pattern=local.*", function(metrics) {
                 draw_graph(metrics.metrics );
             });
         </script>

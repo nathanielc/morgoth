@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from mongo_clients import MongoClients
 from morgoth.data import get_col_for_metric
+from morgoth.utc import utc
 import re
 
 class Reader(object):
@@ -17,19 +18,38 @@ class Reader(object):
             metrics.append(name)
         return metrics
 
-    def get_data(self, metric, dt_start=None, dt_end=None):
+    def get_data(self, metric, start=None, stop=None, step=None):
         time_query = {}
-        if dt_start:
-            time_query['$gte'] = dt_start
-        if dt_end:
-            time_query['$lte'] = dt_end
+        if start:
+            time_query['$gte'] = start
+        if stop:
+            time_query['$lte'] = stop
         col = get_col_for_metric(self._db, metric)
         query = {'metric' : metric}
         if time_query:
             query['time'] = time_query
         data = col.find(query)
         time_data = []
+
+        count = 0
+        total = 0.0
+        boundary = None
+        if start and step:
+            boundary = (start + step).replace(tzinfo=utc)
         for point in data:
-            time_data.append((point['time'].isoformat(), point['value']))
+            if boundary and step:
+                if point['time'] > boundary:
+                    if count > 0:
+                        time_data.append((boundary.isoformat(), total / count))
+                    boundary += step
+                    count = 0
+                    total = 0.0
+                count += 1
+                total += point['value']
+
+            else:
+                time_data.append((point['time'].isoformat(), point['value']))
+        if count > 0:
+            time_data.append((boundary.isoformat(), total / count))
         return time_data
 
