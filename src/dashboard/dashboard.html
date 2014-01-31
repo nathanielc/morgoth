@@ -14,7 +14,7 @@
         <div id="demo"></div>
 
         <script type="text/javascript">
-            var step_sec = 10;
+            var step_sec = 60;
 
             var context = cubism.context()
                                 .step(step_sec * 1e3) // Distance between data points in milliseconds
@@ -59,7 +59,7 @@
                   .insert("div", ".bottom")        // Insert the graph in a div
                   .attr("class", "horizon")        // Turn the div into
                   .call(context.horizon()          // a horizon graph
-                  .format(d3.format("+,.2")));    // Format the values to 2 floating-point decimals
+                  .format(d3.format("+,.1f")));    // Format the values to 2 floating-point decimals
 
 
                 context.on("focus", function(i) {
@@ -71,6 +71,13 @@
             d3.json("http://localhost:8001/metrics?pattern=local.*", function(metrics) {
                 draw_graph(metrics.metrics );
             });
+
+            var svg = d3.select('body').append('svg').attr('width', 200).attr('height', 200);
+            var rect = svg.append('rect')
+                                .attr("x", 10)
+                                .attr("y", 10)
+                                .attr("width", 50)
+                                .attr("height", 100);
         </script>
     </body>
 </html>
