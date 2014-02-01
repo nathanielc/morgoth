@@ -132,3 +132,30 @@ def metric_data(metric):
         'metric' : metric,
         'data': reader.get_data(metric, start, stop, step)
     })
+
+@app.route('/anomalies/<metric>')
+@crossdomain(origin='*')
+def metric_anomalies(metric):
+    start = None
+    stop = None
+    if 'start' in request.args:
+        try:
+            start = dateutil.parser.parse(request.args['start'])
+        except Exception as e:
+            return jsonify({
+                'error' : 'invalid start date format: %s' % str(e)
+                }), 400
+
+    if 'stop' in request.args:
+        try:
+            stop = dateutil.parser.parse(request.args['stop'])
+        except Exception as e:
+            return jsonify({
+                'error' : 'invalid stop date format: %s' % str(e)
+                }), 400
+
+
+    return jsonify({
+        'metric' : metric,
+        'anomalies': reader.get_anomalies(metric, start, stop)
+    })

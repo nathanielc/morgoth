@@ -1,21 +1,7 @@
-from datetime import datetime, timedelta, tzinfo
 
-ZERO = timedelta(0)
+from dateutil.tz import tzutc
 
-# A UTC class.
-
-class UTC(tzinfo):
-    """UTC"""
-    def utcoffset(self, dt):
-        return ZERO
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return ZERO
-
-utc = UTC()
+utc = tzutc()
 
 def now():
     """

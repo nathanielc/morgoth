@@ -16,8 +16,8 @@ class MGOFWindow(Window):
     reduce_code = None
     finalize = None
 
-    def __init__(self, metric,  start, end, n_bins, trainer=False):
-        super(MGOFWindow, self).__init__(metric, start, end)
+    def __init__(self, metric,  start, stop, n_bins, trainer=False):
+        super(MGOFWindow, self).__init__(metric, start, stop)
         self._n_bins = n_bins
         self._trainer = trainer
         self._prob_dist = None
@@ -31,7 +31,7 @@ class MGOFWindow(Window):
             self._id = "%s|%s|%s|%d|mgof" % (
                     self._metric,
                     self._start,
-                    self._end,
+                    self._stop,
                     self._n_bins
                 )
         return self._id
@@ -83,7 +83,7 @@ class MGOFWindow(Window):
 
         finalize_values = {
             'start' : self._start.isoformat(),
-            'end' : self._end.isoformat(),
+            'stop' : self._stop.isoformat(),
             'version': version,
             'metric' : self._metric,
         }
@@ -94,7 +94,7 @@ class MGOFWindow(Window):
 
         query = {
             'metric' : self._metric,
-            'time' : { '$gte' : self._start, '$lt' : self._end},
+            'time' : { '$gte' : self._start, '$lt' : self._stop},
         }
         self._db.metrics.map_reduce(map_code, self.reduce_code,
             out=SON([('merge', 'windows')]),

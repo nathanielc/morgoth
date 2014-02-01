@@ -14,19 +14,27 @@
         <div id="demo"></div>
 
         <script type="text/javascript">
-            var step_sec = 60;
+            var step_sec = 20;
+            var data_size = 800;
+            var data_start = new Date();
+            data_start.setSeconds(data_start.getSeconds() - (data_size * step_sec))
 
             var context = cubism.context()
                                 .step(step_sec * 1e3) // Distance between data points in milliseconds
-                                .size(800); // Number of data points
+                                .size(data_size); // Number of data points
+
 
             d3.select("body").append("div") // Add a vertical rule
               .attr("class", "rule")        // to the graph
               .call(context.rule());
 
-            function metric(name) {
+            var metrics = [];
+            var last_updated = undefined;
+            var drawn_anomalies = {};
+
+            function metric_data(name) {
                 return context.metric(function(start, stop, step, callback) {
-                    d3.json("http://localhost:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString() + '&step=' + step_sec + 's', function(rows) {
+                    d3.json("http://192.168.0.11:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString() + '&step=' + step_sec + 's', function(rows) {
                         values = [];
                         for ( var i = 0; i < rows.data.length; i++) {
                             values.push(rows.data[i][1]);
@@ -34,6 +42,18 @@
                         callback(null, values); });
                 }, name);
             }
+
+            function metric_anmoalies(name) {
+                return context.metric(function(start, stop, step, callback) {
+                    d3.json("http://192.168.0.11:8001/anomalies/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString(), function(rows) {
+                        values = [];
+                        for ( var i = 0; i < rows.anomalies.length; i++) {
+                            values.push(rows.data[i]);
+                        }
+                        callback(null, values); });
+                }, name);
+            }
+
 
 
             function draw_graph(metrics) {
@@ -54,30 +74,74 @@
 
                 d3.select("#demo")
                   .selectAll(".horizon")
-                  .data(metrics.map(metric))
+                  .data(metrics.map(metric_data))
                   .enter()
                   .insert("div", ".bottom")        // Insert the graph in a div
                   .attr("class", "horizon")        // Turn the div into
                   .call(context.horizon()          // a horizon graph
                   .format(d3.format("+,.1f")));    // Format the values to 2 floating-point decimals
 
-
                 context.on("focus", function(i) {
                     d3.selectAll(".value").style("right",                  // Make the rule coincide
                         i == null ? null : context.size() - i + "px"); // with the mouse
                 });
+
+                context.on("change", update_metric_anomalies);
             }
 
-            d3.json("http://localhost:8001/metrics?pattern=local.*", function(metrics) {
-                draw_graph(metrics.metrics );
+
+            function update_metric_anomalies(start, stop) {
+                if (last_updated) {
+                    start = last_updated;
+                }
+                console.log('changed', stop)
+                for (var i = 0; i < metrics.length; i++) {
+                    draw_metric_anomalies(i, metrics[i], start, stop);
+                }
+                last_updated = stop;
+            }
+
+            function draw_metric_anomalies(i, metric, start, stop) {
+
+                var url = "http://192.168.0.11:8001/anomalies/"
+                            + metric
+                           + '?start='
+                           + start.toISOString()
+                           + "&stop="
+                           + stop.toISOString();
+
+                d3.json(url, function (anomalies) {
+                    var horizons = d3.select('#demo')
+                        .selectAll(".horizon")
+                        .select("canvas");
+                    var canvas = horizons[0][i];
+                    for (var j = 0; j < anomalies.anomalies.length; j++) {
+                        var anomaly = anomalies.anomalies[j];
+                        if (anomaly.id in drawn_anomalies) {
+                            continue;
+                        }
+                        drawn_anomalies[anomaly.id] = 1;
+                        console.log("drawing anomaly", anomaly);
+
+
+                        var ctx = canvas.getContext("2d");
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
+                        var px_start = ((new Date(anomaly.start) - data_start) / 1000) / step_sec;
+                        var px_length = (((new Date(anomaly.stop) - data_start) / 1000) / step_sec) - px_start;
+                        ctx.fillRect(px_start, 0, px_length, 30);
+                    }
+
+                });
+            }
+
+
+            d3.json("http://192.168.0.11:8001/metrics?pattern=local.*", function(data) {
+                metrics = data.metrics
+                draw_graph(metrics);
             });
 
-            var svg = d3.select('body').append('svg').attr('width', 200).attr('height', 200);
-            var rect = svg.append('rect')
-                                .attr("x", 10)
-                                .attr("y", 10)
-                                .attr("width", 50)
-                                .attr("height", 100);
+
+
         </script>
     </body>
 </html>

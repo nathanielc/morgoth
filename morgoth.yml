@@ -1,28 +1,26 @@
 mongo:
   use_sharding: false
 metrics:
-  test.*:
+  local.cpu.*:
     type: number
     detectors:
       MGOF:
         n_bins: 25
-        count_threshold: 1
-        period: 15m
-        duration: 1h
+        normal_count: 1
+        period: 30m
+        duration: 30m
         windows:
-          - {offset: 1h, duration: 1h}
-          - {offset: 1w, duration: 1h}
-          - {offset: 2w, duration: 1h}
-          - {offset: 3w, duration: 1h}
-          - {offset: 4w, duration: 1h}
-          - {offset: 1y, duration: 1h}
+          - {offset: 30m, duration: 30m}
+          - {offset: 60m, duration: 30m}
+          - {offset: 90m, duration: 30m}
+          - {offset: 120m, duration: 30m}
+          - {offset: 1w, duration: 30m}
+          - {offset: 2w, duration: 30m}
+          - {offset: 3w, duration: 30m}
+          - {offset: 4w, duration: 30m}
+          - {offset: 1y, duration: 30m}
     notifiers:
         LogNotifier:
-#  test_asdf.*:
-#    type: number
-#    detectors:
-#      Turkey:
-#        asdf: 1
 
 inputs:
   Graphite:

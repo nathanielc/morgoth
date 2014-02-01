@@ -53,3 +53,18 @@ class Reader(object):
             time_data.append((boundary.isoformat(), total / count))
         return time_data
 
+    def get_anomalies(self, metric, start=None, stop=None):
+        query = {'metric' : metric}
+        if start and stop:
+            query['stop'] = { '$gte' : start }
+            query['start'] = { '$lte' : stop }
+
+        data = self._db.anomalies.find(query)
+        anomalies = []
+        for point in data:
+            anomalies.append({
+                'id' : str(point['_id']),
+                'start' : point['start'].isoformat(),
+                'stop' : point['stop'].isoformat()
+            })
+        return anomalies

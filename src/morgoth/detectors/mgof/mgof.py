@@ -17,7 +17,7 @@ class MGOF(Scheduled):
             period,
             duration,
             n_bins=20,
-            count_threshold=1,
+            normal_count=1,
             chi2_percentage=0.95):
         """
         Create an anomaly detector.
@@ -35,20 +35,20 @@ class MGOF(Scheduled):
         @param duration: the length of the window to analyze, timedelta object
         @param n_bins: the number of discrete values to use in analyzing
             the metric data
-        @param count_threshold: the number of windows of a given pattern
-            that must be found in order to count the pattern as normal
+        @param normal_count: the number of windows of a given pattern
+            that must be found in order to count that pattern as normal
         @param chi2_percentage: a value between 0-1 used to determine the
             statistical probalility of a window matching a given pattern
         """
         super(MGOF, self).__init__(period, duration)
         self._windows = windows
         self._n_bins = n_bins
-        self._count_threshold = count_threshold
+        self._normal_count = normal_count
         self._chi2_percentage = chi2_percentage
-        if len(self._windows) <= self._count_threshold:
-            logger.warn("The count_threshold of %d and the number of windows "
+        if len(self._windows) <= self._normal_count:
+            logger.warn("The normal_count of %d and the number of windows "
             "%d doesn't allow for any bad training windows"
-            % (self._count_threshold, len(self._windows)))
+            % (self._normal_count, len(self._windows)))
 
         self._watch()
 
@@ -67,7 +67,7 @@ class MGOF(Scheduled):
                 period,
                 duration,
                 conf.get(['n_bins'], 20),
-                conf.get(['count_threshold'], 1),
+                conf.get(['normal_count'], 1),
                 conf.get(['chi2_percentage'], 0.95)
             )
 
@@ -78,7 +78,7 @@ class MGOF(Scheduled):
         assert len(q) == len(p)
         return numpy.sum(q * numpy.log(q / p))
 
-    def is_anomalous(self, metric, start, end):
+    def is_anomalous(self, metric, start, stop):
 
         windows = []
 
@@ -88,7 +88,7 @@ class MGOF(Scheduled):
             w = MGOFWindow(metric, s, e, self._n_bins, trainer=True)
             windows.append(w)
 
-        window = MGOFWindow(metric, start, end, self._n_bins, trainer=False)
+        window = MGOFWindow(metric, start, stop, self._n_bins, trainer=False)
         windows.append(window)
 
         threshold = chi2.ppf(self._chi2_percentage, self._n_bins - 1)
@@ -126,7 +126,7 @@ class MGOF(Scheduled):
                 if count_index is not None:
                     prob_counts[count_index] += 1
                     # Have we seen this prob dist enough?
-                    if prob_counts[count_index] <= self._count_threshold:
+                    if prob_counts[count_index] <= self._normal_count:
                         anomalous = True
                 else:
                     anomalous = True

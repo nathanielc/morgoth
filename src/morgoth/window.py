@@ -7,11 +7,11 @@ __dir__ = os.path.dirname(__file__)
 
 class Window(object):
 
-    def __init__(self, metric,  start, end):
+    def __init__(self, metric,  start, stop):
         self._db = MongoClients.Normal.morgoth
         self._metric = metric
         self._start = start
-        self._end = end
+        self._stop = stop
         self._id = None
         self._anomalous = None
 
@@ -30,11 +30,11 @@ class Window(object):
         return self._start
 
     @property
-    def end(self):
+    def stop(self):
         """
-        Return the end time in UTC of the window
+        Return the stop time in UTC of the window
         """
-        return self._end
+        return self._stop
 
     @property
     def id(self):
@@ -56,7 +56,7 @@ class Window(object):
 
     @property
     def range(self):
-        return self._start, self._end
+        return self._start, self._stop
 
     def __repr__(self):
         return self.__str__()
@@ -65,6 +65,6 @@ class Window(object):
         return "{Window[%s|%s|%s|anomalous:%s]}" % (
                 self._metric,
                 self._start,
-                self._end,
+                self._stop,
                 self.anomalous,
             )

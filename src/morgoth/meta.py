@@ -133,7 +133,7 @@ class Meta(object):
         cls._db.anomalies.insert({
             'metric' : window.metric,
             'start' : window.start,
-            'end' : window.end,
+            'stop' : window.stop,
         })
         pattern = cls._metric_patterns[window.metric]
         for notifier in cls._notifiers[pattern]:
