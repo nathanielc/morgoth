@@ -1,5 +1,8 @@
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Detector(object):
     """
     This class is responsible for dectecting anomalies in metrics
@@ -7,7 +10,7 @@ class Detector(object):
     A single instance of this class will watch many metrics
     """
     def __init__(self):
-        self._metrics = []
+        self._metrics = set()
 
     @classmethod
     def from_conf(cls, conf):
@@ -18,9 +21,15 @@ class Detector(object):
         """
         raise NotImplementedError("%s.from_conf is not implemented" % cls.__name__)
 
+    def start(self):
+        """
+        Start watching metrics for anomalies
+        """
+        pass
+
     def watch_metric(self, metric):
         """ Called when a this AD should watch a new metric """
-        self._metrics.append(metric)
+        self._metrics.add(metric)
 
     def new_value(self, metric, value):
         """

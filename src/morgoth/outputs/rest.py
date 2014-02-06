@@ -15,8 +15,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.debug = True
-
 
 class Rest(Output):
     def __init__(self, host, port):
@@ -34,7 +32,7 @@ class Rest(Output):
 
     def start(self):
         logger.info("Starting REST output plugin...")
-        self._server = WSGIServer((self._host, self._port), app)
+        self._server = WSGIServer((self._host, self._port), app, log=None)
         self._server.serve_forever()
 
     def stop(self):

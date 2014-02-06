@@ -7,7 +7,7 @@ function (key, value) {
     value.version = %(version)d;
     value.ad = 'mgof';
     value.start =  new Date('%(start)s');
-    value.end = new Date('%(end)s');
+    value.end = new Date('%(stop)s');
     value.metric = '%(metric)s';
     return value;
 }

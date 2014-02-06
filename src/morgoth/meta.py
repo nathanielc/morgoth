@@ -73,6 +73,9 @@ class Meta(object):
             cls._match_metric(metric)
             cls._start_detectors(metric)
 
+        for detectors in cls._detectors.values():
+            for detector in detectors:
+                detector.start()
 
 
 
@@ -96,7 +99,7 @@ class Meta(object):
             }
             conf_meta = cls._get_meta_from_config(metric)
             meta.update(conf_meta)
-            logger.debug("Created new meta %s" % str(meta))
+            #logger.debug("Created new meta %s" % str(meta))
             cls._meta[metric] = meta
         else:
             meta = cls._meta[metric]
@@ -114,7 +117,6 @@ class Meta(object):
 
     @classmethod
     def finish(cls):
-        logger.debug("Finishing Meta")
         if not cls._finishing:
             cls._finishing = True
             for metric in cls._needs_updating:
@@ -169,7 +171,7 @@ class Meta(object):
                 meta['min'] = min(existing_meta['min'], meta['min'])
                 meta['max'] = max(existing_meta['max'], meta['max'])
                 meta['count'] = max(existing_meta['count'], meta['count'])
-            logger.debug("Saving meta %s for metric %s"% (str(meta), metric))
+            #logger.debug("Saving meta %s for metric %s"% (str(meta), metric))
             ret = cls._db.meta.update(
                 {
                     '_id' : metric,

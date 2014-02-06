@@ -5,10 +5,11 @@ metrics:
     type: number
     detectors:
       MGOF:
-        n_bins: 25
+        n_bins: 15
         normal_count: 1
         period: 30m
         duration: 30m
+        chi2_percentage: 0.85
         windows:
           - {offset: 30m, duration: 30m}
           - {offset: 60m, duration: 30m}

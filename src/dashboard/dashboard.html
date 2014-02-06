@@ -14,7 +14,7 @@
         <div id="demo"></div>
 
         <script type="text/javascript">
-            var step_sec = 20;
+            var step_sec = 120;
             var data_size = 800;
             var data_start = new Date();
             data_start.setSeconds(data_start.getSeconds() - (data_size * step_sec))
@@ -91,14 +91,16 @@
 
 
             function update_metric_anomalies(start, stop) {
-                if (last_updated) {
-                    start = last_updated;
-                }
-                console.log('changed', stop)
-                for (var i = 0; i < metrics.length; i++) {
-                    draw_metric_anomalies(i, metrics[i], start, stop);
-                }
-                last_updated = stop;
+                setTimeout(function() {
+                    if (last_updated) {
+                        start = last_updated;
+                    }
+                    console.log('changed', stop)
+                    for (var i = 0; i < metrics.length; i++) {
+                        draw_metric_anomalies(i, metrics[i], start, stop);
+                    }
+                    last_updated = stop;
+                }, 5000);
             }
 
             function draw_metric_anomalies(i, metric, start, stop) {
@@ -125,7 +127,7 @@
 
 
                         var ctx = canvas.getContext("2d");
-                        ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.4)';
                         var px_start = ((new Date(anomaly.start) - data_start) / 1000) / step_sec;
                         var px_length = (((new Date(anomaly.stop) - data_start) / 1000) / step_sec) - px_start;
                         ctx.fillRect(px_start, 0, px_length, 30);

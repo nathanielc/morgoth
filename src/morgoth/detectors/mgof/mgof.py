@@ -39,6 +39,8 @@ class MGOF(Scheduled):
             that must be found in order to count that pattern as normal
         @param chi2_percentage: a value between 0-1 used to determine the
             statistical probalility of a window matching a given pattern
+            Increasing this percentage will make the algorithm less tolerant of
+            differences between windows.
         """
         super(MGOF, self).__init__(period, duration)
         self._windows = windows
@@ -50,7 +52,6 @@ class MGOF(Scheduled):
             "%d doesn't allow for any bad training windows"
             % (self._normal_count, len(self._windows)))
 
-        self._watch()
 
     @classmethod
     def from_conf(cls, conf):

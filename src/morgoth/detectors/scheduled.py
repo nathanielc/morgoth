@@ -5,6 +5,9 @@ from morgoth.schedule import Schedule
 from morgoth.utc import utc, now
 import gevent
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Scheduled(Detector):
     def __init__(self, period, duration):
         """
@@ -18,12 +21,12 @@ class Scheduled(Detector):
         self._duration = duration
 
 
-    def _watch(self):
+    def start(self):
         """
         Start watching
         """
         self._sched = Schedule(self._period, self._check_metrics)
-        self._sched.start()
+        self._sched.start_aligned()
 
     def _check_metrics(self):
         """

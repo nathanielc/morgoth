@@ -112,7 +112,7 @@ class App(object):
         self._logger.info("Finished event set")
 
 def main(args):
-    import logger
+    from morgoth  import logger
     logger.init()
 
     from morgoth.config import Config
