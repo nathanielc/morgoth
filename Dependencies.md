@@ -8,6 +8,12 @@ gevent
 
 flask
 
+scipy
+
+pyyaml
+
+pymongo
+
 
 
 Datastore
