@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from datetime import timedelta
 from morgoth.detectors.scheduled import Scheduled
 from morgoth.detectors.mgof.mgof_window import MGOFWindow
 from morgoth.utils import timedelta_from_str
@@ -22,17 +24,18 @@ import numpy
 import logging
 logger = logging.getLogger(__name__)
 
+
 class MGOF(Scheduled):
     """
     Multinomial Goodness Of Fit
     """
     def __init__(self,
-            windows,
-            period,
-            duration,
-            n_bins=20,
-            normal_count=1,
-            chi2_percentage=0.95):
+                 windows,
+                 period,
+                 duration,
+                 n_bins=20,
+                 normal_count=1,
+                 chi2_percentage=0.95):
         """
         Create an anomaly detector.
 
@@ -62,29 +65,46 @@ class MGOF(Scheduled):
         self._normal_count = normal_count
         self._chi2_percentage = chi2_percentage
         if len(self._windows) <= self._normal_count:
-            logger.warn("The normal_count of %d and the number of windows "
-            "%d doesn't allow for any bad training windows"
-            % (self._normal_count, len(self._windows)))
-
+            logger.warn(
+                "The normal_count of %d and the number of windows "
+                "%d doesn't allow for any bad training windows",
+                self._normal_count, len(self._windows)
+            )
 
     @classmethod
     def from_conf(cls, conf):
         windows = []
         for window in conf.windows:
-            windows.append((
-                timedelta_from_str(window.offset),
-                timedelta_from_str(window.duration),
-            ))
+            offset = timedelta()
+            if 'offset' in window:
+                offset = timedelta_from_str(window.offset)
+            if 'duration' in window:
+                duration = timedelta_from_str(window.duration)
+                windows.append((
+                    offset,
+                    duration,
+                ))
+            if 'range' in window:
+                range = timedelta_from_str(window.range)
+                interval = timedelta_from_str(window.interval)
+                start = offset + range
+                while start > offset:
+                    windows.append((
+                        start,
+                        interval,
+                    ))
+                    start -= interval
+
         period = timedelta_from_str(conf.get('period', '15m'))
         duration = timedelta_from_str(conf.get('duration', '15m'))
         return MGOF(
-                windows,
-                period,
-                duration,
-                conf.get(['n_bins'], 20),
-                conf.get(['normal_count'], 1),
-                conf.get(['chi2_percentage'], 0.95)
-            )
+            windows,
+            period,
+            duration,
+            conf.get(['n_bins'], 20),
+            conf.get(['normal_count'], 1),
+            conf.get(['chi2_percentage'], 0.95)
+        )
 
     def _relative_entropy(self, q, p):
         """
@@ -153,4 +173,3 @@ class MGOF(Scheduled):
             #logger.debug("Analyzed %s" % w)
 
         return window
-

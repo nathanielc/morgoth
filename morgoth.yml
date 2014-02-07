@@ -11,11 +11,8 @@ metrics:
         duration: 30m
         chi2_percentage: 0.85
         windows:
-          - {offset: 30m, duration: 30m}
-          - {offset: 60m, duration: 30m}
-          - {offset: 90m, duration: 30m}
-          - {offset: 120m, duration: 30m}
-          - {offset: 1w, duration: 30m}
+          - {range: 1d, interval: 30m}
+          - {offset: 1w, range: 1d, interval: 30m}
           - {offset: 2w, duration: 30m}
           - {offset: 3w, duration: 30m}
           - {offset: 4w, duration: 30m}
