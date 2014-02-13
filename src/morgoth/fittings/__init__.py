@@ -42,7 +42,7 @@ def load_fittings():
             fitting = fitting_class.from_conf(Config.fittings.get(fitting_name, None))
             fittings.append(fitting)
         except Exception as e:
-            logger.warning("Error creating fitting '%s': %s", fitting_name, e)
+            logger.error("Error creating fitting '%s': %s", fitting_name, e)
 
     return fittings
 

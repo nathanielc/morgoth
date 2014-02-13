@@ -105,7 +105,6 @@ class PullGraphite(Fitting):
         data = json.load(urllib2.urlopen(request))
         if not data:
             logger.warn("Could not find metric %s", metric)
-        logger.debug(data)
         if not data:
             return
         for value, timestamp in data[0]['datapoints']:
