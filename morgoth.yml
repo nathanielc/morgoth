@@ -1,7 +1,7 @@
 mongo:
   use_sharding: false
 metrics:
-  local.cpu.*:
+  .*:
     type: number
     detectors:
       MGOF:
@@ -25,10 +25,10 @@ fittings:
     port: 4200
   unix:
     path: /tmp/jim
-
-outputs:
-    Rest:
-        port: 8001
+  Rest:
+    port: 8001
+  Dashboard:
+    port: 4000
 
 detectors:
   plugin_dirs:

@@ -45,7 +45,7 @@ class Rest(Fitting):
 
 
     def start(self):
-        logger.info("Starting REST fitting plugin...")
+        logger.info("Starting REST fitting...")
         self._server = WSGIServer((self._host, self._port), app, log=None)
         self._server.serve_forever()
 

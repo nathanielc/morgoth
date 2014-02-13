@@ -50,7 +50,7 @@ class Graphite(Fitting):
 
 
     def start(self):
-        logger.info("Starting graphite fitting plugin...")
+        logger.info("Starting graphite fitting...")
 
         # Start gevent server for quick processing of metrics
         self._server = StreamServer(

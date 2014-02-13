@@ -5,16 +5,16 @@
         <title>Morgoth View</title>
 
         <!-- Import Cubism and its dependency D3 -->
-        <script src="/d3.v3.min.js" charset="utf-8"></script>
-        <script src="/cubism.v1.min.js"></script>
+        <script src="/static/d3.v3.min.js" charset="utf-8"></script>
+        <script src="/static/cubism.v1.min.js"></script>
 
-        <link rel="stylesheet" type="text/css" href="main.css">
+        <link rel="stylesheet" type="text/css" href="/static/main.css">
     </head>
     <body>
         <div id="demo"></div>
 
         <script type="text/javascript">
-            var step_sec = 120;
+            var step_sec = 20;
             var data_size = 800;
             var data_start = new Date();
             data_start.setSeconds(data_start.getSeconds() - (data_size * step_sec))
@@ -137,7 +137,7 @@
             }
 
 
-            d3.json("http://192.168.0.11:8001/metrics?pattern=local.*", function(data) {
+            d3.json("http://192.168.0.11:8001/metrics?pattern=.*", function(data) {
                 metrics = data.metrics
                 draw_graph(metrics);
             });

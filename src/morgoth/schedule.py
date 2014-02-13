@@ -38,6 +38,7 @@ class Schedule(object):
         self._period = period.total_seconds()
         self._callback = callback
         self._running = False
+        self._spawned = None
 
     def start_aligned(self):
         """
@@ -85,11 +86,13 @@ class Schedule(object):
         """
         Stop the schedule
         """
-        self._sched.cancel(self._event)
-        assert self._sched.empty()
-        self._event = None
+        self._running = False
+        if self._spawned:
+            self._spawned.kill()
+            self._spawned = None
 
     def _next(self):
-        gevent.spawn_later(self._period, self._next)
-        gevent.spawn(self._callback)
+        if self._running:
+            self._spawned = gevent.spawn_later(self._period, self._next)
+            gevent.spawn(self._callback)
 
