@@ -20,7 +20,7 @@ metrics:
     notifiers:
         LogNotifier:
 
-inputs:
+fittings:
   Graphite:
     port: 4200
   unix:

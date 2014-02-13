@@ -23,7 +23,7 @@ class App(object):
     def __init__(self):
         self._finish_event = Event()
         self._finish_event.set()
-        self._inputs = []
+        self._fittings = []
 
 
     def _initialize_db(self):
@@ -69,12 +69,9 @@ class App(object):
     def handler(self):
         self._finish_event.clear()
         self._logger.info("Caught signal, shutting down")
-        for i in self._inputs:
-            i.stop()
-        self._logger.debug("All inputs have been shutdown")
-        for o in self._outputs:
-            o.stop()
-        self._logger.debug("All outputs have been shutdown")
+        for fitting in self._fittings:
+            fitting.stop()
+        self._logger.debug("All fittings have been shutdown")
         self._finish_event.set()
 
     def run(self):
@@ -100,28 +97,19 @@ class App(object):
         from morgoth.meta import Meta
         Meta.load()
 
-        # Start input plugins
-        from morgoth.inputs import load_inputs
-        self._inputs = load_inputs()
+        # Start fittings
+        from morgoth.fittings import load_fittings
+        self._fittings = load_fittings()
 
         spawned = []
-        for input in self._inputs:
-            spawn = gevent.spawn(input.start)
-            spawned.append(spawn)
-
-
-        # Start output plugins
-        from morgoth.outputs import load_outputs
-        self._outputs = load_outputs()
-
-        for output in self._outputs:
-            spawn = gevent.spawn(output.start)
+        for fitting in self._fittings:
+            spawn = gevent.spawn(fitting.start)
             spawned.append(spawn)
 
         for spawn in spawned:
             spawn.join()
 
-        self._logger.info("All inputs have stopped")
+        self._logger.info("All fittings have stopped")
         self._finish_event.wait()
         self._logger.info("Finished event set")
 
