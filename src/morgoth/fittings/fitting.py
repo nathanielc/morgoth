@@ -13,14 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class Output(object):
+class Fitting(object):
     def __init__(self):
         pass
 
+    @classmethod
+    def from_conf(cls, conf):
+        """
+        Create a fitting from the given conf
+
+        @param conf: a conf object
+        """
+        raise NotImplementedError("%s.from_conf is not implemented" % cls.__name__)
+
     def start(self):
-        """ Start the output plugin """
+        """ Start collecting data """
         raise NotImplementedError("%s.start is not implemented" % self.__class__.__name__)
 
     def stop(self):
-        """ Stop the output plugin """
+        """ Stop the collection of data """
         raise NotImplementedError("%s.stop is not implemented" % self.__class__.__name__)

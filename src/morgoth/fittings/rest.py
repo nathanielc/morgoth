@@ -21,7 +21,7 @@ from gevent.pywsgi import WSGIServer
 from datetime import timedelta
 import dateutil.parser
 
-from morgoth.outputs.output import Output
+from morgoth.fittings.fitting import Fitting
 from morgoth.data.reader import Reader
 from morgoth.utils import timedelta_from_str
 
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-class Rest(Output):
+class Rest(Fitting):
     def __init__(self, host, port):
         super(Rest, self).__init__()
         self._host = host
@@ -45,7 +45,7 @@ class Rest(Output):
 
 
     def start(self):
-        logger.info("Starting REST output plugin...")
+        logger.info("Starting REST fitting plugin...")
         self._server = WSGIServer((self._host, self._port), app, log=None)
         self._server.serve_forever()
 

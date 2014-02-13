@@ -21,28 +21,28 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def load_inputs():
-    """ Load the configured Inputs """
-    from morgoth.inputs.input import Input
+def load_fittings():
+    """ Load the configured Fittings """
+    from morgoth.fittings.fitting import Fitting
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(Config.get(['inputs', 'plugin_dirs'], []))
+    dirs.extend(Config.get(['fittings', 'plugin_dirs'], []))
 
     pl = PluginLoader()
     mods = pl.find_modules(dirs)
 
-    classes = pl.find_subclasses(mods, Input)
+    classes = pl.find_subclasses(mods, Fitting)
 
-    conf_inputs = [ k for k in Config.inputs.keys() if k != 'plugin_dirs']
-    inputs = []
-    for input_name, input_class in classes:
-        if input_name not in conf_inputs:
+    conf_fittings = [ k for k in Config.fittings.keys() if k != 'plugin_dirs']
+    fittings = []
+    for fitting_name, fitting_class in classes:
+        if fitting_name not in conf_fittings:
             continue
         try:
-            logger.debug("Found Input %s", input_name)
-            input = input_class.from_conf(Config.inputs.get(input_name, None))
-            inputs.append(input)
+            logger.debug("Found Fitting %s", fitting_name)
+            fitting = fitting_class.from_conf(Config.fittings.get(fitting_name, None))
+            fittings.append(fitting)
         except Exception as e:
-            logger.warning("Error creating input '%s': %s", input_name, e)
+            logger.warning("Error creating fitting '%s': %s", fitting_name, e)
 
-    return inputs
+    return fittings
 

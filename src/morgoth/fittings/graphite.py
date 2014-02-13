@@ -17,7 +17,7 @@ import socket
 from morgoth.config import Config
 from morgoth.utc import utc
 from morgoth.data.writer import Writer
-from morgoth.inputs.input import Input
+from morgoth.fittings.fitting import Fitting
 from gevent.server import StreamServer
 from datetime import datetime
 import gevent
@@ -25,7 +25,7 @@ import gevent
 import logging
 logger = logging.getLogger(__name__)
 
-class Graphite(Input):
+class Graphite(Fitting):
     def __init__(self, host, port, stop_timeout, max_pool_size):
         super(Graphite, self).__init__()
         self._port = port
@@ -50,7 +50,7 @@ class Graphite(Input):
 
 
     def start(self):
-        logger.info("Starting graphite input plugin...")
+        logger.info("Starting graphite fitting plugin...")
 
         # Start gevent server for quick processing of metrics
         self._server = StreamServer(
