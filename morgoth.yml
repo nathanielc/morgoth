@@ -7,16 +7,16 @@ metrics:
       MGOF:
         n_bins: 15
         normal_count: 1
-        period: 30m
-        duration: 30m
-        chi2_percentage: 0.85
+        period: 5m
+        duration: 5m
+        chi2_percentage: 0.95
         windows:
-          - {range: 1d, interval: 30m}
-          - {offset: 1w, range: 1d, interval: 30m}
-          - {offset: 2w, duration: 30m}
-          - {offset: 3w, duration: 30m}
-          - {offset: 4w, duration: 30m}
-          - {offset: 1y, duration: 30m}
+          - {range: 1d, interval: 5m}
+          - {offset: 1w, range: 1h, interval: 5m}
+          - {offset: 2w, range: 1h, interval: 5m}
+          - {offset: 3w, range: 1h, interval: 5m}
+          - {offset: 4w, range: 1h, interval: 5m}
+          - {offset: 1y, range: 1h, interval: 5m}
     notifiers:
         LogNotifier:
 
@@ -27,6 +27,7 @@ fittings:
     path: /tmp/jim
   Rest:
     port: 8001
+  PullGraphite: !include pull_graphite.yml
   Dashboard:
     port: 4000
 

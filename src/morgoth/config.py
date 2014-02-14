@@ -15,6 +15,7 @@
 
 from types import DictType, ListType
 import yaml
+import os
 
 import logging
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class Config(dict):
     @classmethod
     def load(cls, filepath='morgoth.yml'):
         with open(filepath) as f:
-            conf_data = yaml.safe_load(f)
+            conf_data = yaml.load(f, Loader)
         global _conf
         _conf = Config(conf_data)
 
@@ -143,4 +144,19 @@ class ConfigList(Config):
     def __iter__(self):
         return self.itervalues()
 
+
+class Loader(yaml.Loader):
+    """
+    yaml.Loader that allows for relative includes of other yaml files
+    """
+    def __init__(self, stream):
+        super(Loader, self).__init__(stream)
+        self._root = os.path.dirname(stream.name)
+
+    def _include(self, node):
+        filename = os.path.join(self._root, self.construct_scalar(node))
+        with open(filename, 'r') as f:
+            return yaml.load(f, Loader)
+
+Loader.add_constructor('!include', Loader._include)
 
