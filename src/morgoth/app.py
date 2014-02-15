@@ -16,6 +16,7 @@
 from gevent import monkey; monkey.patch_all()
 from gevent.event import Event
 import gevent
+from optparse import OptionParser
 
 
 class App(object):
@@ -117,8 +118,13 @@ def main(args):
     from morgoth  import logger
     logger.init()
 
+    #Parse args
+    parser = OptionParser()
+    parser.add_option('-c', '--config', dest='config', help='path to configuration file', default='morgoth.yml')
+    (options, args) = parser.parse_args(args)
+
     from morgoth.config import Config
-    Config.load()
+    Config.load(options.config)
 
     app = App()
     app.run()

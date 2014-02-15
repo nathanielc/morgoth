@@ -14,7 +14,7 @@
         <div id="demo"></div>
 
         <script type="text/javascript">
-            var step_sec = 20;
+            var step_sec = 10;
             var data_size = 800;
             var data_start = new Date();
             data_start.setSeconds(data_start.getSeconds() - (data_size * step_sec))
@@ -34,7 +34,7 @@
 
             function metric_data(name) {
                 return context.metric(function(start, stop, step, callback) {
-                    d3.json("http://192.168.0.11:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString() + '&step=' + step_sec + 's', function(rows) {
+                    d3.json("http://localhost:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString() + '&step=' + step_sec + 's', function(rows) {
                         values = [];
                         for ( var i = 0; i < rows.data.length; i++) {
                             values.push(rows.data[i][1]);
@@ -45,7 +45,7 @@
 
             function metric_anmoalies(name) {
                 return context.metric(function(start, stop, step, callback) {
-                    d3.json("http://192.168.0.11:8001/anomalies/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString(), function(rows) {
+                    d3.json("http://localhost:8001/anomalies/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString(), function(rows) {
                         values = [];
                         for ( var i = 0; i < rows.anomalies.length; i++) {
                             values.push(rows.data[i]);
@@ -105,7 +105,7 @@
 
             function draw_metric_anomalies(i, metric, start, stop) {
 
-                var url = "http://192.168.0.11:8001/anomalies/"
+                var url = "http://localhost:8001/anomalies/"
                             + metric
                            + '?start='
                            + start.toISOString()
@@ -137,7 +137,7 @@
             }
 
 
-            d3.json("http://192.168.0.11:8001/metrics?pattern=.*", function(data) {
+            d3.json("http://localhost:8001/metrics?pattern=.*", function(data) {
                 metrics = data.metrics
                 draw_graph(metrics);
             });
