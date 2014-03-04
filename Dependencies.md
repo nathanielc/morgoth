@@ -14,6 +14,8 @@ pyyaml
 
 pymongo
 
+wtforms
+
 
 
 Datastore
