@@ -1,0 +1,11 @@
+{% from "_formhelpers.html" import render_field %}
+<form method=post action="/form">
+  <dl>
+    {{ render_field(form.metric) }}
+    {{ render_field(form.detector) }}
+    {{ render_field(form.start) }}
+    {{ render_field(form.stop) }}
+    {{ render_field(form.conf) }}
+  </dl>
+  <p><input type=submit value=Register>
+</form>

@@ -14,9 +14,10 @@
 # limitations under the License.
 
 
-from flask import Flask, request, jsonify, make_response, current_app
+from flask import Flask, request, jsonify, make_response, current_app, render_template, redirect
 from gevent.pywsgi import WSGIServer
 from morgoth.fittings.fitting import Fitting
+from morgoth.fittings.dashboard.forms import CheckMetric
 
 import logging
 logger = logging.getLogger(__name__)
@@ -54,3 +55,10 @@ class Dashboard(Fitting):
 def root():
     return app.send_static_file('dashboard.html')
 
+
+@app.route('/check_metric', methods=['GET', 'POST'])
+def form():
+    form = CheckMetric(request.form)
+    if request.method == 'POST':
+        return redirect('/check_metric')
+    return render_template('check_metric.html', form=form)

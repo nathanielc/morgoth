@@ -17,6 +17,9 @@ from morgoth.data.mongo_clients import MongoClients
 from morgoth.config import Config
 from morgoth.detectors import get_detector
 from morgoth.notifiers import get_notifier
+from morgoth.schedule import Schedule
+from morgoth.utils import timedelta_from_str
+from morgoth.utc import now
 
 import gevent
 import re
@@ -34,14 +37,11 @@ class Meta(object):
     _needs_updating = {}
     _refresh_interval = Config.get(['metric_meta', 'refresh_interval'], 60)
     _finishing = False
+    _null_manager = None
     """ Dict containg the meta data for each metric """
     _meta = {}
-    """ Dict of Detector classes mapped to metric patterns """
-    _detectors = {}
-    """ Dict of Notifier classes mapped to metric patterns """
-    _notifiers = {}
-    """ Dict of metrics to their matching pattern """
-    _metric_patterns = {}
+    """ Dict of patterns to the MetricManager"""
+    _managers = {}
 
 
     @classmethod
@@ -50,47 +50,17 @@ class Meta(object):
         Loads the existing meta data
         """
 
-        # Load notifiers and ADs from conf
+        # Load managers from conf
         for pattern, conf in Config.metrics.items():
-            cls._detectors[pattern] = []
-            cls._notifiers[pattern] = []
-            # Load Detectors
-            detectors = conf.get('detectors', {})
-            if not detectors:
-                logger.warn('No Detectors defined for metric pattern "%s"' % pattern)
-            for d_name, d_conf in detectors.items():
-                try:
-                    d_class = get_detector(d_name)
-                    detector = d_class.from_conf(d_conf)
-                    cls._detectors[pattern].append(detector)
-                except Exception as e:
-                    logger.error('Could not create Detector "%s" from conf',  d_name )
-                    logger.exception(e)
-            # Load Notifiers
-            notifiers = conf.get('notifiers', {})
-            if not notifiers:
-                logger.warn('No notifiers defined for metric pattern "%s"' % pattern)
-            for n_name, n_conf in notifiers.items():
-                try:
-                    n_class = get_notifier(n_name)
-                    notifier = n_class.from_conf(n_conf)
-                    cls._notifiers[pattern].append(notifier)
-                except Exception as e:
-                    logger.error('Could not create notifier "%s" from conf',  n_name )
-                    logger.exception(e)
-
+            cls._managers[pattern] = MetricManager(pattern, conf)
 
         # Load metrics from database
         for meta in cls._db.meta.find():
             metric = meta['_id']
             cls._meta[metric] = meta
-            cls._match_metric(metric)
-            cls._start_detectors(metric)
-
-        for detectors in cls._detectors.values():
-            for detector in detectors:
-                detector.start()
-
+            manager = cls._match_metric(metric)
+            manager.add_metric(metric)
+            manager.start()
 
 
     @classmethod
@@ -101,7 +71,6 @@ class Meta(object):
         A metric's meta data will be only eventually consistent
         """
         if cls._finishing:
-            #logger.info("MetricMeta is finishing and not accepting any more updates")
             return
         if metric not in cls._meta:
             meta = {
@@ -151,9 +120,6 @@ class Meta(object):
             'start' : window.start,
             'stop' : window.stop,
         })
-        pattern = cls._metric_patterns[window.metric]
-        for notifier in cls._notifiers[pattern]:
-            notifier.notify(window)
 
     @classmethod
     def _update_eventually(cls, metric):
@@ -212,9 +178,10 @@ class Meta(object):
         """
         cls._db.meta.insert(meta)
 
-        cls._match_metric(metric)
+        manager = cls._match_metric(metric)
+        manager.add_metric(metric)
 
-        cls._start_detectors(metric)
+        manager.start()
 
     @classmethod
     def _match_metric(cls, metric):
@@ -222,30 +189,124 @@ class Meta(object):
         Determine which pattern matches the given metric
 
         @param metric: the name of the metric
+        @return the MetricManager for the given metric
         """
-        for pattern, _ in Config.metrics.items():
+        for pattern, manager in cls._managers.items():
             if re.match(pattern, metric):
-                cls._metric_patterns[metric] = pattern
-                return
+                return manager
 
         # No config for the metric
-        cls._metric_patterns[metric] = None
         logger.warn("Metric '%s' has no matching configuration" % metric)
+        return cls._null_manager
 
 
-    @classmethod
-    def _start_detectors(cls, metric):
+
+
+class MetricManager(object):
+    """
+    Manages all the activity around metrics
+    An instance of this class will be created for each entry in the 'metrics' section of the config
+    """
+    def __init__(self, pattern, conf):
         """
-        Tell the Detectors to start monitoring a new metric
+
+        @param pattern: the regex string that matches the metrics
+        @param conf: the conf object from the 'metric' section
         """
-        pattern = cls._metric_patterns[metric]
+        self._pattern = pattern
+        self._detectors = []
+        self._notifiers = []
+        self._metrics = set()
+        self._started = False
 
-        if not pattern:
-            return # No config for this metric ignore
+        # Load Detectors
+        detectors = conf.get('detectors', {})
+        if not detectors:
+            logger.warn('No Detectors defined for metric pattern "%s"' % pattern)
+        for d_entry in detectors:
+            d_name = d_entry.keys()[0]
+            d_conf = d_entry[d_name]
+            try:
+                d_class = get_detector(d_name)
+                detector = d_class.from_conf(d_conf)
+                self._detectors.append(detector)
+            except Exception as e:
+                logger.error('Could not create Detector "%s" from conf Error: "%s"',  d_name, e)
+        # Load Notifiers
+        notifiers = conf.get('notifiers', {})
+        if not notifiers:
+            logger.warn('No notifiers defined for metric pattern "%s"' % pattern)
+        for n_entry in notifiers:
+            n_name = n_entry.keys()[0]
+            n_conf = n_entry[n_name]
+            try:
+                n_class = get_notifier(n_name)
+                notifier = n_class.from_conf(n_conf)
+                self._notifiers.append(notifier)
+            except Exception as e:
+                logger.error('Could not create notifier "%s" from conf',  n_name )
+                logger.exception(e)
 
-        detectors = cls._detectors[pattern]
-        for detectors in detectors:
-            detectors.watch_metric(metric)
+        # Load schedule
+        self._duration = timedelta_from_str(conf.schedule.duration)
+        self._period = timedelta_from_str(conf.schedule.period)
+        self._delay = timedelta_from_str(conf.schedule.delay)
+        self._aligned = conf.get(['schedule', 'aligned'], True)
+
+        self._schedule = Schedule(self._period, self._check_metrics, self._delay)
+
+    def add_metric(self, metric):
+        """
+        Add new metric to the manager
+        """
+        self._metrics.add(metric)
+
+    def start(self):
+        """
+        Start watching the metrics for anomanlies
+        """
+        if not self._started:
+            logger.debug("Starting MetricManager %s", self._pattern)
+            self._started = True
+            if self._aligned:
+                self._schedule.start_aligned()
+            else:
+                self._schedule.start()
+
+    def _check_metrics(self):
+       """
+       Handle the next check
+       """
+       end = now() - self._delay
+       start = end - self._duration
+       logger.debug("Checking metrics for next window %s:%s", start, end)
+       for metric in self._metrics:
+           gevent.spawn(self._check_window, metric, start, end)
+
+    def _check_window(self, metric, start, end):
+        """
+        Check an indivdual window
+
+        @param metric: the name of the metric
+        @param start: the start time
+        @param end: the end time
+        """
+        for detector in self._detectors:
+            window = detector.is_anomalous(metric, start, end)
+            if window.anomalous:
+                Meta.notify_anomalous(window)
+                for notifier in self._notifiers:
+                    notifier.notify(window)
 
 
+
+class NullMetricManager(MetricManager):
+    def __init__(self):
+        pass
+    def start(self):
+        pass
+    def add_metric(self, metric):
+        pass
+
+Meta._null_manager = NullMetricManager()
 

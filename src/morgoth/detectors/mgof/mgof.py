@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from datetime import timedelta
-from morgoth.detectors.scheduled import Scheduled
+from morgoth.detectors.detector import Detector
 from morgoth.detectors.mgof.mgof_window import MGOFWindow
 from morgoth.utils import timedelta_from_str
 from scipy.stats import chi2
@@ -25,14 +25,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MGOF(Scheduled):
+class MGOF(Detector):
     """
     Multinomial Goodness Of Fit
     """
     def __init__(self,
                  windows,
-                 period,
-                 duration,
                  n_bins=20,
                  normal_count=1,
                  chi2_percentage=0.95):
@@ -59,7 +57,7 @@ class MGOF(Scheduled):
             Increasing this percentage will make the algorithm less tolerant of
             differences between windows.
         """
-        super(MGOF, self).__init__(period, duration)
+        super(MGOF, self).__init__()
         self._windows = windows
         self._n_bins = n_bins
         self._normal_count = normal_count
@@ -95,12 +93,8 @@ class MGOF(Scheduled):
                     ))
                     start -= interval
 
-        period = timedelta_from_str(conf.get('period', '15m'))
-        duration = timedelta_from_str(conf.get('duration', '15m'))
         return MGOF(
             windows,
-            period,
-            duration,
             conf.get(['n_bins'], 20),
             conf.get(['normal_count'], 1),
             conf.get(['chi2_percentage'], 0.95)

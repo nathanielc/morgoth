@@ -21,8 +21,10 @@ from gevent.pywsgi import WSGIServer
 from datetime import timedelta
 import dateutil.parser
 
+from morgoth.config import Config
 from morgoth.fittings.fitting import Fitting
 from morgoth.data.reader import Reader
+from morgoth.detectors import get_detector
 from morgoth.utils import timedelta_from_str
 
 import logging
@@ -55,6 +57,21 @@ class Rest(Fitting):
 ##############################
 # Flask methods
 ##############################
+
+
+class ParseError(Exception):
+    pass
+
+def parse_arg(arg, msg, parse, *args, **kwargs):
+
+    if arg not in request.args:
+        raise ParseError("Missing arg '%s'" % arg)
+    value = request.args[arg]
+    try:
+        return parse(value, *args, **kwargs)
+    except Exception as e:
+        raise ParseError(msg % { 'error' : str(e), 'arg' : value})
+
 
 reader = Reader()
 
@@ -171,3 +188,26 @@ def metric_anomalies(metric):
         'metric' : metric,
         'anomalies': reader.get_anomalies(metric, start, stop)
     })
+
+@app.route('/check/<metric>', methods=['GET', 'POST'])
+@crossdomain(origin='*')
+def check(metric):
+
+    try:
+        start = parse_arg('start', 'invalid start date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse)
+        stop = parse_arg('stop', 'invalid stop date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse)
+        detector_class = parse_arg('detector', 'invalid detector name "%(arg)s" Error: %(error)s', get_detector)
+    except ParseError as e:
+        return jsonify({
+            'error' : str(e),
+            }), 400
+
+
+    detector = detector_class.from_conf(Config.loads(request.data))
+    window = detector.is_anomalous(metric, start, stop)
+
+    return jsonify({
+        'start' : str(start),
+        'stop' : str(stop),
+        'window' : repr(window)
+        })

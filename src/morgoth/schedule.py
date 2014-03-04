@@ -27,7 +27,7 @@ class ScheduleError(Exception):
 
 class Schedule(object):
     DAY = timedelta(days=1)
-    def __init__(self, period, callback):
+    def __init__(self, period, callback, delay=timedelta()):
         """
         Create a simple periodic schedule
 
@@ -37,6 +37,7 @@ class Schedule(object):
         """
         self._period = period.total_seconds()
         self._callback = callback
+        self._delay = delay
         self._running = False
         self._spawned = None
 
@@ -61,7 +62,7 @@ class Schedule(object):
             while when < current:
                 when += period_td
         # Start the schedule
-        self.start_at(when)
+        self.start_at(when + self._delay)
 
     def start_at(self, when_utc):
         """

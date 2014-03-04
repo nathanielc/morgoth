@@ -2,35 +2,54 @@ mongo:
   use_sharding: false
 metrics:
   .*:
-    type: number
     detectors:
-      MGOF:
-        n_bins: 15
-        normal_count: 1
-        period: 5m
-        duration: 5m
-        chi2_percentage: 0.95
-        windows:
-          - {range: 1d, interval: 5m}
-          - {offset: 1w, range: 1h, interval: 5m}
-          - {offset: 2w, range: 1h, interval: 5m}
-          - {offset: 3w, range: 1h, interval: 5m}
-          - {offset: 4w, range: 1h, interval: 5m}
-          - {offset: 1y, range: 1h, interval: 5m}
+      - MGOF:
+          n_bins: 15
+          normal_count: 1
+          chi2_percentage: 0.95
+          windows:
+            - {offset: 0s, range: 1d, interval: 5m}
+            - {offset: 1w, range: 1h, interval: 5m}
+            - {offset: 2w, range: 1h, interval: 5m}
+            - {offset: 3w, range: 1h, interval: 5m}
+            - {offset: 4w, range: 1h, interval: 5m}
+            - {offset: 1y, range: 1h, interval: 5m}
+      - MGOF:
+          n_bins: 50
+          normal_count: 1
+          chi2_percentage: 0.85
+          windows:
+            - {offset: 0s, range: 1d, interval: 5m}
+            - {offset: 1w, range: 1d, interval: 5m}
+            - {offset: 2w, range: 1d, interval: 5m}
+            - {offset: 3w, range: 1d, interval: 5m}
+            - {offset: 4w, range: 1d, interval: 5m}
+            - {offset: 1y, range: 1d, interval: 5m}
+      - Turkey:
+          param1: 0.56
     notifiers:
-        LogNotifier:
+      - LogNotifier:
+    schedule:
+      duration: 5m
+      period: 5m
+      delay: 1m
 
 fittings:
-  Graphite:
-    port: 4200
-  unix:
-    path: /tmp/jim
-  Rest:
-    port: 8001
-  PullGraphite: !include pull_graphite.yml
-  Dashboard:
-    port: 4000
+  - Graphite:
+      port: 4200
+  - unix:
+      path: /tmp/jim
+  - Rest:
+      port: 8001
+#  - PullGraphite: !include pull_graphite.yml
+#  - PullGraphite: !include pull_graphite_v2.yml
+  - Dashboard:
+      port: 4000
 
-detectors:
-  plugin_dirs:
-    - /tmp/morgoth
+plugin_dirs:
+  detectors:
+    - /tmp/morgoth/detectors
+  fittings:
+    - /tmp/morgoth/fittings
+  notifiers:
+    - /tmp/mogorth/notifiers

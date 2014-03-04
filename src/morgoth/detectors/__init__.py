@@ -48,14 +48,13 @@ def get_detector(name):
 def load_detectors():
     """ Load the configured Detectors """
     from morgoth.detectors.detector import Detector
-    from morgoth.detectors.scheduled import Scheduled
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(Config.get(['detectors', 'plugin_dirs'], []))
+    dirs.extend(Config.get(['plugin_dirs', 'detectors'], []))
 
     pl = PluginLoader()
     mods = pl.find_modules(dirs)
 
-    classes = pl.find_subclasses(mods, Detector, ignored=set([Scheduled.__name__]))
+    classes = pl.find_subclasses(mods, Detector)
 
     for d_name, d_class in classes:
         logger.debug("Found Detector %s", d_name)

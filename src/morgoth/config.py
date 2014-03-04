@@ -41,6 +41,10 @@ class Config(dict):
             conf_data = yaml.load(f, Loader)
         global _conf
         _conf = Config(conf_data)
+    @classmethod
+    def loads(cls, data):
+        conf_data = yaml.safe_load(data)
+        return Config(conf_data)
 
     def __init__(self, data={}):
         super(Config, self).__init__()
