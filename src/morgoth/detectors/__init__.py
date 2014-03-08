@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from morgoth.config import Config
+from morgoth.app import config
 from morgoth.plugin_loader import PluginLoader
 import os
 
@@ -29,6 +29,6 @@ def get_loader():
     if not _LOADER:
         from morgoth.detectors.detector import Detector
         dirs = [os.path.dirname(__file__)]
-        dirs.extend(Config.get(['plugin_dirs', 'detectors'], []))
+        dirs.extend(config.get(['plugin_dirs', 'detectors'], []))
         _LOADER = PluginLoader(dirs, Detector)
     return _LOADER

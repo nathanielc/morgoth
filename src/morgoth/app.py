@@ -18,6 +18,8 @@ from gevent.event import Event
 import gevent
 from optparse import OptionParser
 
+#Global App config object
+config = None
 
 class App(object):
 
@@ -28,13 +30,12 @@ class App(object):
 
 
     def _initialize_db(self):
-        from morgoth.config import Config
         from morgoth.data.mongo_clients import MongoClients
         from pymongo.errors import OperationFailure
         from pymongo import HASHED
 
-        db_name = Config.get(['mongo', 'database_name'], 'morgoth')
-        use_sharding = Config.get(['mongo', 'use_sharding'], True)
+        db_name = config.get(['mongo', 'database_name'], 'morgoth')
+        use_sharding = config.get(['mongo', 'use_sharding'], True)
 
         conn = MongoClients.Normal
 
@@ -110,8 +111,9 @@ class App(object):
         except Exception as e:
             self._logger.critical('Error launching morgoth')
             self._logger.exception(e)
+
 def main(args):
-    from morgoth  import logger
+    from morgoth import logger
     logger.init()
 
     #Parse args
@@ -120,7 +122,8 @@ def main(args):
     (options, args) = parser.parse_args(args)
 
     from morgoth.config import Config
-    Config.load(options.config)
+    global config
+    config = Config.load(options.config)
 
     app = App()
     app.run()

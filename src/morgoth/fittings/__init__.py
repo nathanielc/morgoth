@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from morgoth.config import Config
+from morgoth.app import config
 from morgoth.plugin_loader import PluginLoader
 from types import ListType
 import os
@@ -26,11 +26,11 @@ def load_fittings():
     """ Load the configured Fittings """
     from morgoth.fittings.fitting import Fitting
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(Config.get(['plugin_dirs', 'fittings'], []))
+    dirs.extend(config.get(['plugin_dirs', 'fittings'], []))
 
     pl = PluginLoader(dirs, Fitting)
     try:
-        fittings = pl.load(Config.fittings)
+        fittings = pl.load(config.fittings)
     except Exception as e:
         logger.error("Error creating fittings %s", e)
         raise e

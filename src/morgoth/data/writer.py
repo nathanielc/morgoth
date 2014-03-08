@@ -17,7 +17,7 @@
 from gevent.queue import JoinableQueue
 from gevent.event import Event
 from morgoth.data.mongo_clients import MongoClients
-from morgoth.config import Config
+from morgoth.app import config
 from morgoth.data import get_col_for_metric
 from morgoth.meta import Meta
 import gevent
@@ -31,8 +31,8 @@ class Writer(object):
     def __init__(self):
         # Write optimized MongoClient
         self._db = MongoClients.Normal.morgoth
-        self._queue = JoinableQueue(maxsize=Config.get(['write_queue', 'max_size'], 1000))
-        self._worker_count = Config.get(['write_queue', 'worker_count'], 2)
+        self._queue = JoinableQueue(maxsize=config.get(['write_queue', 'max_size'], 1000))
+        self._worker_count = config.get(['write_queue', 'worker_count'], 2)
         self._running = Event()
         self._closing = False
         for i in xrange(self._worker_count):

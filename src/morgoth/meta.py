@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from morgoth.data.mongo_clients import MongoClients
-from morgoth.config import Config
+from morgoth.app import config
 from morgoth.metric_manager import MetricManager, NullMetricManager
 
 import re
@@ -27,10 +27,10 @@ __all__ = ['Meta']
 class Meta(object):
     _db = MongoClients.Normal.morgoth
     _db_admin = MongoClients.Normal.admin
-    _db_name = Config.mongo.database_name
-    _use_sharding = Config.mongo.use_sharding
+    _db_name = config.mongo.database_name
+    _use_sharding = config.mongo.use_sharding
     _needs_updating = {}
-    _refresh_interval = Config.get(['metric_meta', 'refresh_interval'], 60)
+    _refresh_interval = config.get(['metric_meta', 'refresh_interval'], 60)
     _finishing = False
     _null_manager = NullMetricManager()
     """ Dict containg the meta data for each metric """
@@ -46,7 +46,7 @@ class Meta(object):
         """
 
         # Load managers from conf
-        for pattern, conf in Config.metrics.items():
+        for pattern, conf in config.metrics.items():
             cls._managers[pattern] = MetricManager(pattern, conf)
 
         # Load metrics from database

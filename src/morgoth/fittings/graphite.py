@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import socket
-from morgoth.config import Config
 from morgoth.utc import utc
 from morgoth.data.writer import Writer
 from morgoth.fittings.fitting import Fitting

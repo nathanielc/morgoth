@@ -21,26 +21,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-_conf = None
-
-class ConfigType(type):
-    """ Metaclass for Config """
-    def __getattr__(cls, key):
-        return _conf[key]
-    def __getitem(cls, key):
-        return _conf[key]
-
 class Config(dict):
     """
     Static config class that provides easy access to the morogth config
     """
-    __metaclass__ = ConfigType
     @classmethod
     def load(cls, filepath='morgoth.yml'):
         with open(filepath) as f:
             conf_data = yaml.load(f, Loader)
-        global _conf
-        _conf = Config(conf_data)
+        return Config(conf_data)
+
     @classmethod
     def loads(cls, data):
         conf_data = yaml.safe_load(data)
@@ -61,10 +51,6 @@ class Config(dict):
                 self[k] = ConfigList(dict_v)
             else:
                 self[k] = v
-        # Rebind methods as instance methods
-        self.get = self._get
-        self.enumerate = self._enumerate
-        self.get_ignored_conf= self._get_ignored_conf
 
         self._is_list = False
 
@@ -72,33 +58,15 @@ class Config(dict):
     def is_list(self):
         return self._is_list
 
-    @classmethod
-    def get(cls, attr, default):
-        """
-        Get conf value
-
-        @param attr: string or list. Return the conf value.
-            If list will recusively find the desired conf value
-        @param default: the value to return if no conf is found
-        """
-        return _conf.get(attr, default)
-
-
-    @classmethod
     def enumerate(self):
-        """ Enumerate conf value """
-        return _conf._attrs
-
-    def _enumerate(self):
         """ Enumerate conf value """
         return self._attrs
 
-    @classmethod
-    def get_ignored_conf(cls):
-        """ Return dict of confs that were not accessed """
-        return _conf.get_ignored_conf()
 
-    def _get_ignored_conf(self):
+    def get_ignored_conf(self):
+        """
+        Return list of config options that were never accessed
+        """
         ignored = {}
         for attr, accessed in self._accessed.iteritems():
             if not accessed:
@@ -117,7 +85,7 @@ class Config(dict):
         self._accessed[attr] = True
         return super(Config, self).__getitem__(attr)
 
-    def _get(self, attr, default):
+    def get(self, attr, default):
         """
         Get conf value
 
