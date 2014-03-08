@@ -32,9 +32,12 @@ class Notifier(object):
         return Notifier()
 
 
-    def notify(self, window):
+    def notify(self, windows):
         """
         Notify that the window is anomalous
+
+        @param windows: list of window objects from each detectors
+            where the consensous is that the window is anomalous
         """
-        logger.info("Window: %s is anomalous" % window)
+        logger.info("Window: %s is anomalous" % windows)
 

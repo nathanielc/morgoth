@@ -15,13 +15,8 @@
 
 from morgoth.data.mongo_clients import MongoClients
 from morgoth.config import Config
-from morgoth.schedule import Schedule
-from morgoth.utils import timedelta_from_str
-from morgoth.utc import now
-import morgoth.detectors
-import morgoth.notifiers
+from morgoth.metric_manager import MetricManager, NullMetricManager
 
-import gevent
 import re
 
 import logging
@@ -37,7 +32,7 @@ class Meta(object):
     _needs_updating = {}
     _refresh_interval = Config.get(['metric_meta', 'refresh_interval'], 60)
     _finishing = False
-    _null_manager = None
+    _null_manager = NullMetricManager()
     """ Dict containg the meta data for each metric """
     _meta = {}
     """ Dict of patterns to the MetricManager"""
@@ -108,17 +103,19 @@ class Meta(object):
 
 
     @classmethod
-    def notify_anomalous(cls, window):
+    def record_anomalous(cls, metric, start, stop):
         """
-        Notify that a given metric is anomalous for the given window
+        Record that a given metric is anomalous for the given window
 
-        @param window: a window object representing the anomalous time frame
+        @param metric: the name of the metric
+        @param start: the start time of the anomalous window
+        @param stop: the stop time of the anomalous window
         """
         # Add the anomaly to the db
         cls._db.anomalies.insert({
-            'metric' : window.metric,
-            'start' : window.start,
-            'stop' : window.stop,
+            'metric' : metric,
+            'start' : start,
+            'stop' : stop,
         })
 
     @classmethod
@@ -201,113 +198,4 @@ class Meta(object):
 
 
 
-
-class MetricManager(object):
-    """
-    Manages all the activity around metrics
-    An instance of this class will be created for each entry in the 'metrics' section of the config
-    """
-    def __init__(self, pattern, conf):
-        """
-
-        @param pattern: the regex string that matches the metrics
-        @param conf: the conf object from the 'metric' section
-        """
-        self._pattern = pattern
-        self._detectors = []
-        self._notifiers = []
-        self._metrics = set()
-        self._started = False
-
-        # Load Detectors
-        d_loader = morgoth.detectors.get_loader()
-        detectors = conf.get('detectors', {})
-        if not detectors:
-            logger.warn('No Detectors defined for metric pattern "%s"' % pattern)
-        else:
-            self._detectors = d_loader.load(detectors)
-
-        # Load Notifiers
-        n_loader = morgoth.notifiers.get_loader()
-        notifiers = conf.get('notifiers', {})
-        if not notifiers:
-            logger.warn('No Notifiers defined for metric pattern "%s"' % pattern)
-        else:
-            self._notifiers = d_loader.load(notifiers)
-
-        # Load schedule
-        self._duration = timedelta_from_str(conf.schedule.duration)
-        self._period = timedelta_from_str(conf.schedule.period)
-        self._delay = timedelta_from_str(conf.schedule.delay)
-        self._aligned = conf.get(['schedule', 'aligned'], True)
-
-        self._schedule = Schedule(self._period, self._check_metrics, self._delay)
-
-
-
-    def add_metric(self, metric):
-        """
-        Add new metric to the manager
-        """
-        self._metrics.add(metric)
-
-    def start(self):
-        """
-        Start watching the metrics for anomanlies
-        """
-        if not self._started:
-            logger.debug(
-                    "Starting MetricManager %s with detectors %s and notifiers %s",
-                    self._pattern,
-                    self._detectors,
-                    self._notifiers,
-                )
-            self._started = True
-            if self._aligned:
-                self._schedule.start_aligned()
-            else:
-                self._schedule.start()
-
-    def _check_metrics(self):
-       """
-       Handle the next check
-       """
-       end = now() - self._delay
-       start = end - self._duration
-       logger.debug("Checking metrics for next window %s:%s", start, end)
-       for metric in self._metrics:
-           gevent.spawn(self._check_window, metric, start, end)
-
-    def _check_window(self, metric, start, end):
-        """
-        Check an indivdual window
-
-        @param metric: the name of the metric
-        @param start: the start time
-        @param end: the end time
-        """
-        votes = 1
-        for detector in self._detectors:
-            window = detector.is_anomalous(metric, start, end)
-            if window.anomalous:
-                votes += 1
-            else:
-                votes -= 1
-
-        if votes > 0:
-            Meta.notify_anomalous(window)
-            for notifier in self._notifiers:
-                notifier.notify(window)
-
-
-
-class NullMetricManager(MetricManager):
-    def __init__(self):
-        pass
-    def start(self):
-        pass
-    def add_metric(self, metric):
-        pass
-
-Meta._null_manager = NullMetricManager()
 
