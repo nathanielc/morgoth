@@ -15,11 +15,11 @@
 
 from morgoth.data.mongo_clients import MongoClients
 from morgoth.config import Config
-from morgoth.detectors import get_detector
-from morgoth.notifiers import get_notifier
 from morgoth.schedule import Schedule
 from morgoth.utils import timedelta_from_str
 from morgoth.utc import now
+import morgoth.detectors
+import morgoth.notifiers
 
 import gevent
 import re
@@ -220,32 +220,20 @@ class MetricManager(object):
         self._started = False
 
         # Load Detectors
+        d_loader = morgoth.detectors.get_loader()
         detectors = conf.get('detectors', {})
         if not detectors:
             logger.warn('No Detectors defined for metric pattern "%s"' % pattern)
-        for d_entry in detectors:
-            d_name = d_entry.keys()[0]
-            d_conf = d_entry[d_name]
-            try:
-                d_class = get_detector(d_name)
-                detector = d_class.from_conf(d_conf)
-                self._detectors.append(detector)
-            except Exception as e:
-                logger.error('Could not create Detector "%s" from conf Error: "%s"',  d_name, e)
+        else:
+            self._detectors = d_loader.load(detectors)
+
         # Load Notifiers
+        n_loader = morgoth.notifiers.get_loader()
         notifiers = conf.get('notifiers', {})
         if not notifiers:
-            logger.warn('No notifiers defined for metric pattern "%s"' % pattern)
-        for n_entry in notifiers:
-            n_name = n_entry.keys()[0]
-            n_conf = n_entry[n_name]
-            try:
-                n_class = get_notifier(n_name)
-                notifier = n_class.from_conf(n_conf)
-                self._notifiers.append(notifier)
-            except Exception as e:
-                logger.error('Could not create notifier "%s" from conf',  n_name )
-                logger.exception(e)
+            logger.warn('No Notifiers defined for metric pattern "%s"' % pattern)
+        else:
+            self._notifiers = d_loader.load(notifiers)
 
         # Load schedule
         self._duration = timedelta_from_str(conf.schedule.duration)
@@ -254,6 +242,8 @@ class MetricManager(object):
         self._aligned = conf.get(['schedule', 'aligned'], True)
 
         self._schedule = Schedule(self._period, self._check_metrics, self._delay)
+
+
 
     def add_metric(self, metric):
         """
@@ -266,7 +256,12 @@ class MetricManager(object):
         Start watching the metrics for anomanlies
         """
         if not self._started:
-            logger.debug("Starting MetricManager %s", self._pattern)
+            logger.debug(
+                    "Starting MetricManager %s with detectors %s and notifiers %s",
+                    self._pattern,
+                    self._detectors,
+                    self._notifiers,
+                )
             self._started = True
             if self._aligned:
                 self._schedule.start_aligned()
@@ -291,12 +286,18 @@ class MetricManager(object):
         @param start: the start time
         @param end: the end time
         """
+        votes = 1
         for detector in self._detectors:
             window = detector.is_anomalous(metric, start, end)
             if window.anomalous:
-                Meta.notify_anomalous(window)
-                for notifier in self._notifiers:
-                    notifier.notify(window)
+                votes += 1
+            else:
+                votes -= 1
+
+        if votes > 0:
+            Meta.notify_anomalous(window)
+            for notifier in self._notifiers:
+                notifier.notify(window)
 
 
 

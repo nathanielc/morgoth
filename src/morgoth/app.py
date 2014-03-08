@@ -76,44 +76,40 @@ class App(object):
         self._finish_event.set()
 
     def run(self):
-        import logging
-        self._logger = logging.getLogger(__name__)
+        try:
+            import logging
+            self._logger = logging.getLogger(__name__)
 
-        self._initialize_db()
+            self._initialize_db()
 
-        # Setup signal handlers
-        import signal
-        gevent.signal(signal.SIGINT, self.handler)
-
-        # Load the Detectors
-        from morgoth.detectors import load_detectors
-        load_detectors()
-
-        # Initialize notifiers
-        from morgoth.notifiers import load_notifiers
-        load_notifiers()
+            # Setup signal handlers
+            import signal
+            gevent.signal(signal.SIGINT, self.handler)
 
 
-        # Initialize the meta data
-        from morgoth.meta import Meta
-        Meta.load()
+            # Initialize the meta data
+            from morgoth.meta import Meta
+            Meta.load()
 
-        # Start fittings
-        from morgoth.fittings import load_fittings
-        self._fittings = load_fittings()
+            # Start fittings
+            from morgoth.fittings import load_fittings
+            self._fittings = load_fittings()
 
-        spawned = []
-        for fitting in self._fittings:
-            spawn = gevent.spawn(fitting.start)
-            spawned.append(spawn)
+            spawned = []
+            for fitting in self._fittings:
+                spawn = gevent.spawn(fitting.start)
+                spawned.append(spawn)
 
-        for spawn in spawned:
-            spawn.join()
+            for spawn in spawned:
+                spawn.join()
 
-        self._logger.info("All fittings have stopped")
-        self._finish_event.wait()
-        self._logger.info("Finished event set")
+            self._logger.info("All fittings have stopped")
+            self._finish_event.wait()
+            self._logger.info("Finished event set")
 
+        except Exception as e:
+            self._logger.critical('Error launching morgoth')
+            self._logger.exception(e)
 def main(args):
     from morgoth  import logger
     logger.init()

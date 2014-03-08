@@ -15,6 +15,7 @@
 
 from morgoth.config import Config
 from morgoth.plugin_loader import PluginLoader
+from types import ListType
 import os
 
 import logging
@@ -27,30 +28,12 @@ def load_fittings():
     dirs = [os.path.dirname(__file__)]
     dirs.extend(Config.get(['plugin_dirs', 'fittings'], []))
 
-    pl = PluginLoader()
-    mods = pl.find_modules(dirs)
-
-    classes = pl.find_subclasses(mods, Fitting)
-    classes_by_name = {}
-    for c_name, cls in classes:
-        classes_by_name[c_name] = cls
-
-
-    fittings = []
-    for fitting_entry in Config.fittings:
-        fitting_name = fitting_entry.keys()[0]
-        if fitting_name not in classes_by_name:
-            logger.warn('Configured fitting "%s" doesn\'t exist', fitting_name)
-            continue
-
-        fitting_conf = fitting_entry[fitting_name]
-        fitting_class = classes_by_name[fitting_name]
-        try:
-            logger.debug("Found Fitting %s", fitting_name)
-            fitting = fitting_class.from_conf(fitting_conf)
-            fittings.append(fitting)
-        except Exception as e:
-            logger.error("Error creating fitting '%s': %s", fitting_name, e)
+    pl = PluginLoader(dirs, Fitting)
+    try:
+        fittings = pl.load(Config.fittings)
+    except Exception as e:
+        logger.error("Error creating fittings %s", e)
+        raise e
 
     return fittings
 

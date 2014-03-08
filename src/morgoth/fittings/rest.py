@@ -24,7 +24,7 @@ import dateutil.parser
 from morgoth.config import Config
 from morgoth.fittings.fitting import Fitting
 from morgoth.data.reader import Reader
-from morgoth.detectors import get_detector
+from morgoth.detectors import get_loader
 from morgoth.utils import timedelta_from_str
 
 import logging
@@ -196,7 +196,8 @@ def check(metric):
     try:
         start = parse_arg('start', 'invalid start date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse)
         stop = parse_arg('stop', 'invalid stop date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse)
-        detector_class = parse_arg('detector', 'invalid detector name "%(arg)s" Error: %(error)s', get_detector)
+        detector_loader = get_loader()
+        detector_class = parse_arg('detector', 'invalid detector name "%(arg)s" Error: %(error)s', detector_loader.get_plugin_class)
     except ParseError as e:
         return jsonify({
             'error' : str(e),

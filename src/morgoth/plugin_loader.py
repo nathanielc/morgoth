@@ -26,18 +26,65 @@ class PluginLoader(object):
     """
     A class to facilitate loading plugins dynamically
     """
-    def __init__(self):
-        """
+    def __init__(self, search_dirs, base_class, depth=1, ignored=set()):
         """
 
-    def find_modules(self, search_dirs, depth=1):
-        """
-        Find a modules in `search_dirs`
         @param search_dirs: list of directories to search in
         @param depth: the depth of subdirs to search
+        @param base_class: the base class that all plugins should extend
         """
-        return self._find_modules(search_dirs, depth, None)
-    def _find_modules(self, search_dirs, depth, package):
+        self._search_dirs = search_dirs
+        self._base_class = base_class
+        self._depth = depth
+        self._ignored = ignored
+        self._classes = {}
+
+        # Find modules and classes
+        modules = self._find_modules(self._search_dirs, depth)
+        self._classes = self._find_subclasses(modules, self._base_class, self._ignored)
+
+    def load(self, plugins_conf):
+        """
+        Parses conf and loads discovered plugins into the `container`
+
+        @param plugins_conf: list of Config objects
+            plugins_conf must be dictionary config where each value is either
+            another dictionary config or a list of dictionary configs. Each
+            of the nested dictionries will be passed as the 'conf' to the
+            'from_conf' method on the plugin class.
+        """
+        plugins = []
+        for name, confs in plugins_conf.items():
+            plugin_class = self.get_plugin_class(name)
+            if not confs.is_list:
+                confs = [confs]
+            for conf in confs:
+                try:
+                    plugin = plugin_class.from_conf(conf)
+                    plugins.append(plugin)
+                except Exception as e:
+                    logger.error('Could not create "%s" from conf "%s" Error: "%s"',  name, conf, e)
+                    raise e
+        return plugins
+
+    def get_plugin_class(self, name):
+        """
+        Return the class for a given plugin
+
+        @param name: the name of the class of the plugin
+        """
+        try:
+            return self._classes[name]
+        except KeyError as e:
+            raise LoaderError('No such plugin %s' % name)
+
+    def _find_modules(self, search_dirs, depth=1):
+        """
+        Find a modules in `search_dirs`
+        """
+        return self.__find_modules(search_dirs, depth, None)
+
+    def __find_modules(self, search_dirs, depth, package):
         """
         Find modules recursively in search_dirs
 
@@ -63,7 +110,7 @@ class PluginLoader(object):
                         name = entry
                     pkg = imp.load_module(name, *found_pkg)
                     mods.append(pkg)
-                    mods.extend(self._find_modules(
+                    mods.extend(self.__find_modules(
                         [path],
                         depth - 1,
                         name,
@@ -83,7 +130,7 @@ class PluginLoader(object):
                     mods.append(mod)
         return mods
 
-    def find_subclasses(self, mods, parent_class, ignored=set()):
+    def _find_subclasses(self, mods, parent_class, ignored=set()):
         """
         Return all classes found in the list of modules `mods` that are subclasses
         of `parent_class`
@@ -92,21 +139,24 @@ class PluginLoader(object):
         @param parent_class: a parent class
         @param ignore: set of class names to ignore.
             NOTE: `parent_class` is always ignored
+        @return dict of class name to class
         """
-        classes = []
+        classes = {}
         ignored.add(parent_class.__name__)
         for mod in mods:
-            classes.extend(
-                    inspect.getmembers(
+            members = inspect.getmembers(
                         mod,
                         lambda x:
                             inspect.isclass(x)
                             and issubclass(x, parent_class)
                             and x.__name__ not in ignored
                         )
-                )
+            for name, member in members:
+                if name in classes:
+                    raise LoaderError("Plugin of name '%s' already exists, found another in module '%s'" % (name, mod.__name__))
+                classes[name] = member
         return classes
 
 
-
-
+class LoaderError(Exception):
+    pass

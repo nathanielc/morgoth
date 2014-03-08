@@ -21,45 +21,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-_DETECTORS = {}
+_LOADER = None
 
-def register_detector(name, d_class):
-    """
-    Register an Detector by a given name
-
-    @param name: the name to identify the Detector
-    @param d_class: the class of the Detector
-    """
-    if name in _DETECTORS:
-        raise ValueError('Detector of name "%s" already exists' % name)
-    _DETECTORS[name] = d_class
-
-def get_detector(name):
-    """
-    Return the Detector class by a given name
-
-    @return Detector class
-    """
-    if name not in _DETECTORS:
-        raise ValueError("Detector of name '%s' doesn't exist" % name)
-    return _DETECTORS[name]
-
-
-def load_detectors():
-    """ Load the configured Detectors """
-    from morgoth.detectors.detector import Detector
-    dirs = [os.path.dirname(__file__)]
-    dirs.extend(Config.get(['plugin_dirs', 'detectors'], []))
-
-    pl = PluginLoader()
-    mods = pl.find_modules(dirs)
-
-    classes = pl.find_subclasses(mods, Detector)
-
-    for d_name, d_class in classes:
-        logger.debug("Found Detector %s", d_name)
-        try:
-            register_detector(d_name, d_class)
-        except ValueError as e:
-            logger.warning("Found duplicate Detectors with name %s", d_name)
-
+def get_loader():
+    """ Return the Detectors plugin loader """
+    global _LOADER
+    if not _LOADER:
+        from morgoth.detectors.detector import Detector
+        dirs = [os.path.dirname(__file__)]
+        dirs.extend(Config.get(['plugin_dirs', 'detectors'], []))
+        _LOADER = PluginLoader(dirs, Detector)
+    return _LOADER

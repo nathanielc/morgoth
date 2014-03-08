@@ -66,6 +66,11 @@ class Config(dict):
         self.enumerate = self._enumerate
         self.get_ignored_conf= self._get_ignored_conf
 
+        self._is_list = False
+
+    @property
+    def is_list(self):
+        return self._is_list
 
     @classmethod
     def get(cls, attr, default):
@@ -144,6 +149,7 @@ class ConfigList(Config):
     """
     def __init__(self, *args, **kwargs):
         super(ConfigList, self).__init__(*args, **kwargs)
+        self._is_list = True
 
     def __iter__(self):
         return self.itervalues()
