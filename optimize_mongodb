@@ -1,7 +1,0 @@
-
-We need to optimize for high write throughput.
-Read queries need to be efficient but can be eventually consistent.
-
-Use secondaries in replica sets
-Write-concern
-
