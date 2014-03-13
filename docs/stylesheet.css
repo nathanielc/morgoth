@@ -1,3 +1,7 @@
+html {
+    height: 100%;
+}
+
 .tabs, .tabs2, .tabs3 {
     background: transparent;
     background: linear-gradient(#692a2a, #3c1c1c);
@@ -29,8 +33,11 @@ span.stringliteral {
     color: #2050f0;
 }
 
-address {
+address.footer {
     color: #664949;
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
 }
 body {
     background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2a2a29), color-stop(100%, #1c1c1c));
@@ -40,8 +47,18 @@ body {
     background: -ms-linear-gradient(#2a2a29, #1c1c1c);
     background: linear-gradient(#2a2a29, #1c1c1c);
     color: #f0e7d5;
+    height: 100%;
 }
 
 h2 {
     color: #e8e8e8;
+}
+
+#projectname {
+    color: #e8e8e8;
+    font-family: 'OpenSansLight', "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: normal;
+    font-size: 45px;
+    text-align: center;
+    line-height: 36px;
 }
