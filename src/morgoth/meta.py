@@ -17,6 +17,7 @@ from morgoth.data.mongo_clients import MongoClients
 from morgoth.app import config
 from morgoth.metric_manager import MetricManager, NullMetricManager
 
+import gevent
 import re
 
 import logging
@@ -196,6 +197,9 @@ class Meta(object):
         logger.warn("Metric '%s' has no matching configuration" % metric)
         return cls._null_manager
 
-
+    @classmethod
+    def delete_metric(cls, metric):
+        cls._db.metrics.remove({'metric' : metric})
+        cls._db.meta.remove({'_id' : metric})
 
 

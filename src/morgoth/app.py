@@ -16,7 +16,6 @@
 from gevent import monkey; monkey.patch_all()
 from gevent.event import Event
 import gevent
-from optparse import OptionParser
 
 #Global App config object
 config = None
@@ -112,18 +111,14 @@ class App(object):
             self._logger.critical('Error launching morgoth')
             self._logger.exception(e)
 
-def main(args):
+def main(config_path):
     from morgoth import logger
     logger.init()
 
-    #Parse args
-    parser = OptionParser()
-    parser.add_option('-c', '--config', dest='config', help='path to configuration file', default='morgoth.yml')
-    (options, args) = parser.parse_args(args)
 
     from morgoth.config import Config
     global config
-    config = Config.load(options.config)
+    config = Config.load(config_path)
 
     app = App()
     app.run()

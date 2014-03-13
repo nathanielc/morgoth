@@ -1,5 +1,5 @@
 
-Morgoth
+Morgoth {#mainpage}
 =======
 
 Morgoth is a metric collection system with two main focuses:

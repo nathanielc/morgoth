@@ -13,16 +13,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-from morgoth.collector import Collector
-from morgoth.anomaly_detector import AnomalyDetector
+from morgoth.test.app_test_case import AppTestCase
+from morgoth.data.writer import Writer
+from morgoth.detectors.mgof.mgof import MGOF
 from datetime import datetime, timedelta
+import os
+import tempfile
 
 
-class AnomalyDetectorTestCase(unittest.TestCase):
+class MGOFTest(AppTestCase):
+    """
+    NOTE: this is an an end to end test
+    """
+    conf = """
+mongo:
+  use_sharding: false
+metrics:
+  .*:
+    detectors:
+      MGOF:
+        n_bins: 15
+        normal_count: 1
+        chi2_percentage: 0.95
+        windows:
+            - {offset: 1w, duration: 1h}
+            - {offset: 2w, duration: 1h}
+            - {offset: 3w, duration: 1h}
+            - {offset: 4w, duration: 1h}
+            - {offset: 5w, duration: 1h}
+            - {offset: 6w, duration: 1h}
+    schedule:
+      duration: 5m
+      period: 5m
+      delay: 1m
+    """
+
     def create_metric_data(self, metric, start):
         self.delete_metric_data(metric)
-        c = Collector()
+        writer = Writer()
         for w in range(6):
             for h in range(1):
                 for m in range(60):
@@ -36,27 +64,29 @@ class AnomalyDetectorTestCase(unittest.TestCase):
                         value = m*60 + s
                         if w == 5:
                            value *= 4
-                        c.insert(
+                        writer.insert(
                             start + delta,
                             metric,
                             value
                             )
     def delete_metric_data(self, metric):
-        c = Collector()
-        c.delete_metric(metric)
-    def test_anomaly_detector_01(self):
-        metric = 'test_anomaly_detector'
+        writer = Writer()
+        writer.delete_metric(metric)
+    def test_mgof_01(self):
+        self.start_app(self.config_path)
+
+        metric = 'test_mgof'
         start = datetime(2013, 9, 1)
         self.create_metric_data(metric, start)
-        ad = AnomalyDetector(metric)
+        mgof = MGOF.from_conf(self.mgof_conf)
 
         a_start = start + timedelta(weeks=5)
         a_end = a_start + timedelta(hours=1)
-        self.assertTrue(ad.is_anomalous(a_start, a_end))
+        self.assertTrue(mgof.is_anomalous(metric, a_start, a_end))
 
         na_start = start + timedelta(weeks=4)
         na_end = na_start + timedelta(hours=1)
-        self.assertFalse(ad.is_anomalous(na_start, na_end))
+        self.assertFalse(ad.is_anomalous(metric, na_start, na_end))
 
 if __name__ == '__main__':
     unittest.main()

@@ -61,6 +61,9 @@ class Writer(object):
         self._queue.put((dt_utc, metric, value))
         self._running.set()
 
+    def delete_metric(self, metric):
+        Meta.delete_metric(metric)
+
     def close(self):
         self._closing = True
         self._queue.join()

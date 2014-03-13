@@ -12,6 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+@namespace morgoth.detectors.mgof.mgof
+
+Multinomial Goodness of Fit anomaly detection algorithm
+"""
 
 from datetime import timedelta
 from morgoth.detectors.detector import Detector
@@ -39,8 +44,7 @@ class MGOF(Detector):
 
         This anomaly detector uses a multinomial goodness-of-fit test.
 
-        The algorithim is adapted from this paper:
-            http://www.hpl.hp.com/techreports/2011/HPL-2011-8.html
+        The algorithm is adapted from this <a href='http://www.hpl.hp.com/techreports/2011/HPL-2011-8.html'>paper</a>
 
         @param windows: list of (timedelta, timedelta) tuples
             The first element is the offset of the window
@@ -108,6 +112,13 @@ class MGOF(Detector):
         return numpy.sum(q * numpy.log(q / p))
 
     def is_anomalous(self, metric, start, stop):
+        """
+
+        Use the MGOF alogrithm to determine if the given
+        metric is anomalous in the specified time range
+
+        @example is_anomalous.py
+        """
 
         windows = []
 

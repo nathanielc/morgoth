@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Copyright 2014 Nathaniel Cook
 #
@@ -14,18 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import morgoth.app
-import sys
-from optparse import OptionParser
+import unittest
+from morgoth.app import main
+import gevent
 
-def main(args):
+class AppTestCase(unittest.TestCase):
 
-    #Parse args
-    parser = OptionParser()
-    parser.add_option('-c', '--config', dest='config', help='path to configuration file', default='morgoth.yml')
-    (options, args) = parser.parse_args(args)
+    @classmethod
+    def setUpClass(cls):
+        cls.tdir = tempfile.mkdtemp()
+        cls.config_path = os.path.join(cls.tdir, 'morgoth.yml')
+        with open(cls.config_path, 'w') as f:
+            f.write(cls.conf)
+        gevent.spawn(main(config_path=cls.config_path))
+        gevent.sleep(0)
 
-    return morgoth.app.main(config_path=options.config)
-
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.config_path)
+        os.rmdir(cls.tdir)

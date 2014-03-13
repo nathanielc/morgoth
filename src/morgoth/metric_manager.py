@@ -58,12 +58,16 @@ class MetricManager(object):
             self._notifiers = d_loader.load(notifiers)
 
         # Load schedule
-        self._duration = timedelta_from_str(conf.schedule.duration)
-        self._period = timedelta_from_str(conf.schedule.period)
-        self._delay = timedelta_from_str(conf.schedule.delay)
-        self._aligned = conf.get(['schedule', 'aligned'], True)
+        schedule = conf.get('schedule', None)
+        if schedule:
+            self._duration = timedelta_from_str(schedule.duration)
+            self._period = timedelta_from_str(schedule.period)
+            self._delay = timedelta_from_str(schedule.delay)
+            self._aligned = schedule.get('aligned', True)
 
-        self._schedule = Schedule(self._period, self._check_metrics, self._delay)
+            self._schedule = Schedule(self._period, self._check_metrics, self._delay)
+        else:
+            self._schedule = None
 
         # Load consensus
         self._consensus = conf.get('consensus', 0.5)
@@ -80,7 +84,7 @@ class MetricManager(object):
         """
         Start watching the metrics for anomanlies
         """
-        if not self._started:
+        if not self._started and self._schedule:
             logger.debug(
                     "Starting MetricManager %s with detectors %s and notifiers %s",
                     self._pattern,
