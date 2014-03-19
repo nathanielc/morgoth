@@ -1,0 +1,69 @@
+html {
+    height: 100%;
+}
+
+.tabs, .tabs2, .tabs3 {
+    background: transparent;
+    background: linear-gradient(#692a2a, #3c1c1c);
+}
+
+.tablist a, .tablist li {
+    background: linear-gradient(#692a2a, #3c1c1c);
+    color: #f0e7d5;
+    text-shadow: none;
+}
+
+.tablist li.current a, .tablist a:hover {
+    background: transparent;
+}
+
+div.header {
+    background: transparent;
+}
+
+.directory tr.even {
+    background-color: #1c1c1c;
+}
+
+div.fragment, span.lineno {
+    background-color: #1c1c1c;
+}
+
+span.stringliteral {
+    color: #2050f0;
+}
+div.footer {
+    position: absolute;
+    bottom: 0px;
+}
+div.footer span {
+    float: left
+}
+address.footer {
+    color: #664949;
+    right: 0px;
+    float: right;
+}
+body {
+    background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2a2a29), color-stop(100%, #1c1c1c));
+    background: -webkit-linear-gradient(#2a2a29, #1c1c1c);
+    background: -moz-linear-gradient(#2a2a29, #1c1c1c);
+    background: -o-linear-gradient(#2a2a29, #1c1c1c);
+    background: -ms-linear-gradient(#2a2a29, #1c1c1c);
+    background: linear-gradient(#2a2a29, #1c1c1c);
+    color: #f0e7d5;
+    height: 100%;
+}
+
+h2 {
+    color: #e8e8e8;
+}
+
+#projectname {
+    color: #e8e8e8;
+    font-family: 'OpenSansLight', "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: normal;
+    font-size: 45px;
+    text-align: center;
+    line-height: 36px;
+}
