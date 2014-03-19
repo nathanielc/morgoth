@@ -17,41 +17,46 @@ from gevent import monkey; monkey.patch_all()
 from gevent.event import Event
 import gevent
 
-#Global App config object
-config = None
 
 class App(object):
 
-    def __init__(self):
+    def __init__(self, config):
+        """
+        Initialize the morgoth append
+
+        @param config: the app configuration object
+        @type config: morgoth.config.Config
+        """
         self._finish_event = Event()
         self._finish_event.set()
         self._fittings = []
-
+        self._config = config
 
     def _initialize_db(self):
         from morgoth.data.mongo_clients import MongoClients
         from pymongo.errors import OperationFailure
         from pymongo import HASHED
 
-        db_name = config.get(['mongo', 'database_name'], 'morgoth')
-        use_sharding = config.get(['mongo', 'use_sharding'], True)
+        db_name = self._config.get(['mongo', 'database_name'], 'morgoth')
+        use_sharding = self._config.get(['mongo', 'use_sharding'], True)
 
         conn = MongoClients.Normal
-
 
         if use_sharding:
             try:
                 conn.admin.command('enableSharding', db_name)
             except OperationFailure as e:
                 if not e.message.endswith('already enabled'):
-                    self._logger.error('Error: sharding enabled for morgoth but unable to enable sharding on mongo. See use_sharding config')
+                    self._logger.error(
+                        'Error: sharding enabled for morgoth but unable to enable sharding on mongo. See use_sharding config'
+                    )
                     raise e
 
         cols = [
-                ('meta', [('_id', HASHED)]),
-                ('metrics', [('metric', 1), ('time', 1)]),
-                ('windows', [('metric', 1), ('ad', 1)])
-            ]
+            ('meta', [('_id', HASHED)]),
+            ('metrics', [('metric', 1), ('time', 1)]),
+            ('windows', [('metric', 1), ('ad', 1)])
+        ]
 
         for col, key in cols:
             try:
@@ -63,9 +68,11 @@ class App(object):
                         key=key)
             except OperationFailure as e:
                 if not e.message.endswith('already sharded'):
-                    self._logger.error('Error: sharding enabled for morgoth but unable to shard %s collection. See use_sharding config' % col)
+                    self._logger.error(
+                        'Error: sharding enabled for morgoth but unable to shard %s collection. See use_sharding config',
+                        col,
+                    )
                     raise e
-
 
     def handler(self):
         self._finish_event.clear()
@@ -86,14 +93,24 @@ class App(object):
             import signal
             gevent.signal(signal.SIGINT, self.handler)
 
+            # Configure Writer defaults
+            from morgoth.data.writer import Writer
+            Writer.configure_defaults(self._config)
+
+
+            # Configure detectors and notifiers
+            from morgoth.detectors import configure_detectors
+            from morgoth.notifiers import configure_notifiers
+            configure_detectors(self._config)
+            configure_notifiers(self._config)
 
             # Initialize the meta data
             from morgoth.meta import Meta
-            Meta.load()
+            Meta.load(self._config)
 
             # Start fittings
             from morgoth.fittings import load_fittings
-            self._fittings = load_fittings()
+            self._fittings = load_fittings(self._config)
 
             spawned = []
             for fitting in self._fittings:
@@ -111,16 +128,15 @@ class App(object):
             self._logger.critical('Error launching morgoth')
             self._logger.exception(e)
 
+
 def main(config_path):
     from morgoth import logger
     logger.init()
 
-
     from morgoth.config import Config
-    global config
     config = Config.load(config_path)
 
-    app = App()
+    app = App(config)
     app.run()
 
     return 0

@@ -17,7 +17,6 @@
 from gevent.queue import JoinableQueue
 from gevent.event import Event
 from morgoth.data.mongo_clients import MongoClients
-from morgoth.app import config
 from morgoth.data import get_col_for_metric
 from morgoth.meta import Meta
 import gevent
@@ -28,16 +27,31 @@ logger = logging.getLogger(__name__)
 
 class Writer(object):
     __time_fmt = "%Y%m%d%H"
-    def __init__(self):
-        # Write optimized MongoClient
+    _max_size = 1000
+    _worker_count = 2
+    def __init__(self, max_size=None, worker_count=None):
         self._db = MongoClients.Normal.morgoth
-        self._queue = JoinableQueue(maxsize=config.get(['write_queue', 'max_size'], 1000))
-        self._worker_count = config.get(['write_queue', 'worker_count'], 2)
+        if max_size is None:
+            max_size = Writer._max_size
+        self._queue = JoinableQueue(maxsize=max_size)
+        if worker_count is None:
+            worker_count = Writer._worker_count
+        self._worker_count = worker_count
         self._running = Event()
         self._closing = False
         for i in xrange(self._worker_count):
             gevent.spawn(self._worker)
 
+    @classmethod
+    def configure_defaults(cls, config):
+        """
+        Configure the default writer options
+
+        @param config: the app configuration object
+        @type config: morgoth.config.Config
+        """
+        cls._max_size = config.get(['writer', 'queue', 'max_size'], cls._max_size)
+        cls._worker_count = config.get(['writer', 'queue', 'worker_count'], cls._worker_count)
 
     def _worker(self):
         while True:

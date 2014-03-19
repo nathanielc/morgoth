@@ -13,19 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 from morgoth.app import main
 import gevent
+import os
+import tempfile
+import unittest
 
 class AppTestCase(unittest.TestCase):
 
+    conf = None
     @classmethod
     def setUpClass(cls):
         cls.tdir = tempfile.mkdtemp()
         cls.config_path = os.path.join(cls.tdir, 'morgoth.yml')
         with open(cls.config_path, 'w') as f:
             f.write(cls.conf)
-        gevent.spawn(main(config_path=cls.config_path))
+        gevent.spawn(main, config_path=cls.config_path)
         gevent.sleep(0)
 
     @classmethod

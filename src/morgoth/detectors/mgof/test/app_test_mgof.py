@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from morgoth.config import Config
 from morgoth.test.app_test_case import AppTestCase
 from morgoth.data.writer import Writer
 from morgoth.detectors.mgof.mgof import MGOF
@@ -25,6 +26,18 @@ class MGOFTest(AppTestCase):
     """
     NOTE: this is an an end to end test
     """
+    mgof_conf = """
+n_bins: 15
+normal_count: 1
+chi2_percentage: 0.95
+windows:
+    - {offset: 1w, duration: 1h}
+    - {offset: 2w, duration: 1h}
+    - {offset: 3w, duration: 1h}
+    - {offset: 4w, duration: 1h}
+    - {offset: 5w, duration: 1h}
+    - {offset: 6w, duration: 1h}
+"""
     conf = """
 mongo:
   use_sharding: false
@@ -73,12 +86,11 @@ metrics:
         writer = Writer()
         writer.delete_metric(metric)
     def test_mgof_01(self):
-        self.start_app(self.config_path)
 
         metric = 'test_mgof'
         start = datetime(2013, 9, 1)
-        self.create_metric_data(metric, start)
-        mgof = MGOF.from_conf(self.mgof_conf)
+       self.create_metric_data(metric, start)
+        mgof = MGOF.from_conf(Config.loads(self.mgof_conf))
 
         a_start = start + timedelta(weeks=5)
         a_end = a_start + timedelta(hours=1)

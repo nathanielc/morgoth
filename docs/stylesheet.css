@@ -32,12 +32,17 @@ div.fragment, span.lineno {
 span.stringliteral {
     color: #2050f0;
 }
-
+div.footer {
+    position: absolute;
+    bottom: 0px;
+}
+div.footer span {
+    float: left
+}
 address.footer {
     color: #664949;
-    position: absolute;
     right: 0px;
-    bottom: 0px;
+    float: right;
 }
 body {
     background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #2a2a29), color-stop(100%, #1c1c1c));

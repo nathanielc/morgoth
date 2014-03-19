@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from morgoth.app import config
 from morgoth.plugin_loader import PluginLoader
 import os
 
@@ -23,12 +22,25 @@ logger = logging.getLogger(__name__)
 
 _LOADER = None
 
-def get_loader():
-    """ Return the Notifier plugin loader """
+def configure_notifiers(config):
+    """
+    Configure the notifier plugin loader
+
+    @param config: the app configuration object
+    @type config: morgoth.config.Config
+    """
     global _LOADER
-    if not _LOADER:
-        from morgoth.notifiers.notifier import Notifier
-        dirs = [os.path.dirname(__file__)]
-        dirs.extend(config.get(['plugin_dirs', 'notifiers'], []))
-        _LOADER = PluginLoader(dirs, Notifier)
+    from morgoth.notifiers.notifier import Notifier
+    dirs = [os.path.dirname(__file__)]
+    dirs.extend(config.get(['plugin_dirs', 'notifiers'], []))
+    _LOADER = PluginLoader(dirs, Notifier)
+
+
+def get_loader():
+    """
+    Return the Notifier plugin loader
+
+    configure_notifiers must be called before this method.
+    """
+    assert _LOADER is not None
     return _LOADER

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from morgoth.app import config
 from morgoth.plugin_loader import PluginLoader
 import os
 
@@ -23,12 +22,24 @@ logger = logging.getLogger(__name__)
 
 _LOADER = None
 
-def get_loader():
-    """ Return the Detectors plugin loader """
+def configure_detectors(config):
+    """
+    Configure the detector plugin loader
+
+    @param config: the app configuration object
+    @type config: morgoth.config.Config
+    """
     global _LOADER
-    if not _LOADER:
-        from morgoth.detectors.detector import Detector
-        dirs = [os.path.dirname(__file__)]
-        dirs.extend(config.get(['plugin_dirs', 'detectors'], []))
-        _LOADER = PluginLoader(dirs, Detector)
+    from morgoth.detectors.detector import Detector
+    dirs = [os.path.dirname(__file__)]
+    dirs.extend(config.get(['plugin_dirs', 'detectors'], []))
+    _LOADER = PluginLoader(dirs, Detector)
+
+def get_loader():
+    """
+    Return the Detectors plugin loader
+
+    configure_detectors must be called before this method.
+    """
+    assert _LOADER is not None
     return _LOADER

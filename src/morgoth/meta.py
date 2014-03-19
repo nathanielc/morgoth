@@ -14,7 +14,6 @@
 # limitations under the License.
 
 from morgoth.data.mongo_clients import MongoClients
-from morgoth.app import config
 from morgoth.metric_manager import MetricManager, NullMetricManager
 
 import gevent
@@ -28,10 +27,10 @@ __all__ = ['Meta']
 class Meta(object):
     _db = MongoClients.Normal.morgoth
     _db_admin = MongoClients.Normal.admin
-    _db_name = config.mongo.database_name
-    _use_sharding = config.mongo.use_sharding
+    _db_name = None
+    _use_sharding = None
     _needs_updating = {}
-    _refresh_interval = config.get(['metric_meta', 'refresh_interval'], 60)
+    _refresh_interval = None
     _finishing = False
     _null_manager = NullMetricManager()
     """ Dict containg the meta data for each metric """
@@ -41,10 +40,20 @@ class Meta(object):
 
 
     @classmethod
-    def load(cls):
+    def load(cls, config):
         """
         Loads the existing meta data
+
+        @param config: the app configuration object
+        @type config: morgoth.config.Config
         """
+        cls._db_name = config.mongo.database_name
+        cls._use_sharding = config.mongo.use_sharding
+        cls._needs_updating = {}
+        cls._refresh_interval = config.get(
+            ['metric_meta', 'refresh_interval'],
+            60
+        )
 
         # Load managers from conf
         for pattern, conf in config.metrics.items():
@@ -76,8 +85,6 @@ class Meta(object):
                 'max' : value,
                 'count' : 1,
             }
-            conf_meta = cls._get_meta_from_config(metric)
-            meta.update(conf_meta)
             #logger.debug("Created new meta %s" % str(meta))
             cls._meta[metric] = meta
         else:
@@ -125,10 +132,6 @@ class Meta(object):
         if cls._finishing: return
         del cls._needs_updating[metric]
         cls._update(metric)
-
-    @classmethod
-    def _get_meta_from_config(cls, metric):
-        return {}
 
     @classmethod
     def _update(cls, metric):
