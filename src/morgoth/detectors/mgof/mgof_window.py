@@ -67,12 +67,15 @@ class MGOFWindow(Window):
         if self._prob_dist is None:
             data = self._db.windows.find_one({'_id': self.id})
             meta = self._db.meta.find_one({'_id' : self._metric})
+
             if data is None or data['value']['version'] != meta['version']:
                 self._update()
                 data = self._db.windows.find_one({'_id': self.id})
                 if data is None:
                     return [0] * self._n_bins, 0
             self._prob_dist = data['value']['prob_dist'], data['value']['count']
+        if len(self._prob_dist[0]) != self._n_bins:
+            raise ValueError('Probability distribution does not have the length n_bins, something with the meta got corrupted')
         return self._prob_dist
 
     def _update(self):

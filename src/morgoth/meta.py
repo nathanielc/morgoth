@@ -87,6 +87,7 @@ class Meta(object):
             }
             #logger.debug("Created new meta %s" % str(meta))
             cls._meta[metric] = meta
+            cls._update(metric)
         else:
             meta = cls._meta[metric]
             #logger.debug("Updating meta with new value: %s %f" % (str(meta), value))
@@ -94,11 +95,11 @@ class Meta(object):
             meta['max'] = max(meta['max'], value)
             meta['count'] += 1
 
-        if metric not in cls._needs_updating:
-            cls._needs_updating[metric] = True
-            gevent.spawn(cls._update_eventually, metric)
-        #else:
-        #    logger.debug("Metric already scheduled for update...")
+            if metric not in cls._needs_updating:
+                cls._needs_updating[metric] = True
+                gevent.spawn(cls._update_eventually, metric)
+            #else:
+            #    logger.debug("Metric already scheduled for update...")
 
 
     @classmethod
@@ -127,17 +128,26 @@ class Meta(object):
         })
 
     @classmethod
+    def flush(cls):
+        """
+        Flush all pending changes to the meta data
+        """
+        metrics = cls._needs_updating.keys()
+        for metric in metrics:
+            cls._update(metric)
+
+    @classmethod
     def _update_eventually(cls, metric):
         gevent.sleep(cls._refresh_interval)
         if cls._finishing: return
-        del cls._needs_updating[metric]
-        cls._update(metric)
 
     @classmethod
     def _update(cls, metric):
         """
         Perform the actual update of the meta data
         """
+        if metric in cls._needs_updating:
+            del cls._needs_updating[metric]
         meta = cls._meta[metric]
         # Update meta information
         success = False
@@ -202,7 +212,9 @@ class Meta(object):
 
     @classmethod
     def delete_metric(cls, metric):
+        logger.debug('Deleting metric %s', metric)
         cls._db.metrics.remove({'metric' : metric})
+        cls._db.windows.remove({'value.metric' : metric})
         cls._db.meta.remove({'_id' : metric})
 
 

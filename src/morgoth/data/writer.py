@@ -29,6 +29,7 @@ class Writer(object):
     __time_fmt = "%Y%m%d%H"
     _max_size = 1000
     _worker_count = 2
+    _flush_token = 'FLUSH'
     def __init__(self, max_size=None, worker_count=None):
         self._db = MongoClients.Normal.morgoth
         if max_size is None:
@@ -38,6 +39,8 @@ class Writer(object):
             worker_count = Writer._worker_count
         self._worker_count = worker_count
         self._running = Event()
+        self._flushed = Event()
+        self._flushing = False
         self._closing = False
         for i in xrange(self._worker_count):
             gevent.spawn(self._worker)
@@ -58,6 +61,10 @@ class Writer(object):
             self._running.wait()
             while not self._queue.empty():
                 dt_utc, metric, value = self._queue.get()
+                if dt_utc == self._flush_token:
+                    Meta.flush()
+                    self._flushed.set()
+                    continue
                 col = get_col_for_metric(self._db, metric)
                 col.insert({
                     'time' : dt_utc,
@@ -83,5 +90,14 @@ class Writer(object):
         self._queue.join()
         logger.debug("Writer queue is empty")
         Meta.finish()
+
+    def flush(self):
+        if not self._flushing:
+            self._flushing = True
+            self._queue.put((self._flush_token, None, None))
+
+        self._flushed.wait()
+        self._flushing = False
+        self._flushed.clear()
 
 

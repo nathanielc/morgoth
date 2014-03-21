@@ -82,23 +82,27 @@ metrics:
                             metric,
                             value
                             )
+        writer.flush()
     def delete_metric_data(self, metric):
         writer = Writer()
         writer.delete_metric(metric)
     def test_mgof_01(self):
 
-        metric = 'test_mgof'
-        start = datetime(2013, 9, 1)
-       self.create_metric_data(metric, start)
-        mgof = MGOF.from_conf(Config.loads(self.mgof_conf))
+        try:
+            metric = 'test_mgof'
+            start = datetime(2013, 9, 1)
+            self.create_metric_data(metric, start)
+            mgof = MGOF.from_conf(Config.loads(self.mgof_conf))
 
-        a_start = start + timedelta(weeks=5)
-        a_end = a_start + timedelta(hours=1)
-        self.assertTrue(mgof.is_anomalous(metric, a_start, a_end))
+            a_start = start + timedelta(weeks=5)
+            a_end = a_start + timedelta(hours=1)
+            self.assertTrue(mgof.is_anomalous(metric, a_start, a_end).anomalous)
 
-        na_start = start + timedelta(weeks=4)
-        na_end = na_start + timedelta(hours=1)
-        self.assertFalse(ad.is_anomalous(metric, na_start, na_end))
+            na_start = start + timedelta(weeks=4)
+            na_end = na_start + timedelta(hours=1)
+            self.assertFalse(mgof.is_anomalous(metric, na_start, na_end).anomalous)
+        finally:
+            self.delete_metric_data(metric)
 
 if __name__ == '__main__':
     unittest.main()
