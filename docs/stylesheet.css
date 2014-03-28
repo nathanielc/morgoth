@@ -32,7 +32,9 @@ div.fragment, span.lineno {
 span.stringliteral {
     color: #2050f0;
 }
-div.contents {
+div.footer {
+    position: absolute;
+    bottom: 0px;
 }
 div.footer span {
     float: left
@@ -50,8 +52,7 @@ body {
     background: -ms-linear-gradient(#2a2a29, #1c1c1c);
     background: linear-gradient(#2a2a29, #1c1c1c);
     color: #f0e7d5;
-    margin: 0 auto;
-    width: 900px;
+    height: 100%;
 }
 
 h2 {
