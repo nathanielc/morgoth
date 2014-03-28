@@ -26,6 +26,9 @@ logger = logging.getLogger(__name__)
 __dir__ = os.path.dirname(__file__)
 
 class MGOFWindow(Window):
+    """
+    A window object specific to the MGOF algorithm
+    """
     map = None
     reduce_code = None
     finalize = None

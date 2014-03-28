@@ -21,6 +21,9 @@ import tempfile
 import unittest
 
 class TestConfig(unittest.TestCase):
+    """
+    morgoth.config.Config unittest
+    """
     simple_yaml = """
     test_key0: value0
     test_key1:

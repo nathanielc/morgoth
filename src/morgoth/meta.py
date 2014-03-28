@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 __all__ = ['Meta']
 
 class Meta(object):
+    """
+    This class is responsible for keeping track of various meta data for metrics
+    """
     _db = MongoClients.Normal.morgoth
     _db_admin = MongoClients.Normal.admin
     _db_name = None

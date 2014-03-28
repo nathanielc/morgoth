@@ -25,6 +25,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Graphite(Fitting):
+    """
+    Fitting to input data into morgoth using the same format that graphite uses.
+    """
     def __init__(self, host, port, stop_timeout, max_pool_size):
         super(Graphite, self).__init__()
         self._port = port

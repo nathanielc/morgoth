@@ -20,6 +20,9 @@ import os
 __dir__ = os.path.dirname(__file__)
 
 class Window(object):
+    """
+    Represents a window in data for a given metric
+    """
 
     def __init__(self, metric,  start, stop):
         self._db = MongoClients.Normal.morgoth

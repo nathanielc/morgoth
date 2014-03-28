@@ -18,6 +18,9 @@ import pymongo
 from pymongo.read_preferences import ReadPreference
 
 class MongoClients(object):
+    """
+    Class that provides easy access to different types of mongo clients
+    """
     Normal = pymongo.MongoClient(tz_aware=True)
     WriteOptimized = pymongo.MongoClient(tz_aware=True, w=0)
     SecondaryPreferred = pymongo.MongoClient(tz_aware=True, read_preference=ReadPreference.SECONDARY_PREFERRED)

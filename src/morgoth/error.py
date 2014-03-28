@@ -14,6 +14,9 @@
 # limitations under the License.
 
 class MorgothError(Exception):
+    """
+    Basic error class for morgoth
+    """
     def __init__(self, *args, **kwargs):
         super(MorgothError, self).__init__(*args, **kwargs)
 

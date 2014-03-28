@@ -28,6 +28,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class PullGraphite(Fitting):
+    """
+    Fitting to periodically pull data from a graphite install and store the data in morgoth
+    """
     _date_format = "%H:%M_%Y%m%d"
     def __init__(self, metric_pattern, graphite_url, period, user=None, password=None):
         """

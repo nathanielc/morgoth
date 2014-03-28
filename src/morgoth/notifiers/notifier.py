@@ -19,6 +19,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Notifier(object):
+    """
+    A Notifier base class. Notifiers are plugable so any custom
+    notifier can be written
+
+    Notifiers 'notify' of anomalies in any desired manner.
+    """
     def __init___(self):
         pass
 

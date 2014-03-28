@@ -19,6 +19,9 @@ import gevent
 
 
 class App(object):
+    """
+    The entry point for launching the morgoth application
+    """
 
     def __init__(self, config):
         """

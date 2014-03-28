@@ -17,6 +17,9 @@
 from wtforms import Form, TextField, TextAreaField, DateField
 
 class CheckMetric(Form):
+    """
+    Form for submittig a one time detector check
+    """
     metric = TextField('Metric')
     detector = TextField('Detector Name')
     start = DateField()

@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 class Dashboard(Fitting):
+    """
+    Dashboard fitting that provides a web front end to the metrics and anomalies in morgoth
+    """
     def __init__(self, host, port):
         super(Dashboard, self).__init__()
         self._host = host

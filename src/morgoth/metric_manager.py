@@ -131,6 +131,9 @@ class MetricManager(object):
 
 
 class NullMetricManager(MetricManager):
+    """
+    A noop implementation of the MetricManager
+    """
     def __init__(self):
         pass
     def start(self):

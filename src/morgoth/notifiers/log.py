@@ -20,6 +20,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class LogNotifier(Notifier):
+    """
+    Simply logs the occurence of anomaly
+    """
     def __init___(self):
         pass
 

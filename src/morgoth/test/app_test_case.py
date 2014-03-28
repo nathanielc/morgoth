@@ -20,6 +20,9 @@ import tempfile
 import unittest
 
 class AppTestCase(unittest.TestCase):
+    """
+    Base class for app (end to end) tests
+    """
 
     conf = None
     @classmethod

@@ -14,6 +14,15 @@
 # limitations under the License.
 
 class Fitting(object):
+    """
+    Fittings are plugins to morgoth that expose behaviors
+
+    Fittings can be used to insert data into morgoth via any format needed.
+    Or they can be used to retrieve the data from morgoth in any desired format.
+
+    This class is the base class for all Fittings
+
+    """
     def __init__(self):
         pass
 

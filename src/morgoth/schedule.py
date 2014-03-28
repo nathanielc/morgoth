@@ -26,6 +26,9 @@ class ScheduleError(Exception):
 
 
 class Schedule(object):
+    """
+    Class that will call a given callback on a periodic schedule
+    """
     DAY = timedelta(days=1)
     def __init__(self, period, callback, delay=timedelta()):
         """

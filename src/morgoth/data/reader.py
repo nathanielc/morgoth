@@ -20,6 +20,9 @@ from morgoth.utc import utc
 import re
 
 class Reader(object):
+    """
+    Class that provides read access to the metric data and anomalies
+    """
     def __init__(self):
         self._db = MongoClients.Normal.morgoth
 

@@ -33,6 +33,10 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 class Rest(Fitting):
+    """
+    REST API fitting. Provides access to data and anomalies
+    as well as the ability to schedule a one time detector run.
+    """
     def __init__(self, host, port):
         super(Rest, self).__init__()
         self._host = host

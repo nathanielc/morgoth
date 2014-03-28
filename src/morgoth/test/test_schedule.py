@@ -21,6 +21,9 @@ import gevent
 import time
 
 class TestSchedule(unittest.TestCase):
+    """
+    Unittest for morgoth.schedule.Schedule
+    """
     def test_schedule_00(self):
         self.period = timedelta(seconds=1)
         self.last = time.time()

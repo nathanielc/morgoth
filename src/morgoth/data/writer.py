@@ -26,6 +26,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Writer(object):
+    """
+    Class that provides write access to store metrics in morgoth
+    """
     __time_fmt = "%Y%m%d%H"
     _max_size = 1000
     _worker_count = 2
