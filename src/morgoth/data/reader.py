@@ -19,6 +19,9 @@ from morgoth.data import get_col_for_metric
 from morgoth.utc import utc
 import re
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Reader(object):
     """
     Class that provides read access to the metric data and anomalies
@@ -53,12 +56,16 @@ class Reader(object):
         boundary = None
         if start and step:
             boundary = (start + step).replace(tzinfo=utc)
+        raw_data = []
         for point in data:
+            raw_data.append((point['time'].isoformat(), point['value']))
             if boundary and step:
                 if point['time'] > boundary:
                     if count > 0:
                         time_data.append((boundary.isoformat(), total / count))
                     boundary += step
+                    while boundary + step <= point['time']:
+                        boundary += step
                     count = 0
                     total = 0.0
                 count += 1
@@ -68,6 +75,9 @@ class Reader(object):
                 time_data.append((point['time'].isoformat(), point['value']))
         if count > 0:
             time_data.append((boundary.isoformat(), total / count))
+
+        logger.debug(raw_data)
+        logger.debug(time_data)
         return time_data
 
     def get_anomalies(self, metric, start=None, stop=None):

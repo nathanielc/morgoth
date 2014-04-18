@@ -177,7 +177,7 @@ class MGOF(Detector):
             w.anomalous = anomalous
             #logger.debug("Analyzed %s" % w)
 
-        return window
+        return window.anomalous, window
     def __repr__(self):
         return 'MGOF[n_bins:%d,normal_count:%d,chi2_percentage:%0.2f]' % (
                     self._n_bins,

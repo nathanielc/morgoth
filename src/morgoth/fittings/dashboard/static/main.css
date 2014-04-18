@@ -96,5 +96,9 @@ header {
 }
 
 #demo {
-  width: 800px;
+  width: 1000px;
+}
+
+#slider {
+  margin-left: 40px;
 }

@@ -40,7 +40,6 @@ fittings:
     port: 8001
   PullGraphite:
     - !include pull_graphite.yml
-    - !include pull_graphite_v2.yml
   Dashboard:
     port: 4000
 

@@ -79,9 +79,19 @@ class Writer(object):
             self._running.clear()
 
     def insert(self, dt_utc, metric, value):
+        """
+        Insert a data point for a given metric
+
+        @param dt_utc: the utc datetime of the data point
+        @param metric: the name of the metric
+        @param value: the value of the metric, must not be None
+        @raise ValueError of `value` is None
+        """
         if self._closing:
             logger.debug("Writer is closed")
             return
+        if value is None:
+            raise ValueError('value cannot be None')
         self._queue.put((dt_utc, metric, value))
         self._running.set()
 

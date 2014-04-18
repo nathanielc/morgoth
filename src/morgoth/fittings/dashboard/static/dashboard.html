@@ -4,146 +4,44 @@
         <meta charset="utf-8">
         <title>Morgoth View</title>
 
-        <!-- Import Cubism and its dependency D3 -->
+        <link type="text/css" rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css">
+        <link rel="stylesheet" type="text/css" href="/static/main.css">
+        <link rel="stylesheet" type="text/css" href="/static/rickshaw.min.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
         <script src="/static/d3.v3.min.js" charset="utf-8"></script>
         <script src="/static/cubism.v1.min.js"></script>
+        <script src="/static/rickshaw.js"></script>
+        <script src="/static/rickshaw.horizon.js"></script>
+        <script src="/static/dashboard.js"></script>
+<style>
+#chart_container {
+        position: relative;
+        font-family: Arial, Helvetica, sans-serif;
+}
+#chart {
+        position: relative;
+        left: 40px;
+}
+#y_axis {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+}
+</style>
 
-        <link rel="stylesheet" type="text/css" href="/static/main.css">
     </head>
     <body>
         <div id="demo"></div>
-
-        <script type="text/javascript">
-            var step_sec = 10;
-            var data_size = 800;
-            var data_start = new Date();
-            data_start.setSeconds(data_start.getSeconds() - (data_size * step_sec))
-
-            var context = cubism.context()
-                                .step(step_sec * 1e3) // Distance between data points in milliseconds
-                                .size(data_size); // Number of data points
-
-
-            d3.select("body").append("div") // Add a vertical rule
-              .attr("class", "rule")        // to the graph
-              .call(context.rule());
-
-            var metrics = [];
-            var last_updated = undefined;
-            var drawn_anomalies = {};
-
-            function metric_data(name) {
-                return context.metric(function(start, stop, step, callback) {
-                    d3.json("http://localhost:8001/data/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString() + '&step=' + step_sec + 's', function(rows) {
-                        values = [];
-                        for ( var i = 0; i < rows.data.length; i++) {
-                            values.push(rows.data[i][1]);
-                        }
-                        callback(null, values); });
-                }, name);
-            }
-
-            function metric_anmoalies(name) {
-                return context.metric(function(start, stop, step, callback) {
-                    d3.json("http://localhost:8001/anomalies/" + name + '?start=' + start.toISOString() + '&stop=' + stop.toISOString(), function(rows) {
-                        values = [];
-                        for ( var i = 0; i < rows.anomalies.length; i++) {
-                            values.push(rows.data[i]);
-                        }
-                        callback(null, values); });
-                }, name);
-            }
-
-
-
-            function draw_graph(metrics) {
-                d3.select("#demo")                 // Select the div on which we want to act
-                  .selectAll(".axis")              // This is a standard D3 mechanism to
-                  .data(["top"])                   // bind data to a graph. In this case
-                  .enter()                         // we're binding the axes "top" and "bottom".
-                  .append("div")                   // Create two divs and
-                  .attr("class", function(d) {     // give them the classes
-                    return d + " axis";            // top axis and bottom axis
-                  })                               // respectively
-                  .each(function(d) {              // For each of these axes,
-                    d3.select(this)                // draw the axes with 4 intervals
-                      .call(context.axis()         // and place them in their proper places
-                      .ticks(8).orient(d));
-                  });
-
-
-                d3.select("#demo")
-                  .selectAll(".horizon")
-                  .data(metrics.map(metric_data))
-                  .enter()
-                  .insert("div", ".bottom")        // Insert the graph in a div
-                  .attr("class", "horizon")        // Turn the div into
-                  .call(context.horizon()          // a horizon graph
-                  .format(d3.format("+,.1f")));    // Format the values to 2 floating-point decimals
-
-                context.on("focus", function(i) {
-                    d3.selectAll(".value").style("right",                  // Make the rule coincide
-                        i == null ? null : context.size() - i + "px"); // with the mouse
-                });
-
-                context.on("change", update_metric_anomalies);
-            }
-
-
-            function update_metric_anomalies(start, stop) {
-                setTimeout(function() {
-                    if (last_updated) {
-                        start = last_updated;
-                    }
-                    console.log('changed', stop)
-                    for (var i = 0; i < metrics.length; i++) {
-                        draw_metric_anomalies(i, metrics[i], start, stop);
-                    }
-                    last_updated = stop;
-                }, 5000);
-            }
-
-            function draw_metric_anomalies(i, metric, start, stop) {
-
-                var url = "http://localhost:8001/anomalies/"
-                            + metric
-                           + '?start='
-                           + start.toISOString()
-                           + "&stop="
-                           + stop.toISOString();
-
-                d3.json(url, function (anomalies) {
-                    var horizons = d3.select('#demo')
-                        .selectAll(".horizon")
-                        .select("canvas");
-                    var canvas = horizons[0][i];
-                    for (var j = 0; j < anomalies.anomalies.length; j++) {
-                        var anomaly = anomalies.anomalies[j];
-                        if (anomaly.id in drawn_anomalies) {
-                            continue;
-                        }
-                        drawn_anomalies[anomaly.id] = 1;
-                        console.log("drawing anomaly", anomaly);
-
-
-                        var ctx = canvas.getContext("2d");
-                        ctx.fillStyle = 'rgba(255, 255, 0, 0.4)';
-                        var px_start = ((new Date(anomaly.start) - data_start) / 1000) / step_sec;
-                        var px_length = (((new Date(anomaly.stop) - data_start) / 1000) / step_sec) - px_start;
-                        ctx.fillRect(px_start, 0, px_length, 30);
-                    }
-
-                });
-            }
-
-
-            d3.json("http://localhost:8001/metrics?pattern=.*", function(data) {
-                metrics = data.metrics
-                draw_graph(metrics);
-            });
-
-
-
-        </script>
+        <div id='metrics'></div>
+        <div id="chart_container">
+            <div id="y_axis"></div>
+            <div id="chart"></div>
+            <div id="slider"></div>
+            <div id="legend"></div>
+            <div id="smoother"></div>
+        </div>
     </body>
 </html>

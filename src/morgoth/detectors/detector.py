@@ -61,6 +61,8 @@ class Detector(object):
         @param metric: the name of the metric to analyze
         @param start: datetime - marks the start time to analyze
         @param end: datetime - marks the end time to analyze
-        @return window - a window object indicating whether it is anomalous
+        @return (bool, window) - a tuple with a bool indicating whether
+            the window is considered anomalous and a window object
+            with information about why each the detector labeled the window as it did
         """
         raise NotImplementedError("%s.is_anomalous is not implemented" % self.__class__.__name__)

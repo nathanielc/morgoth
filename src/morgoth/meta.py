@@ -107,11 +107,14 @@ class Meta(object):
 
     @classmethod
     def finish(cls):
+        """
+        Finish updating all metrics that still need updating
+        """
         if not cls._finishing:
             cls._finishing = True
-            for metric in cls._needs_updating:
+            while len(cls._needs_updating) > 0:
+                metric = cls._needs_updating.keys()[0]
                 cls._update(metric)
-            cls._needs_updating = {}
 
 
     @classmethod

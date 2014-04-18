@@ -29,16 +29,25 @@ logger = logging.getLogger(__name__)
 
 class PullGraphite(Fitting):
     """
-    Fitting to periodically pull data from a graphite install and store the data in morgoth
+    Fitting to periodically pull data from a graphite
+        install and store the data in morgoth
     """
     _date_format = "%H:%M_%Y%m%d"
-    def __init__(self, metric_pattern, graphite_url, period, user=None, password=None):
+    def __init__(self,
+            metric_pattern,
+            graphite_url,
+            period,
+            lag=timedelta(),
+            user=None,
+            password=None):
         """
         Initialize a pull graphite fitting
 
         @param metric_pattern: a graphite pattern for the metrics to pull
         @param graphite_url: the url of the graphite instance http://host[:port]
         @param period: timedelta object for how often the data should be pulled
+        @param lag: timedelta object for how much to lag from the current
+            time when requesting data
         @param user: username for basic http authentication
         @param password: password for basic http authentication
         """
@@ -46,6 +55,7 @@ class PullGraphite(Fitting):
         self._metric_pattern = metric_pattern
         self._graphite_url = graphite_url
         self._period = period
+        self._lag = lag
         self._user = user
         self._password = password
         self._schedule = Schedule(self._period, self._pull)
@@ -56,17 +66,20 @@ class PullGraphite(Fitting):
         metric_pattern = conf.get('metric_pattern', '*')
         graphite_url = conf.get('graphite_url', 'http://localhost')
         period = timedelta_from_str(conf.get('period', '5m'))
+        lag = timedelta_from_str(conf.get('lag', '1m'))
         user = conf.get('user', None)
         password = conf.get('password', None)
         return PullGraphite(
                 metric_pattern,
                 graphite_url,
                 period,
+                lag,
                 user,
                 password
             )
 
     def start(self):
+        logger.info("Starting pull graphite fitting")
         self._schedule.start_aligned()
 
     def stop(self):
@@ -76,49 +89,49 @@ class PullGraphite(Fitting):
         """
         Pull the next chunk of data from the graphite instance
         """
-        stop = now() - timedelta(hours=7)
+        stop = now() - self._lag
         start = stop - self._period
-        self._pull_metrics(self._metric_pattern, start, stop)
+        self._pull_data(self._metric_pattern, start, stop)
 
-    def _pull_metrics(self, metric, start, stop):
-        logger.debug('Pulling metrics for %s', metric)
-        request = urllib2.Request("%s/metrics/find?query=%s" % (self._graphite_url, metric))
-        self._add_auth(request)
-        children = json.load(urllib2.urlopen(request))
-        for child in children:
-            child_metric = child['id']
-            if child['leaf'] == 0:
-                self._pull_metrics("%s.*" % child_metric, start, stop)
-            else:
-                self._pull_data(child_metric, start, stop)
-        if not children:
-            self._pull_data(metric, start, stop)
+    def _pull_data(self, metric_target, start, stop):
+        """
+        Request the data from graphite and insert into morgoth
 
-    def _pull_data(self, metric, start, stop):
+        @param metric_target: the metric name or a pattern
+        @param start: the start time
+        @param stop: the stop time
+        """
         url = "%s/render?target=%s&format=json&from=%s&until=%s" % (
                 self._graphite_url,
-                metric,
+                metric_target,
                 start.strftime(self._date_format),
                 stop.strftime(self._date_format),
             )
-        logger.debug("Pulling data for %s:\n%s", metric, url)
+        logger.debug("Pulling data for %s: %s", metric_target, url)
         request = urllib2.Request(url)
         self._add_auth(request)
         data = json.load(urllib2.urlopen(request))
         if not data:
-            logger.warn("Could not find metric %s", metric)
+            logger.warn("Could not find metrics for target %s", metric_target)
         if not data:
             return
-        for value, timestamp in data[0]['datapoints']:
-            dt_utc = datetime.fromtimestamp(timestamp + 60*60, utc)
-            self._writer.insert(dt_utc, metric, value)
-
-
-
-
-
+        for dataset in data:
+            metric_name = dataset['target']
+            logger.debug("Inserting datapoints for %s", metric_name)
+            for value, timestamp in dataset['datapoints']:
+                if value is not None:
+                    dt_utc = datetime.fromtimestamp(timestamp, utc)
+                    self._writer.insert(dt_utc, metric_name, value)
 
     def _add_auth(self, request):
+        """
+        Add the authentication headers to a request
+
+        @param request: the request object
+        """
+        header = "Basic " + (
+            ('%s:%s' % (self._user, self._password)).encode('base64')
+        )
         if self._user and self._password:
-            request.add_header("Authorization", "Basic " + (('%s:%s' % (self._user, self._password)).encode('base64')))
+            request.add_header("Authorization", header)
 

@@ -36,9 +36,9 @@ class LogNotifier(Notifier):
         return LogNotifier()
 
 
-    def notify(self, window):
+    def notify(self, metric, windows):
         """
         Notify that the window is anomalous
         """
-        logger.info("Window: %s is anomalous" % window)
+        logger.info("Window: %s as determined by %s", metric, windows)
 

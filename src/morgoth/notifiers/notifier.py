@@ -38,12 +38,13 @@ class Notifier(object):
         return Notifier()
 
 
-    def notify(self, windows):
+    def notify(self, metric, windows):
         """
         Notify that the window is anomalous
 
-        @param windows: list of window objects from each detectors
+        @param metric: the metric that is considered anomalous
+        @param windows: list of window objects from each detector
             where the consensous is that the window is anomalous
         """
-        logger.info("Window: %s is anomalous" % windows)
+        raise NotImplementedError('%s.notify is not implemented' % (self.__class__.__name__))
 

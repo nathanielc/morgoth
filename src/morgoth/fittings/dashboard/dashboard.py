@@ -26,12 +26,14 @@ app = Flask(__name__)
 
 class Dashboard(Fitting):
     """
-    Dashboard fitting that provides a web front end to the metrics and anomalies in morgoth
+    Dashboard fitting that provides a web front end to the
+    metrics and anomalies in morgoth
     """
     def __init__(self, host, port):
         super(Dashboard, self).__init__()
         self._host = host
         self._port = port
+        self._server = None
 
 
     @classmethod
@@ -56,11 +58,17 @@ class Dashboard(Fitting):
 
 @app.route('/')
 def root():
+    """
+    Root for the Dashboard
+    """
     return app.send_static_file('dashboard.html')
 
 
 @app.route('/check_metric', methods=['GET', 'POST'])
-def form():
+def check_metric():
+    """
+    HTML Form for submitting a single check for anomalies on a metric
+    """
     form = CheckMetric(request.form)
     if request.method == 'POST':
         return redirect('/check_metric')

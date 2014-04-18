@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 class MetricManager(object):
     """
     Manages all the activity around metrics
-    An instance of this class will be created for each entry in the 'metrics' section of the config
+    An instance of this class will be created for each
+    entry in the 'metrics' section of the config
     """
     def __init__(self, pattern, conf):
         """
@@ -45,7 +46,7 @@ class MetricManager(object):
         d_loader = morgoth.detectors.get_loader()
         detectors = conf.get('detectors', {})
         if not detectors:
-            logger.warn('No Detectors defined for metric pattern "%s"' % pattern)
+            logger.warn('No Detectors defined for metric pattern "%s"', pattern)
         else:
             self._detectors = d_loader.load(detectors)
 
@@ -53,9 +54,9 @@ class MetricManager(object):
         n_loader = morgoth.notifiers.get_loader()
         notifiers = conf.get('notifiers', {})
         if not notifiers:
-            logger.warn('No Notifiers defined for metric pattern "%s"' % pattern)
+            logger.warn('No Notifiers defined for metric pattern "%s"', pattern)
         else:
-            self._notifiers = d_loader.load(notifiers)
+            self._notifiers = n_loader.load(notifiers)
 
         # Load schedule
         schedule = conf.get('schedule', None)
@@ -65,7 +66,11 @@ class MetricManager(object):
             self._delay = timedelta_from_str(schedule.delay)
             self._aligned = schedule.get('aligned', True)
 
-            self._schedule = Schedule(self._period, self._check_metrics, self._delay)
+            self._schedule = Schedule(
+                self._period,
+                self._check_metrics,
+                self._delay
+            )
         else:
             self._schedule = None
 
@@ -86,11 +91,11 @@ class MetricManager(object):
         """
         if not self._started and self._schedule:
             logger.debug(
-                    "Starting MetricManager %s with detectors %s and notifiers %s",
-                    self._pattern,
-                    self._detectors,
-                    self._notifiers,
-                )
+                "Starting MetricManager %s with detectors %s and notifiers %s",
+                self._pattern,
+                self._detectors,
+                self._notifiers,
+            )
             self._started = True
             if self._aligned:
                 self._schedule.start_aligned()
@@ -98,14 +103,14 @@ class MetricManager(object):
                 self._schedule.start()
 
     def _check_metrics(self):
-       """
-       Handle the next check
-       """
-       stop = now() - self._delay
-       start = stop - self._duration
-       logger.debug("Checking metrics for next window %s:%s", start, stop)
-       for metric in self._metrics:
-           gevent.spawn(self._check_window, metric, start, stop)
+        """
+        Handle the next check
+        """
+        stop = now() - self._delay
+        start = stop - self._duration
+        logger.debug("Checking metrics for next window %s:%s", start, stop)
+        for metric in self._metrics:
+            gevent.spawn(self._check_window, metric, start, stop)
 
     def _check_window(self, metric, start, stop):
         """
@@ -118,15 +123,14 @@ class MetricManager(object):
         votes = 0.0
         windows = []
         for detector in self._detectors:
-            window = detector.is_anomalous(metric, start, stop)
-            if window.anomalous:
+            anomalous, window = detector.is_anomalous(metric, start, stop)
+            if anomalous:
                 votes += 1
-            windows.appstop(window)
+            windows.append(window)
 
         if votes / len(self._detectors) > self._consensus:
-            Meta.notify_anomalous(metric, start, stop)
             for notifier in self._notifiers:
-                notifier.notify(windows)
+                notifier.notify(metric, windows)
 
 
 
@@ -135,7 +139,9 @@ class NullMetricManager(MetricManager):
     A noop implementation of the MetricManager
     """
     def __init__(self):
-        pass
+        """
+        Not calling parent intentionally
+        """
     def start(self):
         pass
     def add_metric(self, metric):
