@@ -55,9 +55,7 @@ class PullGraphite(Fitting):
         @param offset: the UTC offset to use when requesting data from graphite. see param tz
         @param tz: tz string that can be passed to dateutil.tz.gettz to
             find a time zone of the graphite server.
-
             NOTE: the tz conf takes precedence over the offset param
-
         @param user: username for basic http authentication
         @param password: password for basic http authentication
         """
