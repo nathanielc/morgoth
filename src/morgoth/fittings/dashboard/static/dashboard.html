@@ -5,8 +5,8 @@
         <title>Morgoth View</title>
 
         <link type="text/css" rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css">
-        <link rel="stylesheet" type="text/css" href="/static/main.css">
         <link rel="stylesheet" type="text/css" href="/static/rickshaw.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/main.css">
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
@@ -34,14 +34,33 @@
 
     </head>
     <body>
-        <div id="demo"></div>
-        <div id='metrics'></div>
+        <div id='controls'>
+            <div>
+                <h2>Metrics</h2>
+                <input type='text' id='metric_pattern' value='.*'/>
+                <div id="legend"></div>
+            </div>
+            <div>
+                <h2>Smoothing</h2>
+                <div id="smoother"></div>
+            </div>
+            <div>
+                <h2>Time</h2>
+                <p>
+                    <label for='start_date'>Start:</label>
+                    <input type='text' id='start_date' class='datepicker'/>
+                </p>
+                <p>
+                    <label for='stop_date'>Stop:</label>
+                    <input type='text' id='stop_date' class='datepicker'/>
+                </p>
+            </div>
+        </div>
         <div id="chart_container">
             <div id="y_axis"></div>
             <div id="chart"></div>
             <div id="slider"></div>
-            <div id="legend"></div>
-            <div id="smoother"></div>
         </div>
+        <div class='clear'></div>
     </body>
 </html>
