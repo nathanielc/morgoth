@@ -76,8 +76,6 @@ class Reader(object):
         if count > 0:
             time_data.append((boundary.isoformat(), total / count))
 
-        logger.debug(raw_data)
-        logger.debug(time_data)
         return time_data
 
     def get_anomalies(self, metric, start=None, stop=None):

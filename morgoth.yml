@@ -24,6 +24,9 @@ metrics:
             - {offset: 3w, range: 1d, interval: 5m}
             - {offset: 4w, range: 1d, interval: 5m}
             - {offset: 1y, range: 1d, interval: 5m}
+      Threshold:
+        threshold: 5000
+        percentile: 70
     # Turkey:
     #    param1: 0.56
     #notifiers:
