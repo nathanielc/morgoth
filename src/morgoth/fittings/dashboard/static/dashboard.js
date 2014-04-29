@@ -2,6 +2,7 @@
 function Metrics() {
     this.series = [];
     this.graph = undefined;
+    this.requests = [];
 }
 
 Metrics.prototype.draw = function () {
@@ -9,16 +10,30 @@ Metrics.prototype.draw = function () {
     var that = this;
     var series = this.series;
 
-    var num_points = 1000;
-    var start = new Date('2014-03-29T00:00');
-    var stop = new Date('2014-03-29T01:00');
+    var num_points = 250;
+    var start = new Date();
+    var start_date = $('#start_date').val();
+    if (start_date) {
+        start = new Date(start_date);
+    }
+    else {
+        start.setDate(start.getDate() - 1);
+    }
+
+    var stop = new Date();
+    var stop_date = $('#stop_date').val();
+    if (stop_date) {
+        stop = new Date(stop_date);
+    }
+
     var step = ((stop.getTime() - start.getTime()) / 1000 ) / num_points;
 
-    var metric_pattern = 'qualtrics.cp.*';
+
+    var metric_pattern = $('#metric_pattern').val();
 
     var palette = new Rickshaw.Color.Palette();
 
-    d3.json("http://localhost:8001/metrics?pattern=" + metric_pattern, function(data) {
+    that.json("http://localhost:8001/metrics?pattern=" + metric_pattern, function(data) {
         metrics = data.metrics
         metrics.forEach(function(metric, index) {
             var url = "http://localhost:8001/data/"
@@ -26,7 +41,7 @@ Metrics.prototype.draw = function () {
                     + '?start=' + start.toString()
                     + '&stop=' + stop.toString()
                     + '&step=' + step + 's';
-            d3.json(url, function(rows) {
+            that.json(url, function(rows) {
                 var data = [];
                 if (rows.data.length > 0) {
                     rows.data.forEach(function(r) {
@@ -46,13 +61,25 @@ Metrics.prototype.draw = function () {
     });
 }
 
+Metrics.prototype.redraw = function () {
+    $('#legend').empty();
+    $('#chart_container').html(
+        '<div id="y_axis"></div><div id="chart"></div><div id="slider"></div>'
+    );
+    this.series = [];
+    this.graph = undefined;
+    this.abort_all();
+    this.draw();
+}
+
 Metrics.prototype.update = function() {
+
     if (this.graph == undefined) {
         this._init_graph();
     }
     var graph = this.graph;
     graph.update();
-    $('#legend').empty();
+    $('#legend').empty().css('height', '');
     var legend = new Rickshaw.Graph.Legend( {
         graph: graph,
         element: document.getElementById('legend')
@@ -78,14 +105,13 @@ Metrics.prototype.update = function() {
 Metrics.prototype._init_graph = function() {
 
     var series = this.series;
-    //Rickshaw.Series.fill(series, null);
     var graph = new Rickshaw.Graph( {
                 element: document.querySelector("#chart"),
                 width: 1000,
-                height: 50,
-                renderer: 'horizon',
+                height: 500,
+                renderer: 'line',
+                interpolation: 'linear',
                 series: series,
-                interpolation: 'step-after',
     } );
     this.graph = graph;
 
@@ -117,11 +143,31 @@ Metrics.prototype._init_graph = function() {
     });
 
     previewXAxis.render();
+
+    $('input.datepicker')
+        .datepicker()
+        .change(function () {
+            window.Metrics.redraw();
+        });
+
+    $('#metric_pattern').change(function () { window.Metrics.redraw(); });
+}
+
+Metrics.prototype.json = function() {
+    this.requests.push(d3.json.apply(null, arguments));
+}
+
+Metrics.prototype.abort_all = function () {
+    this.requests.forEach(function (request) {
+        request.abort();
+    });
+    this.requests = [];
 }
 
 
+
 function draw() {
-    var metrics = new Metrics();
-    metrics.draw();
+    window.Metrics = new Metrics();
+    window.Metrics.draw();
 }
 $(document).ready(draw);

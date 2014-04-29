@@ -37,6 +37,7 @@ class PullGraphite(Fitting):
             metric_pattern,
             graphite_url,
             period,
+            metric_format,
             lag=timedelta(),
             user=None,
             password=None):
@@ -46,6 +47,7 @@ class PullGraphite(Fitting):
         @param metric_pattern: a graphite pattern for the metrics to pull
         @param graphite_url: the url of the graphite instance http://host[:port]
         @param period: timedelta object for how often the data should be pulled
+        @param metric_format: python format string to reformat the metric name. Must have exactly one '%s' option
         @param lag: timedelta object for how much to lag from the current
             time when requesting data
         @param user: username for basic http authentication
@@ -55,6 +57,7 @@ class PullGraphite(Fitting):
         self._metric_pattern = metric_pattern
         self._graphite_url = graphite_url
         self._period = period
+        self._metric_format = metric_format
         self._lag = lag
         self._user = user
         self._password = password
@@ -66,6 +69,7 @@ class PullGraphite(Fitting):
         metric_pattern = conf.get('metric_pattern', '*')
         graphite_url = conf.get('graphite_url', 'http://localhost')
         period = timedelta_from_str(conf.get('period', '5m'))
+        metric_format = conf.get('metric_format', '%s')
         lag = timedelta_from_str(conf.get('lag', '1m'))
         user = conf.get('user', None)
         password = conf.get('password', None)
@@ -73,6 +77,7 @@ class PullGraphite(Fitting):
                 metric_pattern,
                 graphite_url,
                 period,
+                metric_format,
                 lag,
                 user,
                 password
@@ -116,7 +121,7 @@ class PullGraphite(Fitting):
         if not data:
             return
         for dataset in data:
-            metric_name = dataset['target']
+            metric_name = self._metric_format % dataset['target']
             logger.debug("Inserting datapoints for %s", metric_name)
             for value, timestamp in dataset['datapoints']:
                 if value is not None:

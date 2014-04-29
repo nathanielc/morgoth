@@ -1,8 +1,5 @@
 body {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
-  margin: 30px auto;
-  width: 1280px;
-  position: relative;
 }
 
 header {
@@ -101,4 +98,35 @@ header {
 
 #slider {
   margin-left: 40px;
+}
+
+
+#controls {
+    float: left;
+}
+
+#legend {
+    margin: 20px;
+    display: block;
+}
+
+#smoother {
+    width: 200px;
+    margin: 20px;
+}
+
+#chart_container {
+    float: left;
+    margin: 50px;
+}
+
+
+.clear {
+    clear: both;
+}
+
+.rickshaw_graph .x_tick .title {
+    opacity: 1;
+    font-weight: bold;
+    font-size: 14px;
 }
