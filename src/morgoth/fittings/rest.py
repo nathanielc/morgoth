@@ -139,7 +139,9 @@ def metric_data(metric):
     step = None
     if 'start' in request.args:
         try:
+            logger.debug(request.args['start'])
             start = dateutil.parser.parse(request.args['start'])
+            logger.debug(repr(start))
         except Exception as e:
             return jsonify({
                 'error' : 'invalid start date format: %s' % str(e)
@@ -148,6 +150,7 @@ def metric_data(metric):
     if 'stop' in request.args:
         try:
             stop = dateutil.parser.parse(request.args['stop'])
+            logger.debug(stop)
         except Exception as e:
             return jsonify({
                 'error' : 'invalid stop date format: %s' % str(e)

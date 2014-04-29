@@ -123,10 +123,13 @@ class MetricManager(object):
         votes = 0.0
         windows = []
         for detector in self._detectors:
-            anomalous, window = detector.is_anomalous(metric, start, stop)
-            if anomalous:
-                votes += 1
-            windows.append(window)
+            try:
+                anomalous, window = detector.is_anomalous(metric, start, stop)
+                if anomalous:
+                    votes += 1
+                windows.append(window)
+            except Exception as e:
+                logger.exception(e)
 
         if votes / len(self._detectors) > self._consensus:
             for notifier in self._notifiers:

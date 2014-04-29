@@ -115,7 +115,10 @@ Metrics.prototype._init_graph = function() {
     } );
     this.graph = graph;
 
-    var x_axis = new Rickshaw.Graph.Axis.Time( { graph: graph } );
+    var x_axis = new Rickshaw.Graph.Axis.Time( {
+        graph: graph,
+        timeFixture: new Rickshaw.Fixtures.Time.Local(),
+    } );
 
     var y_axis = new Rickshaw.Graph.Axis.Y( {
             graph: graph,

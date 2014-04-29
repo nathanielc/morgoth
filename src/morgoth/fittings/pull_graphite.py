@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-
+from dateutil.tz import tzoffset, gettz
 from datetime import timedelta, datetime
 from morgoth.utc import now, utc
 from morgoth.data.writer import Writer
@@ -39,6 +39,8 @@ class PullGraphite(Fitting):
             period,
             metric_format,
             lag=timedelta(),
+            offset=0,
+            tz=None,
             user=None,
             password=None):
         """
@@ -50,6 +52,12 @@ class PullGraphite(Fitting):
         @param metric_format: python format string to reformat the metric name. Must have exactly one '%s' option
         @param lag: timedelta object for how much to lag from the current
             time when requesting data
+        @param offset: the UTC offset to use when requesting data from graphite. see param tz
+        @param tz: tz string that can be passed to dateutil.tz.gettz to
+            find a time zone of the graphite server.
+
+            NOTE: the tz conf takes precedence over the offset param
+
         @param user: username for basic http authentication
         @param password: password for basic http authentication
         """
@@ -59,6 +67,10 @@ class PullGraphite(Fitting):
         self._period = period
         self._metric_format = metric_format
         self._lag = lag
+        if tz is None:
+            self._tz_offset = tzoffset(None, offset)
+        else:
+            self._tz_offset = gettz(tz)
         self._user = user
         self._password = password
         self._schedule = Schedule(self._period, self._pull)
@@ -71,6 +83,8 @@ class PullGraphite(Fitting):
         period = timedelta_from_str(conf.get('period', '5m'))
         metric_format = conf.get('metric_format', '%s')
         lag = timedelta_from_str(conf.get('lag', '1m'))
+        offset = timedelta_from_str(conf.get('offset', '0m'))
+        tz = conf.get('tz', None)
         user = conf.get('user', None)
         password = conf.get('password', None)
         return PullGraphite(
@@ -79,6 +93,8 @@ class PullGraphite(Fitting):
                 period,
                 metric_format,
                 lag,
+                offset.total_seconds(),
+                tz,
                 user,
                 password
             )
@@ -106,11 +122,14 @@ class PullGraphite(Fitting):
         @param start: the start time
         @param stop: the stop time
         """
+        g_start = start.astimezone(self._tz_offset)
+        g_stop = stop.astimezone(self._tz_offset)
+
         url = "%s/render?target=%s&format=json&from=%s&until=%s" % (
                 self._graphite_url,
                 metric_target,
-                start.strftime(self._date_format),
-                stop.strftime(self._date_format),
+                g_start.strftime(self._date_format),
+                g_stop.strftime(self._date_format),
             )
         logger.debug("Pulling data for %s: %s", metric_target, url)
         request = urllib2.Request(url)

@@ -144,7 +144,7 @@ class MGOF(Detector):
                 #Skip the window, too small
                 #logger.debug("Skipped %s %d" % (w, count))
                 if not w.trainer:
-                    logger.warn("Skipped non training window %s. Number of data points in window is less than number of bins." % w)
+                    logger.warn("Skipped non training window %s. Number of data points %d in window is less than number of bins.", w, count)
                 continue
             if m == 0:
                 prob_distrs.append(p)

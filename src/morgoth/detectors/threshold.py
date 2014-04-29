@@ -19,7 +19,10 @@ Simple detector that marks the window as anomalous if the data crosses
 a given threshold
 """
 
+from morgoth.data.reader import Reader
 from morgoth.detectors.detector import Detector
+from morgoth.window import Window
+
 import numpy
 
 
@@ -46,6 +49,7 @@ class Threshold(Detector):
         """
         self._threshold = threshold
         self._percentile = percentile
+        self._reader = Reader()
 
 
     @classmethod
@@ -64,11 +68,17 @@ class Threshold(Detector):
         """
         Check the data against the threshold
         """
-        percentile = numpy.percentile(reader.get_data(metric, start, stop), self._percentile)
-
         window = Window(metric, start, stop)
+        data = self._reader.get_data(metric, start, stop)
+        if not data:
+            logger.warn('Found 0 datapoints for metric %s in %s', metric, window)
+            window.anomalous = False
+            return window.anomalous, window
+        percentile = numpy.percentile(numpy.array(data), self._percentile)
+        logger.debug('%dth percentile for %s is "%f"' , self._percentile, metric, percentile)
+
         window.anomalous = percentile > self._threshold
-        return window
+        return window.anomalous, window
 
     def __repr__(self):
         return 'Threshold[threshold=%f,percentile=%d]' % (
