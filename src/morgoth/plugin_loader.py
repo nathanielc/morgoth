@@ -100,7 +100,12 @@ class PluginLoader(object):
                 if os.path.isdir(path) and depth > 0:
 
                     #Find package
-                    found_pkg = imp.find_module(entry, [search_dir])
+                    found_pkg = None
+                    try:
+                        found_pkg = imp.find_module(entry, [search_dir])
+                    except ImportError:
+                        pass
+
                     if not found_pkg:
                         continue
 

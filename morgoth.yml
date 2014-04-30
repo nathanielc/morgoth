@@ -29,8 +29,9 @@ metrics:
         percentile: 70
     # Turkey:
     #    param1: 0.56
-    #notifiers:
-    #  LogNotifier:
+    notifiers:
+      EmailNotifier:
+        - !include email.yml
     schedule:
       duration: 5m
       period: 5m
@@ -42,10 +43,10 @@ fittings:
   Rest:
     port: 8001
   PullGraphite:
-    - !include ut1_graphite.yml
-    - !include co1_graphite.yml
-    - !include az1_graphite.yml
-    - !include eu1_graphite.yml
+    #- !include ut1_graphite.yml
+    #- !include co1_graphite.yml
+    #- !include az1_graphite.yml
+    #- !include eu1_graphite.yml
     - !include ap1_graphite.yml
   Dashboard:
     port: 4000
