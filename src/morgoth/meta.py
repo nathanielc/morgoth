@@ -59,8 +59,9 @@ class Meta(object):
         )
 
         # Load managers from conf
-        for pattern, conf in config.metrics.items():
-            cls._managers[pattern] = MetricManager(pattern, conf)
+        for metric_set  in config.metrics:
+            for pattern, conf in metric_set.items():
+                cls._managers[pattern] = MetricManager(pattern, conf)
 
         # Load metrics from database
         for meta in cls._db.meta.find():
@@ -117,21 +118,6 @@ class Meta(object):
                 cls._update(metric)
 
 
-    @classmethod
-    def record_anomalous(cls, metric, start, stop):
-        """
-        Record that a given metric is anomalous for the given window
-
-        @param metric: the name of the metric
-        @param start: the start time of the anomalous window
-        @param stop: the stop time of the anomalous window
-        """
-        # Add the anomaly to the db
-        cls._db.anomalies.insert({
-            'metric' : metric,
-            'start' : start,
-            'stop' : stop,
-        })
 
     @classmethod
     def flush(cls):
@@ -218,7 +204,7 @@ class Meta(object):
 
     @classmethod
     def delete_metric(cls, metric):
-        logger.debug('Deleting metric %s', metric)
+        logger.info('Deleting metric %s', metric)
         cls._db.metrics.remove({'metric' : metric})
         cls._db.windows.remove({'value.metric' : metric})
         cls._db.meta.remove({'_id' : metric})

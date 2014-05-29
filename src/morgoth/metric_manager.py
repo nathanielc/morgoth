@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from morgoth.data.mongo_clients import MongoClients
 from morgoth.schedule import Schedule
 from morgoth.utils import timedelta_from_str
 from morgoth.utc import now
@@ -25,6 +26,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class MetricManager(object):
+    _db = MongoClients.Normal.morgoth
     """
     Manages all the activity around metrics
     An instance of this class will be created for each
@@ -134,7 +136,22 @@ class MetricManager(object):
         if votes / len(self._detectors) > self._consensus:
             for notifier in self._notifiers:
                 notifier.notify(metric, windows)
+            self._record_anomalous(metric, start, stop)
 
+    def _record_anomalous(self, metric, start, stop):
+        """
+        Record that a given metric is anomalous for the given window
+
+        @param metric: the name of the metric
+        @param start: the start time of the anomalous window
+        @param stop: the stop time of the anomalous window
+        """
+        # Add the anomaly to the db
+        self._db.anomalies.insert({
+            'metric' : metric,
+            'start' : start,
+            'stop' : stop,
+        })
 
 
 class NullMetricManager(MetricManager):

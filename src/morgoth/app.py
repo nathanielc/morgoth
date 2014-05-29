@@ -35,47 +35,6 @@ class App(object):
         self._fittings = []
         self._config = config
 
-    def _initialize_db(self):
-        from morgoth.data.mongo_clients import MongoClients
-        from pymongo.errors import OperationFailure
-        from pymongo import HASHED
-
-        db_name = self._config.get(['mongo', 'database_name'], 'morgoth')
-        use_sharding = self._config.get(['mongo', 'use_sharding'], True)
-
-        conn = MongoClients.Normal
-
-        if use_sharding:
-            try:
-                conn.admin.command('enableSharding', db_name)
-            except OperationFailure as e:
-                if not e.message.endswith('already enabled'):
-                    self._logger.error(
-                        'Error: sharding enabled for morgoth but unable to enable sharding on mongo. See use_sharding config'
-                    )
-                    raise e
-
-        cols = [
-            ('meta', [('_id', HASHED)]),
-            ('metrics', [('metric', 1), ('time', 1)]),
-            ('windows', [('metric', 1), ('ad', 1)])
-        ]
-
-        for col, key in cols:
-            try:
-                conn[db_name][col].ensure_index(key)
-                if use_sharding:
-                    conn.admin.command(
-                        'shardCollection',
-                        '%s.%s' % (db_name, col),
-                        key=key)
-            except OperationFailure as e:
-                if not e.message.endswith('already sharded'):
-                    self._logger.error(
-                        'Error: sharding enabled for morgoth but unable to shard %s collection. See use_sharding config',
-                        col,
-                    )
-                    raise e
 
     def handler(self):
         self._finish_event.clear()
@@ -90,26 +49,21 @@ class App(object):
             import logging
             self._logger = logging.getLogger(__name__)
 
-            self._initialize_db()
 
             # Setup signal handlers
             import signal
             gevent.signal(signal.SIGINT, self.handler)
 
-            # Configure Writer defaults
-            from morgoth.data.writer import Writer
-            Writer.configure_defaults(self._config)
-
+            # Setup data engine
+            from morgoth.data import load_data_engine
+            engine = load_data_engine(self._config)
+            engine.initialize()
 
             # Configure detectors and notifiers
             from morgoth.detectors import configure_detectors
             from morgoth.notifiers import configure_notifiers
             configure_detectors(self._config)
             configure_notifiers(self._config)
-
-            # Initialize the meta data
-            from morgoth.meta import Meta
-            Meta.load(self._config)
 
             # Start fittings
             from morgoth.fittings import load_fittings
@@ -130,6 +84,7 @@ class App(object):
         except Exception as e:
             self._logger.critical('Error launching morgoth')
             self._logger.exception(e)
+
 
 
 def main(config_path):

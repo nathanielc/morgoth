@@ -6,6 +6,7 @@
 
         <link type="text/css" rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css">
         <link rel="stylesheet" type="text/css" href="/static/rickshaw.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/jquery-ui-timepicker-addon.min.css">
         <link rel="stylesheet" type="text/css" href="/static/main.css">
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
@@ -15,22 +16,7 @@
         <script src="/static/rickshaw.js"></script>
         <script src="/static/rickshaw.horizon.js"></script>
         <script src="/static/dashboard.js"></script>
-<style>
-#chart_container {
-        position: relative;
-        font-family: Arial, Helvetica, sans-serif;
-}
-#chart {
-        position: relative;
-        left: 40px;
-}
-#y_axis {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 40px;
-}
-</style>
+        <script src="/static/jquery-ui-timepicker-addon.min.js"></script>
 
     </head>
     <body>
@@ -62,6 +48,7 @@
         <div id="chart_container">
             <div id="y_axis"></div>
             <div id="chart"></div>
+            <div id="annotations"></div>
             <div id="slider"></div>
         </div>
         <div class='clear'></div>

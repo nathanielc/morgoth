@@ -34,7 +34,7 @@ class MGOFWindow(Window):
     finalize = None
 
     def __init__(self, metric,  start, stop, n_bins, trainer=False):
-        super(MGOFWindow, self).__init__(metric, start, stop)
+        super(MGOFWindow, self).__init__(metric, start, stop, 'MGOF')
         self._n_bins = n_bins
         self._trainer = trainer
         self._prob_dist = None

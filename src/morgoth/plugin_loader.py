@@ -45,7 +45,7 @@ class PluginLoader(object):
 
     def load(self, plugins_conf):
         """
-        Parses conf and loads discovered plugins into the `container`
+        Parses conf and loads discovered plugins
 
         @param plugins_conf: list of Config objects
             plugins_conf must be dictionary config where each value is either

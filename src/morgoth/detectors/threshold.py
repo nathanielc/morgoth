@@ -68,7 +68,7 @@ class Threshold(Detector):
         """
         Check the data against the threshold
         """
-        window = Window(metric, start, stop)
+        window = Window(metric, start, stop, self.__class__.__name__)
         data = [ d[1] for d in self._reader.get_data(metric, start, stop)]
         if not data:
             logger.warn('Found 0 datapoints for metric %s in %s', metric, window)

@@ -33,15 +33,17 @@ Metrics.prototype.draw = function () {
 
     var palette = new Rickshaw.Color.Palette();
 
-    that.json("http://localhost:8001/metrics?pattern=" + metric_pattern, function(data) {
+    var host = '10.1.50.42';
+
+    that.json("http://" + host + ":8001/metrics?pattern=" + metric_pattern, function(data) {
         metrics = data.metrics
         metrics.forEach(function(metric, index) {
-            var url = "http://localhost:8001/data/"
+            var data_url = "http://" + host + ":8001/data/"
                     + metric
                     + '?start=' + start.toString()
                     + '&stop=' + stop.toString()
                     + '&step=' + step + 's';
-            that.json(url, function(rows) {
+            that.json(data_url, function(rows) {
                 var data = [];
                 if (rows.data.length > 0) {
                     rows.data.forEach(function(r) {
@@ -57,6 +59,19 @@ Metrics.prototype.draw = function () {
                     console.log('no data received for ' + metric);
                 }
             });
+            var anomalies_url = "http://" + host + ":8001/anomalies/"
+                    + metric
+                    + '?start=' + start.toString()
+                    + '&stop=' + stop.toString()
+            that.json(anomalies_url, function (rows) {
+
+                rows.anomalies.forEach(function (r) {
+                    var r_start = new Date(r.start);
+                    var r_stop = new Date(r.stop);
+                    var duration = (r_stop.getTime() - r_start.getTime())/ 1000;
+                    that.annotate(r_start.getTime() / 1000, metric + ' -- ' + duration + 's');
+                });
+            });
         });
     });
 }
@@ -64,10 +79,11 @@ Metrics.prototype.draw = function () {
 Metrics.prototype.redraw = function () {
     $('#legend').empty();
     $('#chart_container').html(
-        '<div id="y_axis"></div><div id="chart"></div><div id="slider"></div>'
+        '<div id="y_axis"></div><div id="chart"></div><div id="annotations"></div><div id="slider"></div>'
     );
     this.series = [];
     this.graph = undefined;
+    this.annotator = undefined;
     this.abort_all();
     this.draw();
 }
@@ -79,6 +95,10 @@ Metrics.prototype.update = function() {
     }
     var graph = this.graph;
     graph.update();
+
+    this.annotator.update();
+
+
     $('#legend').empty().css('height', '');
     var legend = new Rickshaw.Graph.Legend( {
         graph: graph,
@@ -101,6 +121,18 @@ Metrics.prototype.update = function() {
         legend: legend
     } );
 }
+
+Metrics.prototype.annotate = function(date, msg) {
+
+    if (this.graph == undefined) {
+        this._init_graph();
+    }
+
+    this.annotator.add(date, msg);
+    this.annotator.update();
+}
+
+
 
 Metrics.prototype._init_graph = function() {
 
@@ -130,6 +162,12 @@ Metrics.prototype._init_graph = function() {
 
     graph.render();
 
+
+    this.annotator = new Rickshaw.Graph.Annotate({
+        graph: graph,
+        element: document.getElementById('annotations'),
+    });
+
     var smoother = new Rickshaw.Graph.Smoother( {
         graph: graph,
         element: $('#smoother')
@@ -148,9 +186,14 @@ Metrics.prototype._init_graph = function() {
     previewXAxis.render();
 
     $('input.datepicker')
-        .datepicker()
+        .datetimepicker()
         .change(function () {
-            window.Metrics.redraw();
+            if (window.Metrics.redraw_timeout) {
+                clearTimeout(window.Metrics.redraw_timeout);
+            }
+            window.Metrics.redraw_timeout = setTimeout(function() {
+                window.Metrics.redraw();
+            },1000);
         });
 
     $('#metric_pattern').change(function () { window.Metrics.redraw(); });

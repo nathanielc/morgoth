@@ -62,8 +62,8 @@ class EmailNotifier(Notifier):
         """
         toaddrs = conf.toaddrs.split(',')
         fromaddr = conf.fromaddr
-        host = conf.host
-        port = int(conf.port)
+        host = conf.get('host', 'localhost')
+        port = int(conf.get('port', 25))
         tls = bool(conf.get('tls', False))
         username = conf.get('username', None)
         password = conf.get('password', None)

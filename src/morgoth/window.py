@@ -24,13 +24,14 @@ class Window(object):
     Represents a window in data for a given metric
     """
 
-    def __init__(self, metric,  start, stop):
+    def __init__(self, metric,  start, stop, detector_name=None):
         self._db = MongoClients.Normal.morgoth
         self._metric = metric
         self._start = start
         self._stop = stop
         self._id = None
         self._anomalous = None
+        self._detector_name = detector_name
 
     @property
     def metric(self):
@@ -79,9 +80,10 @@ class Window(object):
         return self.__str__()
 
     def __str__(self):
-        return "{Window[%s|%s|%s|anomalous:%s]}" % (
+        return "{Window[%s|%s|%s|anomalous:%s|detector:%s]}" % (
                 self._metric,
                 self._start,
                 self._stop,
                 self.anomalous,
+                self._detector_name
             )

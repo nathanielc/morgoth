@@ -30,16 +30,6 @@ class Writer(object):
     def __init__(self):
         pass
 
-    @classmethod
-    def configure_defaults(cls, config):
-        """
-        Configure the default writer options
-
-        @param config: the app configuration object
-        @type config: morgoth.config.Config
-        """
-        pass
-
     def insert(self, dt_utc, metric, value):
         """
         Insert a data point for a given metric
@@ -104,9 +94,17 @@ class DefaultWriter(Writer):
             gevent.spawn(self._worker)
 
     @classmethod
-    def configure_defaults(cls, config):
-        cls._max_size = config.get(['writer', 'queue', 'max_size'], cls._max_size)
-        cls._worker_count = config.get(['writer', 'queue', 'worker_count'], cls._worker_count)
+    def get_options(cls, config):
+        """
+        Read writer conf and return dict of options for creating DefaultWriter
+        The options dict can later be passed as key word args to the DefaultWriter constructor
+        """
+        options = {}
+        if config:
+            options['max_size'] = config.get(['writer', 'queue', 'max_size'], cls._max_size)
+            options['worker_count'] = config.get(['writer', 'queue', 'worker_count'], cls._worker_count)
+        return options
+
 
     def _worker(self):
         """
@@ -121,12 +119,6 @@ class DefaultWriter(Writer):
                     self._flush()
                     self._flushed.set()
                     continue
-                col = self._db.metrics
-                col.insert({
-                    'time' : dt_utc,
-                    'value' : value,
-                    'metric' : metric}
-                )
                 self._insert(metric, value)
                 self._queue.task_done()
             self._running.clear()

@@ -24,7 +24,6 @@ class Reader(object):
     """
     Class that provides read access to the metric data and anomalies
     """
-    def __init__(self):
 
     def get_metrics(self, pattern=None):
         pass

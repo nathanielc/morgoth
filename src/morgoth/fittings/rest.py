@@ -24,6 +24,7 @@ import dateutil.parser
 from morgoth.config import Config
 from morgoth.fittings.fitting import Fitting
 from morgoth.data.reader import Reader
+from morgoth.data.writer import Writer
 from morgoth.detectors import get_loader
 from morgoth.utils import timedelta_from_str
 
@@ -78,6 +79,7 @@ def parse_arg(arg, msg, parse, *args, **kwargs):
 
 
 reader = Reader()
+writer = Writer()
 
 
 
@@ -165,6 +167,17 @@ def metric_data(metric):
         'metric' : metric,
         'data': reader.get_data(metric, start, stop, step)
     })
+
+@app.route('/delete/<metric>', methods=['DELETE'])
+@crossdomain(origin='*')
+def delete_metric(metric):
+    writer.delete_metric(metric)
+    return jsonify({
+        'metric' : metric,
+        'deleted' : 'Success',
+    })
+
+
 
 @app.route('/anomalies/<metric>')
 @crossdomain(origin='*')

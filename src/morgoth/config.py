@@ -127,6 +127,7 @@ class Loader(yaml.Loader):
     """
     yaml.Loader that allows for relative includes of other yaml files
     """
+    extensions = ['.yaml', '.yml', '.conf']
     def __init__(self, stream):
         super(Loader, self).__init__(stream)
         self._root = os.path.dirname(stream.name)
@@ -136,5 +137,19 @@ class Loader(yaml.Loader):
         with open(filename, 'r') as f:
             return yaml.load(f, Loader)
 
+    def _include_dir(self, node):
+        directory = os.path.join(self._root, self.construct_scalar(node))
+        data = []
+        for filename in os.listdir(directory):
+            extension = os.path.splitext(filename)[1]
+            filepath = os.path.join(directory, filename)
+            if extension not in self.extensions:
+                logger.warn('skipping %s when including confs from %s', filename, directory)
+                continue
+            with open(filepath, 'r') as f:
+                data.append(yaml.load(f, Loader))
+        return data
+
 Loader.add_constructor('!include', Loader._include)
+Loader.add_constructor('!include_dir', Loader._include_dir)
 
