@@ -14,7 +14,6 @@
 # limitations under the License.
 
 from datetime import datetime, timedelta
-from mongo_clients import MongoClients
 from morgoth.data.reader import Reader
 from morgoth.utc import utc
 import re
@@ -26,9 +25,14 @@ class MongoReader(Reader):
     """
     Class that provides read access to the metric data and anomalies
     """
-    def __init__(self):
+    def __init__(self, db):
+        """
+        Create MongoReader
+
+        @param db: database connection object pymongo.MongoClient.<database>
+        """
         super(MongoReader, self).__init__()
-        self._db = MongoClients.Normal.morgoth
+        self._db = db
 
     def get_metrics(self, pattern=None):
         metrics = []

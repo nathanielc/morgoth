@@ -26,10 +26,6 @@ class MongoWriter(DefaultWriter):
     """
     MongoDB implementation of the Writer class
     """
-    _db = MongoClients.Normal.morgoth
-    _db_admin = MongoClients.Normal.admin
-    _db_name = None
-    _use_sharding = None
     _needs_updating = {}
     _refresh_interval = None
     _finishing = False
@@ -37,8 +33,10 @@ class MongoWriter(DefaultWriter):
     """ Dict containg the meta data for each metric """
     _meta = {}
 
-    def __init__(self, max_size=None, worker_count=None):
+    def __init__(self, db, refresh_interval, max_size=None, worker_count=None):
         super(MongoWriter, self).__init__(max_size, worker_count)
+        self._db = db
+        self._refresh_interval = refresh_interval
 
     def _load(self):
         """
@@ -47,13 +45,7 @@ class MongoWriter(DefaultWriter):
         @param config: the app configuration object
         @type config: morgoth.config.Config
         """
-        self._db_name = config.mongo.database_name
-        self._use_sharding = config.mongo.use_sharding
         self._needs_updating = {}
-        self._refresh_interval = config.get(
-            ['metric_meta', 'refresh_interval'],
-            60
-        )
 
         # Load managers from conf
         for pattern, conf in config.metrics.items():
