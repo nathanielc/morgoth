@@ -26,13 +26,15 @@ class PluginLoader(object):
     """
     A class to facilitate loading plugins dynamically
     """
-    def __init__(self, search_dirs, base_class, depth=1, ignored=set()):
+    def __init__(self, app, search_dirs, base_class, depth=1, ignored=set()):
         """
 
+        @param app: Morgoth Application instance
         @param search_dirs: list of directories to search in
         @param depth: the depth of subdirs to search
         @param base_class: the base class that all plugins should extend
         """
+        self._app = app
         self._search_dirs = search_dirs
         self._base_class = base_class
         self._depth = depth
@@ -60,10 +62,11 @@ class PluginLoader(object):
                 confs = [confs]
             for conf in confs:
                 try:
-                    plugin = plugin_class.from_conf(conf)
+                    plugin = plugin_class.from_conf(conf, self._app)
                     plugins.append(plugin)
                 except Exception as e:
                     logger.error('Could not create "%s" from conf "%s" Error: "%s"',  name, conf, e)
+                    logger.exception(e)
                     raise e
         return plugins
 

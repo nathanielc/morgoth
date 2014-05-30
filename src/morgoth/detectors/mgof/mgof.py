@@ -35,10 +35,11 @@ class MGOF(Detector):
     Multinomial Goodness Of Fit
     """
     def __init__(self,
-                 windows,
-                 n_bins=20,
-                 normal_count=1,
-                 chi2_percentage=0.95):
+                app,
+                windows,
+                n_bins=20,
+                normal_count=1,
+                chi2_percentage=0.95):
         """
         Create an anomaly detector.
 
@@ -62,6 +63,8 @@ class MGOF(Detector):
             differences between windows.
         """
         super(MGOF, self).__init__()
+        self._app = app
+        self._reader = app.engine.get_reader()
         self._windows = windows
         self._n_bins = n_bins
         self._normal_count = normal_count
@@ -74,7 +77,7 @@ class MGOF(Detector):
             )
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         windows = []
         for window in conf.windows:
             offset = timedelta()
@@ -98,6 +101,7 @@ class MGOF(Detector):
                     start -= interval
 
         return MGOF(
+            app,
             windows,
             conf.get(['n_bins'], 20),
             conf.get(['normal_count'], 1),
@@ -125,10 +129,10 @@ class MGOF(Detector):
         for offset, duration in self._windows:
             s = start - offset
             e = s + duration
-            w = MGOFWindow(metric, s, e, self._n_bins, trainer=True)
+            w = MGOFWindow(self._reader, metric, s, e, self._n_bins, trainer=True)
             windows.append(w)
 
-        window = MGOFWindow(metric, start, stop, self._n_bins, trainer=False)
+        window = MGOFWindow(self._reader, metric, start, stop, self._n_bins, trainer=False)
         windows.append(window)
 
         threshold = chi2.ppf(self._chi2_percentage, self._n_bins - 1)

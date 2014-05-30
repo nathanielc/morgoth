@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from morgoth.data.mongo_clients import MongoClients
 from morgoth.schedule import Schedule
 from morgoth.utils import timedelta_from_str
 from morgoth.utc import now
@@ -25,10 +24,9 @@ import gevent
 import logging
 logger = logging.getLogger(__name__)
 
-class MetricManager(object):
-    _db = MongoClients.Normal.morgoth
+class MetricSupervisor(object):
     """
-    Manages all the activity around metrics
+    Supervises all the activity around metrics, scheduling checks etc.
     An instance of this class will be created for each
     entry in the 'metrics' section of the config
     """
@@ -154,7 +152,7 @@ class MetricManager(object):
         })
 
 
-class NullMetricManager(MetricManager):
+class NullMetricSupervisor(MetricSupervisor):
     """
     A noop implementation of the MetricManager
     """

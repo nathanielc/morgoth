@@ -27,11 +27,12 @@ class Detector(object):
         self._metrics = set()
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         """
-        Create a AD from the given conf
+        Create a Detector from the given conf
 
         @param conf: a conf object
+        @param app: reference to the current morgoth application
         """
         raise NotImplementedError("%s.from_conf is not implemented" % cls.__name__)
 

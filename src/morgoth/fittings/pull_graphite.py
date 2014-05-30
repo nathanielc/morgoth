@@ -17,7 +17,6 @@
 from dateutil.tz import tzoffset, gettz
 from datetime import timedelta, datetime
 from morgoth.utc import now, utc
-from morgoth.data.writer import Writer
 from morgoth.fittings.fitting import Fitting
 from morgoth.schedule import Schedule
 from morgoth.utils import timedelta_from_str
@@ -34,6 +33,7 @@ class PullGraphite(Fitting):
     """
     _date_format = "%H:%M_%Y%m%d"
     def __init__(self,
+            app,
             metric_pattern,
             graphite_url,
             period,
@@ -60,6 +60,7 @@ class PullGraphite(Fitting):
         @param password: password for basic http authentication
         """
         super(PullGraphite, self).__init__()
+        self._app = app
         self._metric_pattern = metric_pattern
         self._graphite_url = graphite_url
         self._period = period
@@ -72,10 +73,10 @@ class PullGraphite(Fitting):
         self._user = user
         self._password = password
         self._schedule = Schedule(self._period, self._pull)
-        self._writer = Writer()
+        self._writer = self._app.engine.get_writer()
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         metric_pattern = conf.get('metric_pattern', '*')
         graphite_url = conf.get('graphite_url', 'http://localhost')
         period = timedelta_from_str(conf.get('period', '5m'))
@@ -86,6 +87,7 @@ class PullGraphite(Fitting):
         user = conf.get('user', None)
         password = conf.get('password', None)
         return PullGraphite(
+                app,
                 metric_pattern,
                 graphite_url,
                 period,

@@ -23,17 +23,17 @@ class LogNotifier(Notifier):
     """
     Simply logs the occurence of anomaly
     """
-    def __init___(self):
+    def __init___(self, app):
         pass
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         """
         Create a notifier from the given conf
 
         @param conf: a conf object
         """
-        return LogNotifier()
+        return LogNotifier(app)
 
 
     def notify(self, metric, windows):

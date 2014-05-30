@@ -23,8 +23,6 @@ import dateutil.parser
 
 from morgoth.config import Config
 from morgoth.fittings.fitting import Fitting
-from morgoth.data.reader import Reader
-from morgoth.data.writer import Writer
 from morgoth.detectors import get_loader
 from morgoth.utils import timedelta_from_str
 
@@ -38,22 +36,29 @@ class Rest(Fitting):
     REST API fitting. Provides access to data and anomalies
     as well as the ability to schedule a one time detector run.
     """
-    def __init__(self, host, port):
+    def __init__(self, flask_app, morgoth_app, host, port):
         super(Rest, self).__init__()
+        self._flask_app = flask_app
+        self._morgoth_app = morgoth_app
         self._host = host
         self._port = port
 
+        # Set reader and writer on flask app
+        self._flask_app.reader = morgoth_app.engine.get_reader()
+        self._flask_app.writer = morgoth_app.engine.get_writer()
+
+
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, morgoth_app):
         host = ''
         port = conf.get('port', 8080)
-        return Rest(host, port)
+        return Rest(app, morgoth_app, host, port)
 
 
     def start(self):
         logger.info("Starting REST fitting...")
-        self._server = WSGIServer((self._host, self._port), app, log=None)
+        self._server = WSGIServer((self._host, self._port), self._flask_app, log=None)
         self._server.serve_forever()
 
     def stop(self):
@@ -76,11 +81,6 @@ def parse_arg(arg, msg, parse, *args, **kwargs):
         return parse(value, *args, **kwargs)
     except Exception as e:
         raise ParseError(msg % { 'error' : str(e), 'arg' : value})
-
-
-reader = Reader()
-writer = Writer()
-
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -131,7 +131,7 @@ def metrics():
     pattern = None
     if 'pattern' in request.args:
         pattern = request.args['pattern']
-    return jsonify({'metrics' : reader.get_metrics(pattern)})
+    return jsonify({'metrics' : app.reader.get_metrics(pattern)})
 
 @app.route('/data/<metric>')
 @crossdomain(origin='*')
@@ -165,13 +165,13 @@ def metric_data(metric):
 
     return jsonify({
         'metric' : metric,
-        'data': reader.get_data(metric, start, stop, step)
+        'data': app.reader.get_data(metric, start, stop, step)
     })
 
 @app.route('/delete/<metric>', methods=['DELETE'])
 @crossdomain(origin='*')
 def delete_metric(metric):
-    writer.delete_metric(metric)
+    app.writer.delete_metric(metric)
     return jsonify({
         'metric' : metric,
         'deleted' : 'Success',

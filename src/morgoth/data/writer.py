@@ -16,7 +16,6 @@
 
 from gevent.queue import JoinableQueue
 from gevent.event import Event
-from morgoth.meta import Meta
 import gevent
 import pymongo
 
@@ -27,8 +26,11 @@ class Writer(object):
     """
     Class that provides write access to store metrics in morgoth
     """
-    def __init__(self):
-        pass
+    def __init__(self, app):
+        self._app = app
+        self._metrics_manager = self._app.metrics_manager
+
+
 
     def insert(self, dt_utc, metric, value):
         """
@@ -39,6 +41,7 @@ class Writer(object):
         @param value: the value of the metric, must not be None
         @raise ValueError of `value` is None
         """
+        self._metrics_manager.new_metric(metric)
 
     def record_anomalous(self, metric, start, stop):
         """
@@ -70,6 +73,7 @@ class Writer(object):
         """
         pass
 
+
 class DefaultWriter(Writer):
     """
     Default implementation of the Writer class
@@ -78,8 +82,8 @@ class DefaultWriter(Writer):
     _max_size = 1000
     _worker_count = 2
     _flush_token = 'FLUSH'
-    def __init__(self, max_size=None, worker_count=None):
-        super(DefaultWriter, self).__init__()
+    def __init__(self, app, max_size=None, worker_count=None):
+        super(DefaultWriter, self).__init__(app)
         if max_size is None:
             max_size = DefaultWriter._max_size
         self._queue = JoinableQueue(maxsize=max_size)
@@ -100,9 +104,11 @@ class DefaultWriter(Writer):
         The options dict can later be passed as key word args to the DefaultWriter constructor
         """
         options = {}
-        if config:
-            options['max_size'] = config.get(['writer', 'queue', 'max_size'], cls._max_size)
-            options['worker_count'] = config.get(['writer', 'queue', 'worker_count'], cls._worker_count)
+        try:
+            options['max_size'] = config.writer.get(['writer', 'queue', 'max_size'], cls._max_size)
+            options['worker_count'] = config.writer.get(['writer', 'queue', 'worker_count'], cls._worker_count)
+        except KeyError:
+            pass
         return options
 
 
@@ -119,7 +125,7 @@ class DefaultWriter(Writer):
                     self._flush()
                     self._flushed.set()
                     continue
-                self._insert(metric, value)
+                self._insert(dt_utc, metric, value)
                 self._queue.task_done()
             self._running.clear()
 
@@ -131,8 +137,9 @@ class DefaultWriter(Writer):
             raise ValueError('value cannot be None')
         self._queue.put((dt_utc, metric, value))
         self._running.set()
+        super(DefaultWriter, self).insert(dt_utc, metric, value)
 
-    def _insert(self, metric, values):
+    def _insert(self, dt_utc, metric, values):
         """
         Perform actual insert into db backend
         """
@@ -143,7 +150,6 @@ class DefaultWriter(Writer):
         self._closing = True
         self._queue.join()
         logger.debug("Writer queue is empty")
-        Meta.finish()
 
     def flush(self):
         if not self._flushing:

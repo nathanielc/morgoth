@@ -23,32 +23,32 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def load_data_engine(config):
+def load_data_engine(app):
     """
     Load the configured Data Engines
 
     Note: It is possible to configure more than one data engine.
     This behavior is not supported and will result in an error.
 
-    @param config: the app configuration object
-    @type config: morgoth.config.Config
+    @param app: the morgoth application instance
+    @type app: morgoth.app.App
     """
     from morgoth.data.engine import Engine
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(config.get(['plugin_dirs', 'data_engines'], []))
+    dirs.extend(app.config.get(['plugin_dirs', 'data_engines'], []))
 
-    pl = PluginLoader(dirs, Engine)
+    pl = PluginLoader(app, dirs, Engine)
     engine = None
     try:
-        engines = pl.load(config.data_engine)
+        engines = pl.load(app.config.data_engine)
         if len(engines) > 1:
             raise MorgothError('Only one data engine is supported. Please only configure one')
         engine = engines[0]
 
     except KeyError:
-        logger.warn('No fittings found')
+        logger.error('No data engine config found')
     except Exception as e:
-        logger.error("Error creating fittings %s", e)
+        logger.error("Error creating data engine %s", e)
         raise e
 
     return engine

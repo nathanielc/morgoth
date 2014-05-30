@@ -26,6 +26,7 @@ class EmailNotifier(Notifier):
     Sends an email with information about each anomaly
     """
     def __init__(self,
+            app,
             toaddrs,
             fromaddr,
             host,
@@ -45,6 +46,7 @@ class EmailNotifier(Notifier):
         @param password: if tls is true the password to login
         """
         super(EmailNotifier, self).__init___()
+        self._app = app
         self._toaddrs = toaddrs
         self._fromaddr = fromaddr
         self._host = host
@@ -54,7 +56,7 @@ class EmailNotifier(Notifier):
         self._password = password
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         """
         Create a notifier from the given conf
 
@@ -68,6 +70,7 @@ class EmailNotifier(Notifier):
         username = conf.get('username', None)
         password = conf.get('password', None)
         return EmailNotifier(
+                app,
                 toaddrs,
                 fromaddr,
                 host,

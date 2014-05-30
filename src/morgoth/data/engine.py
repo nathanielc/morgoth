@@ -5,9 +5,12 @@ class Engine(object):
 
     To add support for a specific backend simply implement this Engine class
     """
+    def __init__(self, app):
+        self._app = app
+
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         """
         Construct a data Engine from a config object
         """

@@ -22,18 +22,18 @@ logger = logging.getLogger(__name__)
 
 _LOADER = None
 
-def configure_notifiers(config):
+def configure_notifiers(app):
     """
     Configure the notifier plugin loader
 
-    @param config: the app configuration object
-    @type config: morgoth.config.Config
+    @param app: the morgoth application instance
+    @type app: morgoth.app.App
     """
     global _LOADER
     from morgoth.notifiers.notifier import Notifier
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(config.get(['plugin_dirs', 'notifiers'], []))
-    _LOADER = PluginLoader(dirs, Notifier)
+    dirs.extend(app.config.get(['plugin_dirs', 'notifiers'], []))
+    _LOADER = PluginLoader(app, dirs, Notifier)
 
 
 def get_loader():

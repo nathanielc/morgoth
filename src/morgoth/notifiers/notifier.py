@@ -29,11 +29,12 @@ class Notifier(object):
         pass
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         """
         Create a notifier from the given conf
 
         @param conf: a conf object
+        @param app: reference to the current morgoth application
         """
         return Notifier()
 

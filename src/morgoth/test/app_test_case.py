@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from morgoth.app import main
+from morgoth.app import App
 import gevent
 import os
 import tempfile
@@ -25,16 +25,30 @@ class AppTestCase(unittest.TestCase):
     """
 
     conf = None
-    @classmethod
-    def setUpClass(cls):
-        cls.tdir = tempfile.mkdtemp()
-        cls.config_path = os.path.join(cls.tdir, 'morgoth.yml')
-        with open(cls.config_path, 'w') as f:
-            f.write(cls.conf)
-        gevent.spawn(main, config_path=cls.config_path)
-        gevent.sleep(0)
+    def set_up_app(self, conf):
+        tdir = tempfile.mkdtemp()
+        config_path = os.path.join(tdir, 'morgoth.yml')
+        with open(config_path, 'w') as f:
+            f.write(conf)
 
-    @classmethod
-    def tearDownClass(cls):
-        os.remove(cls.config_path)
-        os.rmdir(cls.tdir)
+        app = self._run_app(config_path)
+        return (app, tdir, config_path)
+
+    def _run_app(self, config_path):
+        from morgoth import logger
+        logger.init()
+
+        from morgoth.config import Config
+        config = Config.load(config_path)
+
+        app = App(config)
+        gevent.spawn(app.run)
+        gevent.sleep(0)
+        app.started_event.wait()
+        return app
+
+
+
+    def tear_down_app(self, app, tdir, config_path):
+        os.remove(config_path)
+        os.rmdir(tdir)

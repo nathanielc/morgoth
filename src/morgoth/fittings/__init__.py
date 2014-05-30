@@ -22,21 +22,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def load_fittings(config):
+def load_fittings(app):
     """
     Load the configured Fittings
 
-    @param config: the app configuration object
-    @type config: morgoth.config.Config
+    @param app: the morgoth application instance
+    @type app: morgoth.app.App
     """
     from morgoth.fittings.fitting import Fitting
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(config.get(['plugin_dirs', 'fittings'], []))
+    dirs.extend(app.config.get(['plugin_dirs', 'fittings'], []))
 
-    pl = PluginLoader(dirs, Fitting)
+    pl = PluginLoader(app, dirs, Fitting)
     fittings = []
     try:
-        fittings = pl.load(config.fittings)
+        fittings = pl.load(app.config.fittings)
     except KeyError:
         logger.warn('No fittings found')
     except Exception as e:

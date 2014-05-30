@@ -15,7 +15,6 @@
 
 import socket
 from morgoth.utc import utc
-from morgoth.data.writer import Writer
 from morgoth.fittings.fitting import Fitting
 from gevent.server import StreamServer
 from datetime import datetime
@@ -28,21 +27,23 @@ class Graphite(Fitting):
     """
     Fitting to input data into morgoth using the same format that graphite uses.
     """
-    def __init__(self, host, port, stop_timeout, max_pool_size):
+    def __init__(self, app, host, port, stop_timeout, max_pool_size):
         super(Graphite, self).__init__()
+        self._app = app
         self._port = port
         self._host = host
         self._stop_timeout = stop_timeout
         self._max_pool_size = max_pool_size
-        self._writer = Writer()
+        self._writer = self._app.engine.get_writer()
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         host = conf.get('host', '')
         port = conf.get('port', 2003)
         stop_timeout = conf.get('stop_timeout', 10)
         max_pool_size = conf.get('max_pool_size', 1000)
         graphite = Graphite(
+                app,
                 host,
                 port,
                 stop_timeout,

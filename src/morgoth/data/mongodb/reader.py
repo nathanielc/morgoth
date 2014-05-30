@@ -13,18 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from bson.code import Code
+from bson.son import SON
 from datetime import datetime, timedelta
 from morgoth.data.reader import Reader
+from morgoth.error import MorgothError
 from morgoth.utc import utc
 import re
+import os
 
 import logging
 logger = logging.getLogger(__name__)
+
+__dir__ = os.path.dirname(__file__)
 
 class MongoReader(Reader):
     """
     Class that provides read access to the metric data and anomalies
     """
+    map = None
+    reduce_code = None
+    finalize = None
     def __init__(self, db):
         """
         Create MongoReader
@@ -49,11 +58,10 @@ class MongoReader(Reader):
             time_query['$gte'] = start
         if stop:
             time_query['$lte'] = stop
-        col = self._db.metric
         query = {'metric' : metric}
         if time_query:
             query['time'] = time_query
-        data = col.find(query)
+        data = self._db.metrics.find(query)
         time_data = []
 
         count = 0
@@ -98,3 +106,53 @@ class MongoReader(Reader):
                 'stop' : point['stop'].isoformat()
             })
         return anomalies
+
+    def get_histogram(self, metric, n_bins, start, stop):
+
+        meta = self._db.meta.find_one({'_id' : metric})
+        if meta is None:
+            raise MorgothError("No such metric '%s'" % metric)
+        m_max = meta['max']
+        m_min = meta['min']
+        version = meta['version']
+
+
+        step_size = ((m_max * 1.01) - m_min) / float(n_bins)
+
+        map_values = {
+            'step_size' : step_size,
+            'm_min' : m_min,
+            'n_bins' : n_bins,
+        }
+
+        finalize_values = {
+            'start' : start.isoformat(),
+            'stop' : stop.isoformat(),
+            'version': version,
+            'metric' : metric,
+        }
+
+        map_code = Code(self.map % map_values)
+        finalize_code = Code(self.finalize % finalize_values)
+
+
+        query = {
+            'metric' : metric,
+            'time' : {'$gte' : start, '$lt' : stop},
+        }
+        result = self._db.metrics.inline_map_reduce(map_code, self.reduce_code,
+            query=query,
+            finalize=finalize_code
+        )
+        if result:
+            return result[0]['value']['prob_dist'], result[0]['value']['count']
+        return [0] * n_bins, 0
+
+# Initialize js code
+if MongoReader.map is None:
+    with open(os.path.join(__dir__, 'window.map.js')) as f:
+        MongoReader.map = f.read()
+    with open(os.path.join(__dir__, 'window.reduce.js')) as f:
+        MongoReader.reduce_code = Code(f.read())
+    with open(os.path.join(__dir__, 'window.finalize.js')) as f:
+        MongoReader.finalize = f.read()

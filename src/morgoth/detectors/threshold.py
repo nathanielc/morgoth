@@ -19,7 +19,6 @@ Simple detector that marks the window as anomalous if the data crosses
 a given threshold
 """
 
-from morgoth.data.reader import Reader
 from morgoth.detectors.detector import Detector
 from morgoth.window import Window
 
@@ -35,6 +34,7 @@ class Threshold(Detector):
     Threshold detector
     """
     def __init__(self,
+            app,
             threshold,
             percentile):
         """
@@ -47,20 +47,21 @@ class Threshold(Detector):
             threshold of 1000 and a percentile of 50 would mean that 50th percentile (median)
             of the data must be greater than the threshold in order to consider the data to be anomalous.
         """
+        self._app = app
         self._threshold = threshold
         self._percentile = percentile
-        self._reader = Reader()
+        self._reader = self._app.engine.get_reader()
 
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         """
         Create a Threshold detector from the conf
         """
         threshold = conf.threshold
         percentile = conf.percentile
 
-        return Threshold(threshold, percentile)
+        return Threshold(app, threshold, percentile)
 
 
 

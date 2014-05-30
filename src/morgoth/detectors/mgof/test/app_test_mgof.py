@@ -15,11 +15,14 @@
 
 from morgoth.config import Config
 from morgoth.test.app_test_case import AppTestCase
-from morgoth.data.writer import Writer
 from morgoth.detectors.mgof.mgof import MGOF
 from datetime import datetime, timedelta
+import unittest
 import os
 import tempfile
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class MGOFTest(AppTestCase):
@@ -38,32 +41,34 @@ windows:
     - {offset: 5w, duration: 1h}
     - {offset: 6w, duration: 1h}
 """
-    conf = """
-mongo:
-  use_sharding: false
+    mongo_conf = """
+data_engine:
+    MongoEngine:
+        use_sharding: false
 metrics:
   .*:
-    detectors:
-      MGOF:
-        n_bins: 15
-        normal_count: 1
-        chi2_percentage: 0.95
-        windows:
-            - {offset: 1w, duration: 1h}
-            - {offset: 2w, duration: 1h}
-            - {offset: 3w, duration: 1h}
-            - {offset: 4w, duration: 1h}
-            - {offset: 5w, duration: 1h}
-            - {offset: 6w, duration: 1h}
     schedule:
       duration: 5m
       period: 5m
       delay: 1m
     """
 
-    def create_metric_data(self, metric, start):
-        self.delete_metric_data(metric)
-        writer = Writer()
+    influx_conf = """
+data_engine:
+    InfluxEngine:
+        asdf: as
+metrics:
+  .*:
+    schedule:
+      duration: 5m
+      period: 5m
+      delay: 1m
+    """
+
+    def create_metric_data(self, writer, metric, start):
+
+        writer.delete_metric(metric)
+
         for w in range(6):
             for h in range(1):
                 for m in range(60):
@@ -83,26 +88,56 @@ metrics:
                             value
                             )
         writer.flush()
-    def delete_metric_data(self, metric):
-        writer = Writer()
-        writer.delete_metric(metric)
+
     def test_mgof_01(self):
 
+        app, tdir, config_path = self.set_up_app(self.mongo_conf)
+        writer = app.engine.get_writer()
         try:
             metric = 'test_mgof'
             start = datetime(2013, 9, 1)
-            self.create_metric_data(metric, start)
-            mgof = MGOF.from_conf(Config.loads(self.mgof_conf))
+            self.create_metric_data(writer, metric, start)
+            mgof = MGOF.from_conf(Config.loads(self.mgof_conf), app)
 
             a_start = start + timedelta(weeks=5)
             a_end = a_start + timedelta(hours=1)
-            self.assertTrue(mgof.is_anomalous(metric, a_start, a_end).anomalous)
+            anomalous, window = mgof.is_anomalous(metric, a_start, a_end)
+            self.assertTrue(anomalous)
+            self.assertTrue(window.anomalous)
 
             na_start = start + timedelta(weeks=4)
             na_end = na_start + timedelta(hours=1)
-            self.assertFalse(mgof.is_anomalous(metric, na_start, na_end).anomalous)
+            anomalous, window = mgof.is_anomalous(metric, na_start, na_end)
+            self.assertFalse(anomalous)
+            self.assertFalse(window.anomalous)
         finally:
-            self.delete_metric_data(metric)
+            writer.delete_metric(metric)
+
+    def test_mgof_02(self):
+
+        app, tdir, config_path = self.set_up_app(self.influx_conf)
+        writer = app.engine.get_writer()
+        try:
+            metric = 'test_mgof'
+            start = datetime(2013, 9, 1)
+            self.create_metric_data(writer, metric, start)
+            logger.debug('##################')
+            mgof = MGOF.from_conf(Config.loads(self.mgof_conf), app)
+
+            a_start = start + timedelta(weeks=5)
+            a_end = a_start + timedelta(hours=1)
+            anomalous, window = mgof.is_anomalous(metric, a_start, a_end)
+            self.assertTrue(anomalous)
+            self.assertTrue(window.anomalous)
+
+            na_start = start + timedelta(weeks=4)
+            na_end = na_start + timedelta(hours=1)
+            anomalous, window = mgof.is_anomalous(metric, na_start, na_end)
+            self.assertFalse(anomalous)
+            self.assertFalse(window.anomalous)
+        finally:
+            writer.delete_metric(metric)
+
 
 if __name__ == '__main__':
     unittest.main()

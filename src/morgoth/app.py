@@ -30,13 +30,17 @@ class App(object):
         @param config: the app configuration object
         @type config: morgoth.config.Config
         """
+        self._started_event = Event()
+        self._started_event.clear()
         self._finish_event = Event()
         self._finish_event.set()
         self._fittings = []
         self._config = config
+        self._engine = None
+        self._metrics_manager = None
 
 
-    def handler(self):
+    def _handler(self):
         self._finish_event.clear()
         self._logger.info("Caught signal, shutting down")
         for fitting in self._fittings:
@@ -44,35 +48,71 @@ class App(object):
         self._logger.debug("All fittings have been shutdown")
         self._finish_event.set()
 
+    @property
+    def started_event(self):
+        return self._started_event
+
+    @property
+    def engine(self):
+        """
+        Data Engine instance
+        """
+        return self._engine
+
+    @property
+    def metrics_manager(self):
+        """
+        Metrics Manager
+        """
+        return self._metrics_manager
+
+    @property
+    def config(self):
+        """
+        Morgoth Application configuration
+        """
+        return self._config
+
     def run(self):
         try:
             import logging
             self._logger = logging.getLogger(__name__)
 
 
-            # Setup signal handlers
+            self._logger.info('Setup signal handlers')
             import signal
-            gevent.signal(signal.SIGINT, self.handler)
+            gevent.signal(signal.SIGINT, self._handler)
 
-            # Setup data engine
-            from morgoth.data import load_data_engine
-            engine = load_data_engine(self._config)
-            engine.initialize()
-
-            # Configure detectors and notifiers
+            self._logger.info('Configure detectors and notifiers')
             from morgoth.detectors import configure_detectors
             from morgoth.notifiers import configure_notifiers
-            configure_detectors(self._config)
-            configure_notifiers(self._config)
+            configure_detectors(self)
+            configure_notifiers(self)
 
-            # Start fittings
+            self._logger.info('Setup data engine')
+            from morgoth.data import load_data_engine
+            self._engine = load_data_engine(self)
+            self._engine.initialize()
+
+
+            self._logger.info('Setup metrics manager')
+            from morgoth.metrics_manager import MetricsManager
+            self._metrics_manager = MetricsManager(self)
+            self._logger.info('Inform the metric manager of existing metrics on startup')
+            reader = self.engine.get_reader()
+            self._metrics_manager.new_metrics(reader.get_metrics())
+
+            self._logger.info('Start fittings')
             from morgoth.fittings import load_fittings
-            self._fittings = load_fittings(self._config)
+            self._fittings = load_fittings(self)
 
             spawned = []
             for fitting in self._fittings:
                 spawn = gevent.spawn(fitting.start)
                 spawned.append(spawn)
+
+            self._started_event.set()
+            self._logger.info('Startup complete')
 
             for spawn in spawned:
                 spawn.join()

@@ -27,11 +27,12 @@ class Fitting(object):
         pass
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, app):
         """
         Create a fitting from the given conf
 
         @param conf: a conf object
+        @param app: reference to the current morgoth application
         """
         raise NotImplementedError("%s.from_conf is not implemented" % cls.__name__)
 

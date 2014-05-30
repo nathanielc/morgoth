@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from morgoth.data.mongo_clients import MongoClients
 from bson.objectid import ObjectId
 import os
 
@@ -25,7 +24,6 @@ class Window(object):
     """
 
     def __init__(self, metric,  start, stop, detector_name=None):
-        self._db = MongoClients.Normal.morgoth
         self._metric = metric
         self._start = start
         self._stop = stop

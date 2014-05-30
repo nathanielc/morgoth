@@ -14,7 +14,6 @@
 # limitations under the License.
 
 
-from morgoth.data.mongo_clients import MongoClients
 from morgoth.data.writer import DefaultWriter
 import gevent
 import pymongo
@@ -29,14 +28,14 @@ class MongoWriter(DefaultWriter):
     _needs_updating = {}
     _refresh_interval = None
     _finishing = False
-    _null_manager = NullMetricManager()
     """ Dict containg the meta data for each metric """
     _meta = {}
 
-    def __init__(self, db, refresh_interval, max_size=None, worker_count=None):
-        super(MongoWriter, self).__init__(max_size, worker_count)
+    def __init__(self, app, db, refresh_interval, max_size=None, worker_count=None):
+        super(MongoWriter, self).__init__(app, max_size, worker_count)
         self._db = db
         self._refresh_interval = refresh_interval
+        self._load()
 
     def _load(self):
         """
@@ -47,25 +46,30 @@ class MongoWriter(DefaultWriter):
         """
         self._needs_updating = {}
 
-        # Load managers from conf
-        for pattern, conf in config.metrics.items():
-            self._managers[pattern] = MetricManager(pattern, conf)
-
         # Load metrics from database
         for meta in self._db.meta.find():
             metric = meta['_id']
             self._meta[metric] = meta
-            manager = self._match_metric(metric)
-            manager.add_metric(metric)
-            manager.start()
+            #manager = self._match_metric(metric)
+            #manager.add_metric(metric)
+            #manager.start()
 
 
-    def _insert(self, metric, value):
+    def _insert(self, dt_utc, metric, value):
         """
         Perform actual insert into db backend
         """
         if self._finishing:
             return
+
+        # Insert into metrics collection
+        self._db.metrics.insert({
+            'time' : dt_utc,
+            'value' : value,
+            'metric' : metric
+        })
+
+
         if metric not in self._meta:
             meta = {
                 '_id' : metric,
@@ -142,10 +146,10 @@ class MongoWriter(DefaultWriter):
         """
         self._db.meta.insert(meta)
 
-        manager = self._match_metric(metric)
-        manager.add_metric(metric)
+        #manager = self._match_metric(metric)
+        #manager.add_metric(metric)
 
-        manager.start()
+        #manager.start()
 
     def _flush(self):
         """
@@ -169,3 +173,4 @@ class MongoWriter(DefaultWriter):
         self._db.metrics.remove({'metric' : metric})
         self._db.windows.remove({'value.metric' : metric})
         self._db.meta.remove({'_id' : metric})
+

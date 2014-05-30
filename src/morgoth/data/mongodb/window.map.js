@@ -7,7 +7,7 @@ function () {
             (this.value - %(m_min)f) / %(step_size)f
         );
     prob_dist[discrete] += 10
-    emit('%(id)s', {
+    emit('histogram', {
         discrete : discrete,
         prob_dist : prob_dist,
         count: 1,

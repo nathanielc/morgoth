@@ -33,3 +33,14 @@ class Reader(object):
 
     def get_anomalies(self, metric, start=None, stop=None):
         pass
+
+    def get_histogram(self, metric, n_bins, start, stop):
+        """
+        Return the histogram of the given metric
+
+        @param metric: the metric name
+        @param n_bins: the number of bins to use in the histogram
+        @param start: the start time
+        @param stop: the stop time
+        """
+        pass

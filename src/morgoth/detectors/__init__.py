@@ -22,18 +22,18 @@ logger = logging.getLogger(__name__)
 
 _LOADER = None
 
-def configure_detectors(config):
+def configure_detectors(app):
     """
     Configure the detector plugin loader
 
-    @param config: the app configuration object
-    @type config: morgoth.config.Config
+    @param app: the morgoth application instance
+    @type app: morgoth.app.App
     """
     global _LOADER
     from morgoth.detectors.detector import Detector
     dirs = [os.path.dirname(__file__)]
-    dirs.extend(config.get(['plugin_dirs', 'detectors'], []))
-    _LOADER = PluginLoader(dirs, Detector)
+    dirs.extend(app.config.get(['plugin_dirs', 'detectors'], []))
+    _LOADER = PluginLoader(app, dirs, Detector)
 
 def get_loader():
     """

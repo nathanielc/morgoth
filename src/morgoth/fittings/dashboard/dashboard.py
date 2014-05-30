@@ -29,18 +29,19 @@ class Dashboard(Fitting):
     Dashboard fitting that provides a web front end to the
     metrics and anomalies in morgoth
     """
-    def __init__(self, host, port):
+    def __init__(self, morgoth_app, host, port):
         super(Dashboard, self).__init__()
+        self._morgoth_app = morgoth_app
         self._host = host
         self._port = port
         self._server = None
 
 
     @classmethod
-    def from_conf(cls, conf):
+    def from_conf(cls, conf, morgoth_app):
         host = ''
         port = conf.get('port', 8080)
-        return Dashboard(host, port)
+        return Dashboard(morgoth_app, host, port)
 
 
     def start(self):
