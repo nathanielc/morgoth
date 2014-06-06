@@ -35,3 +35,15 @@ def to_epoch(dt_utc):
     """
 
     return calendar.timegm(dt_utc.timetuple())
+
+def from_epoch(epoch):
+    """
+    Create a datetime object in UTC timezone from an epoch timestamp
+
+    @param epoch: number of seconds since the epoch
+    """
+    dt = datetime.fromtimestamp(epoch)
+    print dt.isoformat()
+    dt = dt.replace(tzinfo=utc)
+    return dt
+

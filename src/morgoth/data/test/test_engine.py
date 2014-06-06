@@ -29,7 +29,7 @@ class EngineTestCase(object):
     engine_conf = None
 
     def _new_config(self):
-        db_name = "test_engine_db_%d" % random.randint(0, 100)
+        db_name = "test_engine_db_%d" % random.randint(0, 1000)
         return Config.loads(self.engine_conf % db_name)
 
     def _create_engine(self, engine_class, engine_conf, app=None):
@@ -37,10 +37,15 @@ class EngineTestCase(object):
             app = MockApp()
         return engine_class.from_conf(engine_conf, app), app
 
+    def _destroy_engine(self, engine_conf):
+        pass
+
     def _do_test(self, test):
-        engine, app = self._create_engine(self.engine_class, self._new_config())
+        engine_conf = self._new_config()
+        engine, app = self._create_engine(self.engine_class, engine_conf)
         engine.initialize()
         getattr(self, test)(engine, app)
+        self._destroy_engine(engine_conf)
 
 
     def _test_initialize(self, engine, app):
