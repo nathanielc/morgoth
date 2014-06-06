@@ -1,6 +1,6 @@
 
 from morgoth.data.writer import DefaultWriter
-import calendar
+from morgoth.utc import to_epoch
 
 
 import logging
@@ -17,7 +17,7 @@ class InfluxWriter(DefaultWriter):
             'name' : metric,
             'columns' : ['time', 'value'],
             'points': [
-                [calendar.timegm(dt_utc.timetuple()) * 1000, value]
+                [to_epoch(dt_utc) * 1000, value]
             ],
         }]
         self._db.write_points_with_precision(data, time_precision='m')

@@ -23,7 +23,7 @@ class Window(object):
     Represents a window in data for a given metric
     """
 
-    def __init__(self, metric,  start, stop, detector_name=None):
+    def __init__(self, metric, start, stop, detector_name=None):
         self._metric = metric
         self._start = start
         self._stop = stop
@@ -37,6 +37,13 @@ class Window(object):
         Return the metric this window applies to
         """
         return self._metric
+
+    @property
+    def detector_name(self):
+        """
+        Return the detector for this window
+        """
+        return self._detector_name
 
     @property
     def start(self):
@@ -69,7 +76,7 @@ class Window(object):
     @anomalous.setter
     def anomalous(self, value):
         self._anomalous = value
-
+detector for this window
     @property
     def range(self):
         return self._start, self._stop

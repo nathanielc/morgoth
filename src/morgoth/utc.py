@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import calendar
 
 from datetime import datetime
 from dateutil.tz import tzutc
@@ -25,3 +26,12 @@ def now():
     """
     return datetime.now(utc)
 
+
+def to_epoch(dt_utc):
+    """
+    Convert a datetime object to the number of seconds since the epoch
+
+    @param dt_utc: datetime object in the UTC timezone
+    """
+
+    return calendar.timegm(dt_utc.timetuple())

@@ -32,8 +32,8 @@ class App(object):
         """
         self._started_event = Event()
         self._started_event.clear()
-        self._finish_event = Event()
-        self._finish_event.set()
+        self._finished_event = Event()
+        self._finished_event.set()
         self._fittings = []
         self._config = config
         self._engine = None
@@ -41,12 +41,12 @@ class App(object):
 
 
     def _handler(self):
-        self._finish_event.clear()
+        self._finished_event.clear()
         self._logger.info("Caught signal, shutting down")
         for fitting in self._fittings:
             fitting.stop()
         self._logger.debug("All fittings have been shutdown")
-        self._finish_event.set()
+        self._finished_event.set()
 
     @property
     def started_event(self):
@@ -118,7 +118,7 @@ class App(object):
                 spawn.join()
 
             self._logger.info("All fittings have stopped")
-            self._finish_event.wait()
+            self._finished_event.wait()
             self._logger.info("Finished event set")
 
         except Exception as e:

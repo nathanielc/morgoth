@@ -18,31 +18,30 @@ class EngineTestType(type):
         for attrname, value in attrs.items():
             newattrs[attrname] = value
             if attrname.startswith('_test'):
-                newattrs[attrname[1:]] = lambda self: EngineTestType._test_wrapper(self, attrname)
-
-
-        logger.debug(newattrs.keys())
+                newattrs[attrname[1:]] = lambda self, attrname=attrname: self._do_test(attrname)
 
         return super(EngineTestType, cls).__new__(cls, name, bases, newattrs)
 
-    @staticmethod
-    def _test_wrapper(instance, test_name):
-        logger.debug("Instance: %s", instance)
-        logger.debug("Test Name: %s", test_name)
-        engine, app = instance._create_engine(instance.engine_class, instance._new_config())
-
-        test_method = getattr(instance, test_name)
-        test_method(instance, engine, app)
-
-
-class EngineTestCase(unittest.TestCase):
+class EngineTestCase(object):
     __metaclass__ = EngineTestType
 
+    engine_class = None
+    engine_conf = None
+
+    def _new_config(self):
+        db_name = "test_engine_db_%d" % random.randint(0, 100)
+        return Config.loads(self.engine_conf % db_name)
 
     def _create_engine(self, engine_class, engine_conf, app=None):
         if app is None:
             app = MockApp()
         return engine_class.from_conf(engine_conf, app), app
+
+    def _do_test(self, test):
+        engine, app = self._create_engine(self.engine_class, self._new_config())
+        engine.initialize()
+        getattr(self, test)(engine, app)
+
 
     def _test_initialize(self, engine, app):
         self.assertEqual(0, app.metrics_manager.new_metric_count)
