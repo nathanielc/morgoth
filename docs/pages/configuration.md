@@ -1,4 +1,0 @@
-Configuration
-=============
-
-\example morgoth.yml
