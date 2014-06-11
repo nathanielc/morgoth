@@ -1,0 +1,6 @@
+
+@import url('default.css');
+
+div.topic {
+    background-color: #202020;
+}
