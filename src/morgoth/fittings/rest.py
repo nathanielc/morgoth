@@ -203,7 +203,7 @@ def metric_anomalies(metric):
 
     return jsonify({
         'metric' : metric,
-        'anomalies': reader.get_anomalies(metric, start, stop)
+        'anomalies': app.reader.get_anomalies(metric, start, stop)
     })
 
 @app.route('/check/<metric>', methods=['GET', 'POST'])

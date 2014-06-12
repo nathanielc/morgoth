@@ -100,7 +100,9 @@ class App(object):
             self._metrics_manager = MetricsManager(self)
             self._logger.info('Inform the metric manager of existing metrics on startup')
             reader = self.engine.get_reader()
-            self._metrics_manager.new_metrics(reader.get_metrics())
+            metrics = reader.get_metrics()
+            self._logger.debug(metrics)
+            self._metrics_manager.new_metrics(metrics)
 
             self._logger.info('Start fittings')
             from morgoth.fittings import load_fittings

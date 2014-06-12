@@ -37,8 +37,9 @@ class InfluxReader(Reader):
         result = self._db.query(query, time_precision='m')
 
         time_data = []
-        for epoch, _, value in result[0]['points']:
-            time_data.insert(0, (from_epoch(epoch / 1000.0).isoformat(), value))
+        if result:
+            for epoch, _, value in result[0]['points']:
+                time_data.insert(0, (from_epoch(epoch / 1000.0).isoformat(), value))
 
         return time_data
 

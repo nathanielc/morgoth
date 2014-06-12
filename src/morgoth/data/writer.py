@@ -28,9 +28,13 @@ class Writer(object):
     """
     def __init__(self, app):
         self._app = app
-        self._metrics_manager = self._app.metrics_manager
 
-
+    @property
+    def _metrics_manager(self):
+        """
+        The metrics manager instance
+        """
+        return self._app.metrics_manager
 
     def insert(self, dt_utc, metric, value):
         """
