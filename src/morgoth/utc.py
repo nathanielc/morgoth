@@ -14,11 +14,14 @@
 # limitations under the License.
 
 import calendar
+import logging
 
 from datetime import datetime
 from dateutil.tz import tzutc
+logger = logging.getLogger(__name__)
 
 utc = tzutc()
+
 
 def now():
     """
@@ -42,8 +45,6 @@ def from_epoch(epoch):
 
     @param epoch: number of seconds since the epoch
     """
-    dt = datetime.fromtimestamp(epoch)
-    print dt.isoformat()
-    dt = dt.replace(tzinfo=utc)
+    dt = datetime.fromtimestamp(epoch, utc)
     return dt
 

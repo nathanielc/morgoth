@@ -18,7 +18,6 @@ class InfluxReader(Reader):
         metrics = []
         result = self._db.query("list series")
         for row in result:
-            logger.debug(row['name'])
             metrics.append(row['name'])
 
         return metrics
@@ -32,15 +31,15 @@ class InfluxReader(Reader):
             where.append("time < '%s'" % stop.strftime(DATE_FORMAT))
 
         if where:
-            query += ' and '.join(where)
+            query += 'where ' + ' and '.join(where)
 
-        result = self._db.query(query)
+
+        result = self._db.query(query, time_precision='m')
 
         time_data = []
         for epoch, _, value in result[0]['points']:
-            time_data.append((from_epoch(epoch).isoformat(), value))
+            time_data.insert(0, (from_epoch(epoch / 1000.0).isoformat(), value))
 
-        logger.debug(time_data)
         return time_data
 
 
@@ -67,8 +66,10 @@ class InfluxReader(Reader):
         total = result[0]['points'][0][1]
         empty_value = 1.0 / float(total * 10 + n_bins)
         hist = [empty_value] * n_bins
+        s = 0
         for _, total, bucket_start, count in result[0]['points']:
-            i = int((bucket_start - m_min) / step_size)
+            i = int(round((bucket_start - m_min) / step_size))
+            s += count
             hist[i] = count * 10 / float(total * 10 + n_bins)
 
         return hist, total

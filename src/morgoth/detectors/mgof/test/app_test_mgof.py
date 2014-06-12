@@ -56,7 +56,9 @@ metrics:
     influx_conf = """
 data_engine:
     InfluxEngine:
-        asdf: as
+        user: root
+        password: root
+        database: test
 metrics:
   .*:
     schedule:
@@ -91,52 +93,29 @@ metrics:
 
     def test_mgof_01(self):
 
-        app, tdir, config_path = self.set_up_app(self.mongo_conf)
-        writer = app.engine.get_writer()
-        try:
-            metric = 'test_mgof'
-            start = datetime(2013, 9, 1)
-            self.create_metric_data(writer, metric, start)
-            mgof = MGOF.from_conf(Config.loads(self.mgof_conf), app)
+        for conf in [self.mongo_conf, self.influx_conf]:
+            app, tdir, config_path = self.set_up_app(self.mongo_conf)
+            writer = app.engine.get_writer()
+            try:
+                metric = 'test_mgof'
+                start = datetime(2013, 9, 1)
+                self.create_metric_data(writer, metric, start)
+                mgof = MGOF.from_conf(Config.loads(self.mgof_conf), app)
 
-            a_start = start + timedelta(weeks=5)
-            a_end = a_start + timedelta(hours=1)
-            anomalous, window = mgof.is_anomalous(metric, a_start, a_end)
-            self.assertTrue(anomalous)
-            self.assertTrue(window.anomalous)
+                a_start = start + timedelta(weeks=5)
+                a_end = a_start + timedelta(hours=1)
+                anomalous, window = mgof.is_anomalous(metric, a_start, a_end)
+                self.assertTrue(anomalous)
+                self.assertTrue(window.anomalous)
 
-            na_start = start + timedelta(weeks=4)
-            na_end = na_start + timedelta(hours=1)
-            anomalous, window = mgof.is_anomalous(metric, na_start, na_end)
-            self.assertFalse(anomalous)
-            self.assertFalse(window.anomalous)
-        finally:
-            writer.delete_metric(metric)
+                na_start = start + timedelta(weeks=4)
+                na_end = na_start + timedelta(hours=1)
+                anomalous, window = mgof.is_anomalous(metric, na_start, na_end)
+                self.assertFalse(anomalous)
+                self.assertFalse(window.anomalous)
+            finally:
+                writer.delete_metric(metric)
 
-    def test_mgof_02(self):
-
-        app, tdir, config_path = self.set_up_app(self.influx_conf)
-        writer = app.engine.get_writer()
-        try:
-            metric = 'test_mgof'
-            start = datetime(2013, 9, 1)
-            self.create_metric_data(writer, metric, start)
-            logger.debug('##################')
-            mgof = MGOF.from_conf(Config.loads(self.mgof_conf), app)
-
-            a_start = start + timedelta(weeks=5)
-            a_end = a_start + timedelta(hours=1)
-            anomalous, window = mgof.is_anomalous(metric, a_start, a_end)
-            self.assertTrue(anomalous)
-            self.assertTrue(window.anomalous)
-
-            na_start = start + timedelta(weeks=4)
-            na_end = na_start + timedelta(hours=1)
-            anomalous, window = mgof.is_anomalous(metric, na_start, na_end)
-            self.assertFalse(anomalous)
-            self.assertFalse(window.anomalous)
-        finally:
-            writer.delete_metric(metric)
 
 
 if __name__ == '__main__':

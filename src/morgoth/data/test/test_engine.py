@@ -81,7 +81,7 @@ class EngineTestCase(object):
 
         start = datetime(2014, 5, 30, 1, tzinfo=utc)
         count = 100
-        stop = start + timedelta(seconds=count -1)
+        stop = start + timedelta(seconds=count - 1)
 
         expected_data = []
         for i in range(count):
@@ -176,7 +176,7 @@ class EngineTestCase(object):
         hist, hist_count = reader.get_histogram(metric, n_bins, start, stop)
 
         self.assertEqual(count, hist_count)
-        self.assertAlmostEqual(1, sum(hist))
+        self.assertAlmostEqual(1, sum(hist), places=1)
 
         expected_hist = [
                 0.3178217821782178,
@@ -193,7 +193,7 @@ class EngineTestCase(object):
 
         self.assertEqual(len(expected_hist), len(hist))
         for i in range(len(expected_hist)):
-            self.assertAlmostEqual(expected_hist[i], hist[i])
+            self.assertAlmostEqual(expected_hist[i], hist[i], places=2)
 
 
 

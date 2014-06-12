@@ -109,13 +109,17 @@ class PluginLoader(object):
                     except ImportError:
                         pass
 
-                    if not found_pkg:
+                    if not found_pkg or found_pkg == 'test':
                         continue
 
                     if package:
                         name = '%s.%s' % (package, entry)
                     else:
                         name = entry
+
+                    if name.endswith('test'):
+                        continue
+
                     pkg = imp.load_module(name, *found_pkg)
                     mods.append(pkg)
                     mods.extend(self.__find_modules(

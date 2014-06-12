@@ -40,7 +40,6 @@ class InfluxEngine(Engine):
         password = conf.get('password', 'morgoth')
         database = conf.get('database', 'morgoth')
         writer_options = InfluxWriter.get_options(conf)
-        logger.debug(writer_options)
 
         return InfluxEngine(
                 app,

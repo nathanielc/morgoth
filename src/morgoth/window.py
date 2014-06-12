@@ -76,7 +76,7 @@ class Window(object):
     @anomalous.setter
     def anomalous(self, value):
         self._anomalous = value
-detector for this window
+
     @property
     def range(self):
         return self._start, self._stop

@@ -45,8 +45,7 @@ class EmailNotifier(Notifier):
         @param username: if tls is true the username to login
         @param password: if tls is true the password to login
         """
-        super(EmailNotifier, self).__init___()
-        self._app = app
+        super(EmailNotifier, self).__init__(app)
         self._toaddrs = toaddrs
         self._fromaddr = fromaddr
         self._host = host
