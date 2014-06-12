@@ -17,7 +17,7 @@ class InfluxWriter(DefaultWriter):
             'name' : metric,
             'columns' : ['time', 'value'],
             'points': [
-                [to_epoch(dt_utc) * 1000, value]
+                [to_epoch(dt_utc), value]
             ],
         }]
-        self._db.write_points_with_precision(data, time_precision='m')
+        self._db.write_points_with_precision(data, time_precision='s')

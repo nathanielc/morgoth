@@ -5,6 +5,7 @@ from morgoth.data.reader import Reader
 from morgoth.utc import from_epoch, to_epoch
 
 
+logging.getLogger().setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -32,23 +33,20 @@ class InfluxReader(Reader):
         query = "select time, value from %s " % metric
         where = []
         if start:
-            logger.debug(start.isoformat())
-            where.append("time > %dm" % (to_epoch(start) * 1000))
+            where.append("time > %ds" % (to_epoch(start)))
         if stop:
-            logger.debug(stop.isoformat())
-            where.append("time < %dm" % (to_epoch(stop) * 1000))
+            where.append("time < %ds" % (to_epoch(stop)))
 
         if where:
             query += 'where ' + ' and '.join(where)
 
 
-        logger.debug(query)
-        result = self._db.query(query, time_precision='m')
+        result = self._db.query(query, time_precision='s')
 
         time_data = []
         if result:
             for epoch, _, value in result[0]['points']:
-                time_data.insert(0, (from_epoch(epoch / 1000.0).isoformat(), value))
+                time_data.insert(0, (from_epoch(epoch).isoformat(), value))
 
         return time_data
 
@@ -70,7 +68,7 @@ class InfluxReader(Reader):
             start.strftime(DATE_FORMAT),
             stop.strftime(DATE_FORMAT),
         )
-        result = self._db.query(query)
+        result = self._db.query(query, time_precision='s')
         if not result:
             return [0] * n_bins, 0
 

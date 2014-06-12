@@ -19,6 +19,10 @@ from morgoth.config import Config
 import os
 import tempfile
 import unittest
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 class TestConfig(unittest.TestCase):
     """
@@ -77,7 +81,6 @@ class TestConfig(unittest.TestCase):
 
 
 
-
     def test_config_01(self):
         """
         Test '!include' behavior
@@ -108,6 +111,54 @@ class TestConfig(unittest.TestCase):
             if included:
                 os.remove(included.name)
             os.rmdir(tdir)
+
+    def test_config_02(self):
+        """
+        Test exceptions
+        """
+
+        config = Config.loads(self.simple_yaml)
+
+        self.assertEqual('value0', config.test_key0)
+        self.assertEqual('value0', config.get('test_key0', None))
+        self.assertEqual('value0', config.get(['test_key0'], None))
+
+        self.assertRaises(KeyError, lambda config=config: config['no_existant'])
+        self.assertRaises(AttributeError, lambda config=config: config.no_existant)
+
+    def test_config_03(self):
+        """
+        Test ordered dict
+        """
+
+        config = Config.loads(self.simple_yaml)
+
+
+        expected_order = [
+                'test_key0',
+                'test_key1',
+                'test_key2',
+            ]
+        self.assertEqual(len(expected_order), len(config))
+        i = 0
+        for k in config:
+            self.assertEqual(expected_order[i], k)
+            i += 1
+
+        order = [
+            'k0',
+            'k1',
+            'k2',
+            'k3',
+        ]
+
+        self.assertEqual(len(order), len(config.test_key2))
+        i = 0
+        for k in config.test_key2:
+            self.assertEqual(order[i], k)
+            i += 1
+
+
 
 if __name__ == '__main__':
     unittest.main()

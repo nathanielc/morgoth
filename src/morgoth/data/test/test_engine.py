@@ -48,6 +48,7 @@ class EngineTestCase(object):
             getattr(self, test)(engine, app)
         finally:
             self._destroy_engine(engine_conf)
+            pass
 
 
     def _test_initialize(self, engine, app):

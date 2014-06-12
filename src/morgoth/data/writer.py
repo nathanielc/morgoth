@@ -114,7 +114,7 @@ class DefaultWriter(Writer):
         try:
             options['max_size'] = config.writer.get(['writer', 'queue', 'max_size'], cls._max_size)
             options['worker_count'] = config.writer.get(['writer', 'queue', 'worker_count'], cls._worker_count)
-        except KeyError:
+        except AttributeError:
             pass
         return options
 
@@ -137,6 +137,7 @@ class DefaultWriter(Writer):
             self._running.clear()
 
     def insert(self, dt_utc, metric, value):
+        super(DefaultWriter, self).insert(dt_utc, metric, value)
         if self._closing:
             logger.debug("Writer is closed")
             return
@@ -144,7 +145,6 @@ class DefaultWriter(Writer):
             raise ValueError('value cannot be None')
         self._queue.put((dt_utc, metric, value))
         self._running.set()
-        super(DefaultWriter, self).insert(dt_utc, metric, value)
 
     def _insert(self, dt_utc, metric, values):
         """

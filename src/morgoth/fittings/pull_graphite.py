@@ -20,6 +20,7 @@ from morgoth.utc import now, utc
 from morgoth.fittings.fitting import Fitting
 from morgoth.schedule import Schedule
 from morgoth.utils import timedelta_from_str
+from morgoth.utc import from_epoch
 import urllib2
 import json
 
@@ -144,7 +145,7 @@ class PullGraphite(Fitting):
             logger.debug("Inserting datapoints for %s", metric_name)
             for value, timestamp in dataset['datapoints']:
                 if value is not None:
-                    dt_utc = datetime.fromtimestamp(timestamp, utc)
+                    dt_utc = from_epoch(timestamp)
                     self._writer.insert(dt_utc, metric_name, value)
 
     def _add_auth(self, request):

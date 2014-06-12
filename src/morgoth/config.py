@@ -14,35 +14,39 @@
 # limitations under the License.
 
 from types import DictType, ListType
+from collections import OrderedDict
 import yaml
 import os
+
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class Config(dict):
+class Config(OrderedDict):
     """
-    Static config class that provides easy access to the morogth config
+    Static config class that provides easy access to the morgoth config
     """
     @classmethod
     def load(cls, filepath='morgoth.yml'):
         with open(filepath) as f:
-            conf_data = yaml.load(f, Loader)
+            conf_data = yaml.load(f, IncludeLoader)
         return Config(conf_data)
 
     @classmethod
     def loads(cls, data):
-        conf_data = yaml.safe_load(data)
+        conf_data = yaml.load(data, OrderedLoader)
         return Config(conf_data)
 
-    def __init__(self, data={}):
+    def __init__(self, data=None):
         super(Config, self).__init__()
+        if data is None:
+            data = {}
         self._accessed = {}
         for k, v in data.iteritems():
             self._accessed[k] = False
             value_type = type(v)
-            if value_type == DictType:
+            if value_type == DictType or value_type == OrderedDict:
                 self[k] = Config(v)
             elif value_type == ListType:
                 dict_v = {}
@@ -79,10 +83,13 @@ class Config(dict):
 
 
     def __getattr__(self, attr):
-        return self[attr]
+        try:
+            return self[attr]
+        except KeyError:
+            return object.__getattribute__(self, attr)
 
     def __getitem__(self, attr):
-        self._accessed[attr] = True
+        object.__getattribute__(self, '_accessed')[attr] = True
         return super(Config, self).__getitem__(attr)
 
     def get(self, attr, default):
@@ -120,22 +127,62 @@ class ConfigList(Config):
         self._is_list = True
 
     def __iter__(self):
-        return self.itervalues()
+        base_iter = super(ConfigList, self).__iter__()
+        for k in base_iter:
+            yield self[k]
 
 
-class Loader(yaml.Loader):
+class OrderedLoader(yaml.Loader):
     """
-    yaml.Loader that allows for relative includes of other yaml files
+    Preserves the order of dictionaries
+    """
+    def __init__(self, stream):
+        super(OrderedLoader, self).__init__(stream)
+
+        self.add_constructor(u'tag:yaml.org,2002:map', type(self).construct_yaml_map)
+        self.add_constructor(u'tag:yaml.org,2002:omap', type(self).construct_yaml_map)
+
+    def construct_yaml_map(self, node):
+        data = OrderedDict()
+        yield data
+        value = self.construct_mapping(node)
+        data.update(value)
+
+    def construct_mapping(self, node, deep=False):
+        if isinstance(node, yaml.MappingNode):
+            self.flatten_mapping(node)
+        else:
+            raise yaml.constructor.ConstructorError(None, None,
+                'expected a mapping node, but found %s' % node.id, node.start_mark)
+
+        mapping = OrderedDict()
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            try:
+                hash(key)
+            except TypeError, exc:
+                raise yaml.constructor.ConstructorError('while constructing a mapping',
+                    node.start_mark, 'found unacceptable key (%s)' % exc, key_node.start_mark)
+            value = self.construct_object(value_node, deep=deep)
+            mapping[key] = value
+        return mapping
+
+class IncludeLoader(OrderedLoader):
+    """
+    Allows for relative includes of other yaml files
     """
     extensions = ['.yaml', '.yml', '.conf']
     def __init__(self, stream):
-        super(Loader, self).__init__(stream)
+        super(IncludeLoader, self).__init__(stream)
         self._root = os.path.dirname(stream.name)
+
+        self.add_constructor('!include', type(self)._include)
+        self.add_constructor('!include_dir', type(self)._include_dir)
 
     def _include(self, node):
         filename = os.path.join(self._root, self.construct_scalar(node))
         with open(filename, 'r') as f:
-            return yaml.load(f, Loader)
+            return yaml.load(f, IncludeLoader)
 
     def _include_dir(self, node):
         directory = os.path.join(self._root, self.construct_scalar(node))
@@ -147,9 +194,6 @@ class Loader(yaml.Loader):
                 logger.warn('skipping %s when including confs from %s', filename, directory)
                 continue
             with open(filepath, 'r') as f:
-                data.append(yaml.load(f, Loader))
+                data.append(yaml.load(f, IncludeLoader))
         return data
-
-Loader.add_constructor('!include', Loader._include)
-Loader.add_constructor('!include_dir', Loader._include_dir)
 

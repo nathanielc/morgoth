@@ -67,6 +67,7 @@ class MGOFWindow(Window):
         if self._prob_dist is None:
             self._prob_dist = self._reader.get_histogram(self._metric, self._n_bins, self._start, self._stop)
         if len(self._prob_dist[0]) != self._n_bins:
-            raise ValueError('Probability distribution does not have the length n_bins, something with the meta got corrupted')
+            logger.info(self._prob_dist)
+            raise ValueError('Probability distribution does not have the length n_bins')
         return self._prob_dist
 

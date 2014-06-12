@@ -47,7 +47,7 @@ class MongoReader(Reader):
         metrics = []
         for metric in self._db.meta.find():
             name = metric['_id']
-            if pattern and not re.match(pattern, name):
+            if pattern and not re.search(pattern, name):
                 continue
             metrics.append(name)
         return metrics

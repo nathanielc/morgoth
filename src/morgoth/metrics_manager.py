@@ -1,5 +1,6 @@
 
 from morgoth.metric_supervisor import MetricSupervisor, NullMetricSupervisor
+from collections import OrderedDict
 
 import re
 
@@ -13,11 +14,12 @@ class MetricsManager(object):
     _null_supervisor = NullMetricSupervisor()
     def __init__(self, app):
         self._app = app
-        self._supervisors = {}
+        self._supervisors = OrderedDict()
         self._metrics = set()
 
         # Load supervisors from conf
         for pattern, conf in self._app.config.metrics.items():
+            pattern = str(pattern)
             self._supervisors[pattern] = MetricSupervisor(pattern, conf)
 
     def new_metrics(self, metrics):
