@@ -5,8 +5,19 @@ Configuration
 .. contents::
 
 Morgoth configuration is all in yaml. Morgoth provides a handy
-:class:`config <morgoth.config.Config>` class that allows the config to 
-be easily accessed within the code base. 
+:class:`config <morgoth.config.Config>` class that allows the config to
+be easily accessed within the code base.
+
+
+Features
+========
+
+* Include other yaml files relative to the current file via the !include directive
+* Include other yaml files in a directory relative to the current file via the !include_dir directive
+* Preserve order of yaml dictionaries
+* Full support for alias nodes so large repeated configuration can be consolidated
+  NOTE: Aliases do not work across files.
+* Tracks which configuration is used so unused configuration can be removed
 
 Sections
 ========
@@ -17,7 +28,7 @@ There are four main sections to the Morgoth configuration.
 data_engine
 -----------
 
-This section of the configuration determines the data engine to be used. 
+This section of the configuration determines the data engine to be used.
 
 .. code-block:: yaml
 
@@ -52,6 +63,9 @@ Lets look an incomplete starting metrics config:
 First we can see that the metrics config is a dictionary where each key is a regex
 that matches metric names. This way you can define your own metric naming scheme.
 Since the matching is done via regex there is no assumed structure to the metrics names.
+
+Since the dictionaries are ordered the regex patterns need not be mutually exlusive.
+The first pattern to be matched will be used.
 
 
 Within each metrics you can define several components:
