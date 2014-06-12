@@ -1,8 +1,9 @@
+import logging
 
 from morgoth.data.reader import Reader
-import calendar
+from morgoth.utc import from_epoch
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -12,6 +13,38 @@ class InfluxReader(Reader):
     def __init__(self, db):
         super(InfluxReader, self).__init__()
         self._db = db
+
+    def get_metrics(self, pattern=None):
+        metrics = []
+        result = self._db.query("list series")
+        for row in result:
+            logger.debug(row['name'])
+            metrics.append(row['name'])
+
+        return metrics
+
+    def get_data(self, metric, start=None, stop=None, step=None):
+        query = "select time, value from %s " % metric
+        where = []
+        if start:
+            where.append("time > '%s'" % start.strftime(DATE_FORMAT))
+        if stop:
+            where.append("time < '%s'" % stop.strftime(DATE_FORMAT))
+
+        if where:
+            query += ' and '.join(where)
+
+        result = self._db.query(query)
+
+        time_data = []
+        for epoch, _, value in result[0]['points']:
+            time_data.append((from_epoch(epoch).isoformat(), value))
+
+        logger.debug(time_data)
+        return time_data
+
+
+
 
     def get_histogram(self, metric, n_bins, start, stop):
 

@@ -1,12 +1,12 @@
+import logging
 
 from influxdb import client
-from morgoth.data.engine import Engine
 
+from morgoth.data.engine import Engine
 from morgoth.data.influx.reader import InfluxReader
 from morgoth.data.influx.writer import InfluxWriter
 
 
-import logging
 logger = logging.getLogger(__name__)
 
 urllib3_logger = logging.getLogger('urllib3')

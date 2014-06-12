@@ -25,8 +25,8 @@ class Notifier(object):
 
     Notifiers 'notify' of anomalies in any desired manner.
     """
-    def __init___(self):
-        pass
+    def __init__(self, app):
+        self._app = app
 
     @classmethod
     def from_conf(cls, conf, app):
@@ -36,7 +36,7 @@ class Notifier(object):
         @param conf: a conf object
         @param app: reference to the current morgoth application
         """
-        return Notifier()
+        return Notifier(app)
 
 
     def notify(self, metric, windows):

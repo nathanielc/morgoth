@@ -29,6 +29,10 @@ class Reader(object):
         pass
 
     def get_data(self, metric, start=None, stop=None, step=None):
+        """
+        Return list of tuples of the following format:
+            (ISO date string, value)
+        """
         pass
 
     def get_anomalies(self, metric, start=None, stop=None):

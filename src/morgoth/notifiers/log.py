@@ -23,8 +23,8 @@ class LogNotifier(Notifier):
     """
     Simply logs the occurence of anomaly
     """
-    def __init___(self, app):
-        pass
+    def __init__(self, app):
+        super(LogNotifier, self).__init___(app)
 
     @classmethod
     def from_conf(cls, conf, app):
