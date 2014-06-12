@@ -11,6 +11,8 @@ be easily accessed within the code base.
 Sections
 ========
 
+There are four main sections to the Morgoth configuration.
+
 
 data_engine
 -----------
