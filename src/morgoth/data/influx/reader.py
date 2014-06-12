@@ -1,7 +1,8 @@
 import logging
+import re
 
 from morgoth.data.reader import Reader
-from morgoth.utc import from_epoch
+from morgoth.utc import from_epoch, to_epoch
 
 
 logger = logging.getLogger(__name__)
@@ -18,22 +19,30 @@ class InfluxReader(Reader):
         metrics = []
         result = self._db.query("list series")
         for row in result:
-            metrics.append(row['name'])
+            metric = row['name']
+            if pattern is None:
+                metrics.append(metric)
+            elif re.search(pattern, metric):
+                metrics.append(metric)
 
         return metrics
 
     def get_data(self, metric, start=None, stop=None, step=None):
+        super(InfluxReader, self).get_data(metric, start, stop, step)
         query = "select time, value from %s " % metric
         where = []
         if start:
-            where.append("time > '%s'" % start.strftime(DATE_FORMAT))
+            logger.debug(start.isoformat())
+            where.append("time > %dm" % (to_epoch(start) * 1000))
         if stop:
-            where.append("time < '%s'" % stop.strftime(DATE_FORMAT))
+            logger.debug(stop.isoformat())
+            where.append("time < %dm" % (to_epoch(stop) * 1000))
 
         if where:
             query += 'where ' + ' and '.join(where)
 
 
+        logger.debug(query)
         result = self._db.query(query, time_precision='m')
 
         time_data = []
@@ -47,6 +56,7 @@ class InfluxReader(Reader):
 
 
     def get_histogram(self, metric, n_bins, start, stop):
+        super(InfluxReader, self).get_histogram(metric, n_bins, start, stop)
 
         result = self._db.query("select min(value), max(value) from %s" % metric)
         m_min = result[0]['points'][0][1]

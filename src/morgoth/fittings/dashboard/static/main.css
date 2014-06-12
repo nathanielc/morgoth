@@ -6,6 +6,11 @@ header {
   padding: 6px 0;
 }
 
+.logo {
+    background-image: url('logo_200.png');
+    width: 200px;
+    height: 82px;
+}
 #chart_container {
         position: relative;
         font-family: Arial, Helvetica, sans-serif;

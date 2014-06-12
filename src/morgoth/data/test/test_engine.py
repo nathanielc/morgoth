@@ -196,6 +196,36 @@ class EngineTestCase(object):
             self.assertAlmostEqual(expected_hist[i], hist[i], places=2)
 
 
+    def _test_05(self, engine, app):
+
+        writer = engine.get_writer()
+        reader = engine.get_reader()
+
+        start = datetime(2014, 5, 29, 1, tzinfo=utc)
+
+        metric_count = 10
+        for i in range(metric_count):
+            metric = 'test_engine_%s_test05_%d' % (engine.__class__.__name__, i)
+            writer.insert(start, metric, 42)
+            self.assertEqual(i + 1, app.metrics_manager.new_metric_count)
+
+            writer.flush()
+            metrics = reader.get_metrics(metric)
+            self.assertEqual([metric], metrics)
+
+            data = reader.get_data(metric)
+            self.assertEqual(1, len(data))
+            self.assertEqual((start.isoformat(), 42), data[0])
+
+        metrics = reader.get_metrics()
+        self.assertEqual(metric_count, len(metrics))
+
+        metrics = reader.get_metrics(r'test05_[0-4]')
+        self.assertEqual(5, len(metrics))
+
+        metrics = reader.get_metrics(r'test05_[5-9]')
+        self.assertEqual(5, len(metrics))
+
 
 
 class MockMetricsManager(object):

@@ -53,6 +53,7 @@ class MongoReader(Reader):
         return metrics
 
     def get_data(self, metric, start=None, stop=None, step=None):
+        super(MongoReader, self).get_data(metric, start, stop, step)
         time_query = {}
         if start:
             time_query['$gte'] = start
@@ -92,10 +93,11 @@ class MongoReader(Reader):
         return time_data
 
     def get_anomalies(self, metric, start=None, stop=None):
+        super(MongoReader, self).get_anomalies(metric, start, stop)
         query = {'metric' : metric}
         if start and stop:
-            query['stop'] = { '$gte' : start }
-            query['start'] = { '$lte' : stop }
+            query['stop'] = {'$gte' : start}
+            query['start'] = {'$lte' : stop}
 
         data = self._db.anomalies.find(query)
         anomalies = []
@@ -108,6 +110,7 @@ class MongoReader(Reader):
         return anomalies
 
     def get_histogram(self, metric, n_bins, start, stop):
+        super(MongoReader, self).get_histogram(metric, n_bins, start, stop)
 
         meta = self._db.meta.find_one({'_id' : metric})
         if meta is None:

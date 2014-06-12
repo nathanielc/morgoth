@@ -18,6 +18,7 @@ from gevent.queue import JoinableQueue
 from gevent.event import Event
 import gevent
 import pymongo
+from morgoth.utc import utc
 
 import logging
 logger = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ class Writer(object):
         @param value: the value of the metric, must not be None
         @raise ValueError of `value` is None
         """
+        assert dt_utc.tzinfo == utc
         self._metrics_manager.new_metric(metric)
 
     def record_anomalous(self, metric, start, stop):
@@ -55,7 +57,8 @@ class Writer(object):
         @param start: the start time of the anomalous window
         @param stop: the stop time of the anomalous window
         """
-        pass
+        assert start.tzinfo == utc
+        assert stop.tzinfo == utc
 
 
 

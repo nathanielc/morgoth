@@ -33,10 +33,15 @@ class Reader(object):
         Return list of tuples of the following format:
             (ISO date string, value)
         """
-        pass
+        assert start is None or start.tzinfo == utc
+        assert stop is None or stop.tzinfo == utc
 
     def get_anomalies(self, metric, start=None, stop=None):
-        pass
+        """
+        Return list of anomalies for the given metric
+        """
+        assert start is None or start.tzinfo == utc
+        assert stop is None or stop.tzinfo == utc
 
     def get_histogram(self, metric, n_bins, start, stop):
         """
@@ -47,4 +52,5 @@ class Reader(object):
         @param start: the start time
         @param stop: the stop time
         """
-        pass
+        assert start.tzinfo == utc
+        assert stop.tzinfo == utc

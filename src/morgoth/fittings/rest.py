@@ -25,6 +25,7 @@ from morgoth.config import Config
 from morgoth.fittings.fitting import Fitting
 from morgoth.detectors import get_loader
 from morgoth.utils import timedelta_from_str
+from morgoth.utc import to_utc
 
 import logging
 logger = logging.getLogger(__name__)
@@ -141,7 +142,7 @@ def metric_data(metric):
     step = None
     if 'start' in request.args:
         try:
-            start = dateutil.parser.parse(request.args['start'])
+            start = to_utc(dateutil.parser.parse(request.args['start']))
         except Exception as e:
             return jsonify({
                 'error' : 'invalid start date format: %s' % str(e)
@@ -149,7 +150,7 @@ def metric_data(metric):
 
     if 'stop' in request.args:
         try:
-            stop = dateutil.parser.parse(request.args['stop'])
+            stop = to_utc(dateutil.parser.parse(request.args['stop']))
         except Exception as e:
             return jsonify({
                 'error' : 'invalid stop date format: %s' % str(e)
@@ -186,7 +187,7 @@ def metric_anomalies(metric):
     stop = None
     if 'start' in request.args:
         try:
-            start = dateutil.parser.parse(request.args['start'])
+            start = to_utc(dateutil.parser.parse(request.args['start']))
         except Exception as e:
             return jsonify({
                 'error' : 'invalid start date format: %s' % str(e)
@@ -194,7 +195,7 @@ def metric_anomalies(metric):
 
     if 'stop' in request.args:
         try:
-            stop = dateutil.parser.parse(request.args['stop'])
+            stop = to_utc(dateutil.parser.parse(request.args['stop']))
         except Exception as e:
             return jsonify({
                 'error' : 'invalid stop date format: %s' % str(e)
@@ -211,8 +212,8 @@ def metric_anomalies(metric):
 def check(metric):
 
     try:
-        start = parse_arg('start', 'invalid start date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse)
-        stop = parse_arg('stop', 'invalid stop date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse)
+        start = to_utc(parse_arg('start', 'invalid start date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse))
+        stop = to_utc(parse_arg('stop', 'invalid stop date format: "%(arg)s" Error: %(error)s', dateutil.parser.parse))
         detector_loader = get_loader()
         detector_class = parse_arg('detector', 'invalid detector name "%(arg)s" Error: %(error)s', detector_loader.get_plugin_class)
     except ParseError as e:

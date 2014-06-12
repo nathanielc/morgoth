@@ -30,6 +30,14 @@ def now():
     return datetime.now(utc)
 
 
+def to_utc(dt):
+    """
+    Convert a date to utc if not already
+
+    @param dt: datetime object in any timezone
+    """
+    return dt.astimezone(utc)
+
 def to_epoch(dt_utc):
     """
     Convert a datetime object to the number of seconds since the epoch
