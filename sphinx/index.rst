@@ -7,27 +7,19 @@
 Morgoth's documentation!
 ========================
 
+Welcome to Morgoth's documentation.
+
 .. toctree::
    :maxdepth: 1
 
    about
+   started
+   configuration
+   plugins
+   detectors
+   notifiers
+   fittings
    faq
 
-Morgoth ....
 
 
-here is some code::
-
-   import math
-   print 'import done'
-
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Configuration &mdash; Morgoth 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/extra.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="Morgoth 1 documentation" href="index.html" />
+    <link rel="next" title="Plugin Framework" href="plugins.html" />
+    <link rel="prev" title="Getting Started" href="started.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugin Framework"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="started.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Morgoth 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="configuration">
+<h1><a class="toc-backref" href="#id1">Configuration</a><a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#configuration" id="id1">Configuration</a><ul>
+<li><a class="reference internal" href="#sections" id="id2">Sections</a><ul>
+<li><a class="reference internal" href="#data-engine" id="id3">data_engine</a></li>
+<li><a class="reference internal" href="#metrics" id="id4">metrics</a></li>
+<li><a class="reference internal" href="#fittings" id="id5">fittings</a></li>
+<li><a class="reference internal" href="#plugin-dirs" id="id6">plugin_dirs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p>Morgoth configuration is all in yaml. Morgoth provides a handy
+<tt class="xref py py-class docutils literal"><span class="pre">config</span></tt> class that allows the config to
+be easily accessed within the code base.</p>
+<div class="section" id="sections">
+<h2><a class="toc-backref" href="#id2">Sections</a><a class="headerlink" href="#sections" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="data-engine">
+<h3><a class="toc-backref" href="#id3">data_engine</a><a class="headerlink" href="#data-engine" title="Permalink to this headline">¶</a></h3>
+<p>This section of the configuration determines the data engine to be used.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">data_engine</span><span class="p-Indicator">:</span>
+   <span class="l-Scalar-Plain">MongoEngine</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">&lt;specific conf for mongo&gt;</span>
+</pre></div>
+</div>
+<p>At the moment only one data engine may be specified.</p>
+</div>
+<div class="section" id="metrics">
+<h3><a class="toc-backref" href="#id4">metrics</a><a class="headerlink" href="#metrics" title="Permalink to this headline">¶</a></h3>
+<p>In this section you define what Morgoth will do with each of the metrics it receives.</p>
+<p>Lets look an incomplete starting metrics config:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
+   <span class="l-Scalar-Plain">app.*</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">&lt;specific config for just the app.* metrics&gt;</span>
+   <span class="l-Scalar-Plain">node.*</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">&lt;specific config for just the node.* metrics&gt;</span>
+   <span class="l-Scalar-Plain">network.*</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">&lt;specific config for just the network.* metrics&gt;</span>
+</pre></div>
+</div>
+<p>First we can see that the metrics config is a dictionary where each key is a regex
+that matches metric names. This way you can define your own metric naming scheme.
+Since the matching is done via regex there is no assumed structure to the metrics names.</p>
+<p>Within each metrics you can define several components:</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">metrics</span><span class="p-Indicator">:</span>
+   <span class="l-Scalar-Plain">app.*</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">detectors</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">Threshold</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">&lt;specific threshold config&gt;</span>
+         <span class="l-Scalar-Plain">Tukey</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">&lt;specific tukey config&gt;</span>
+      <span class="l-Scalar-Plain">notifiers</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">EmailNotifier</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">&lt;specific email config&gt;</span>
+      <span class="l-Scalar-Plain">schedule</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">duration</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5m</span>
+         <span class="l-Scalar-Plain">period</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5m</span>
+         <span class="l-Scalar-Plain">delay</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1m</span>
+   <span class="l-Scalar-Plain">node.*</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">detectors</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">Threshold</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">&lt;specific threshold config&gt;</span>
+      <span class="l-Scalar-Plain">notifiers</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">LogNotifier</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">&lt;specific log config&gt;</span>
+      <span class="l-Scalar-Plain">schedule</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">duration</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5m</span>
+         <span class="l-Scalar-Plain">period</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5m</span>
+         <span class="l-Scalar-Plain">delay</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1m</span>
+   <span class="l-Scalar-Plain">network.*</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">detectors</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">Threshold</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">&lt;specific threshold config&gt;</span>
+         <span class="l-Scalar-Plain">MGOF</span><span class="p-Indicator">:</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">&lt;specific mgof config&gt;</span>
+            <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">&lt;another mgof config&gt;</span>
+      <span class="l-Scalar-Plain">notifiers</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">EmailNotifier</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">&lt;specific email config&gt;</span>
+      <span class="l-Scalar-Plain">schedule</span><span class="p-Indicator">:</span>
+         <span class="l-Scalar-Plain">duration</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5m</span>
+         <span class="l-Scalar-Plain">period</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5m</span>
+         <span class="l-Scalar-Plain">delay</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1m</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fittings">
+<h3><a class="toc-backref" href="#id5">fittings</a><a class="headerlink" href="#fittings" title="Permalink to this headline">¶</a></h3>
+<p>The fittings that you wish to be installed are configured here. The fittings config object
+is a dictionary where each key is the name of a fitting class and the values are passed
+to the fitting for instantiation.</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">fittings</span><span class="p-Indicator">:</span>
+   <span class="l-Scalar-Plain">Graphite</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">...</span>
+   <span class="l-Scalar-Plain">Rest</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">...</span>
+   <span class="l-Scalar-Plain">Dashboard</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="plugin-dirs">
+<h3><a class="toc-backref" href="#id6">plugin_dirs</a><a class="headerlink" href="#plugin-dirs" title="Permalink to this headline">¶</a></h3>
+<p>Morgoth will autoload plugins from these directories. Specify a list of directories
+for each type of plugin</p>
+<div class="highlight-yaml"><div class="highlight"><pre><span class="l-Scalar-Plain">plugin_dirs</span><span class="p-Indicator">:</span>
+   <span class="l-Scalar-Plain">detectors</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">/etc/morgoth/detectors</span>
+   <span class="l-Scalar-Plain">notifiers</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">/etc/morgoth/notifiers</span>
+   <span class="l-Scalar-Plain">fittings</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">/etc/morgoth/fittings</span>
+   <span class="l-Scalar-Plain">data_engines</span><span class="p-Indicator">:</span>
+      <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">/etc/morgoth/data_engines</span>
+</pre></div>
+</div>
+<p>NOTE: The respective directories in the Morgoth code base will always be searched for plugins.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo_200.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Configuration</a><ul>
+<li><a class="reference internal" href="#sections">Sections</a><ul>
+<li><a class="reference internal" href="#data-engine">data_engine</a></li>
+<li><a class="reference internal" href="#metrics">metrics</a></li>
+<li><a class="reference internal" href="#fittings">fittings</a></li>
+<li><a class="reference internal" href="#plugin-dirs">plugin_dirs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plugins.html" title="Plugin Framework"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="started.html" title="Getting Started"
+             >previous</a> |</li>
+        <li><a href="index.html">Morgoth 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Nathaniel Cook.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

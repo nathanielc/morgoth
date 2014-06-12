@@ -1,0 +1,176 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Plugin Framework &mdash; Morgoth 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/extra.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="top" title="Morgoth 1 documentation" href="index.html" />
+    <link rel="next" title="Detectors" href="detectors.html" />
+    <link rel="prev" title="Getting Started" href="started.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="detectors.html" title="Detectors"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="started.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Morgoth 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="plugin-framework">
+<h1>Plugin Framework<a class="headerlink" href="#plugin-framework" title="Permalink to this headline">¶</a></h1>
+<p>Morgoth is implemented in a simple plugin framework. Each of its components
+follow similiar patterns. Plugins are first class citizens as the core functionality
+of morgoth is implemented as plugins.</p>
+<div class="section" id="writting-a-plugins">
+<h2>Writting a plugins<a class="headerlink" href="#writting-a-plugins" title="Permalink to this headline">¶</a></h2>
+<p>Lets look at the basics of writting a plugin to Morgoth. There are three pieces
+to creating a plugin.</p>
+<ul class="simple">
+<li>The class to extend</li>
+<li>The configuration for the plugin</li>
+<li>The location to place the plugin</li>
+</ul>
+<div class="section" id="the-class-to-extend">
+<h3>The class to extend<a class="headerlink" href="#the-class-to-extend" title="Permalink to this headline">¶</a></h3>
+<p>Each type of plugin in Morgoth will require that you extend a base class.
+For example to create a new detector simply write a python class that impletements
+the <tt class="xref py py-class docutils literal"><span class="pre">Detector</span></tt> class.</p>
+</div>
+<div class="section" id="the-plugin-configuration">
+<h3>The plugin configuration<a class="headerlink" href="#the-plugin-configuration" title="Permalink to this headline">¶</a></h3>
+<p>Each plugin must implement a &#8216;from_conf&#8217; classmethod that will return an instance
+of the plugin based on a given configuration object.</p>
+<p>For example, the email notifier from method looks like this (check out the source):</p>
+<span class="target" id="module-morgoth.notifiers.email_notifier"></span><dl class="class">
+<dt id="morgoth.notifiers.email_notifier.EmailNotifier">
+<em class="property">class </em><tt class="descclassname">morgoth.notifiers.email_notifier.</tt><tt class="descname">EmailNotifier</tt><big>(</big><em>app</em>, <em>toaddrs</em>, <em>fromaddr</em>, <em>host</em>, <em>port</em>, <em>tls=False</em>, <em>username=None</em>, <em>password=None</em><big>)</big><a class="reference internal" href="_modules/morgoth/notifiers/email_notifier.html#EmailNotifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morgoth.notifiers.email_notifier.EmailNotifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends an email with information about each anomaly</p>
+<dl class="classmethod">
+<dt id="morgoth.notifiers.email_notifier.EmailNotifier.from_conf">
+<em class="property">classmethod </em><tt class="descname">from_conf</tt><big>(</big><em>conf</em>, <em>app</em><big>)</big><a class="reference internal" href="_modules/morgoth/notifiers/email_notifier.html#EmailNotifier.from_conf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#morgoth.notifiers.email_notifier.EmailNotifier.from_conf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a notifier from the given conf</p>
+<p>&#64;param conf: a conf object</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>As you can see the method simply consumes a config object and returns and instance of the
+EmailNotifier plugin. This allows each plugin to be fully configurable and define sane
+defaults.</p>
+</div>
+<div class="section" id="the-location-to-place-the-plugin">
+<h3>The location to place the plugin<a class="headerlink" href="#the-location-to-place-the-plugin" title="Permalink to this headline">¶</a></h3>
+<p>If a plugin is defined in the main configuration then it will be autoloaded at startup.
+In order for Morgoth to find the plugin is need to be in a specific location:</p>
+<ul class="simple">
+<li>In the approriate directory within to code base</li>
+<li>In a user configured directory</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo_200.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Plugin Framework</a><ul>
+<li><a class="reference internal" href="#writting-a-plugins">Writting a plugins</a><ul>
+<li><a class="reference internal" href="#the-class-to-extend">The class to extend</a></li>
+<li><a class="reference internal" href="#the-plugin-configuration">The plugin configuration</a></li>
+<li><a class="reference internal" href="#the-location-to-place-the-plugin">The location to place the plugin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="detectors.html" title="Detectors"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="started.html" title="Getting Started"
+             >previous</a> |</li>
+        <li><a href="index.html">Morgoth 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Nathaniel Cook.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
