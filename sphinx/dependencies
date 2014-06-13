@@ -1,0 +1,13 @@
+
+python2.7 -- soon to be ported to 2.6
+
+dateutil
+gevent
+flask
+scipy
+pyyaml
+wtforms
+
+pymongo -- If using MongoDB data engine
+influxdb -- If using InfluxDB data engine
+
