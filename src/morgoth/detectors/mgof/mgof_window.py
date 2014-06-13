@@ -36,20 +36,6 @@ class MGOFWindow(Window):
         self._trainer = trainer
         self._prob_dist = None
 
-    @Window.id.getter
-    def id(self):
-        """
-        Return unique id for this window
-        """
-        if self._id is None:
-            self._id = "%s|%s|%s|%d|mgof" % (
-                    self._metric,
-                    self._start,
-                    self._stop,
-                    self._n_bins
-                )
-        return self._id
-
     @property
     def trainer(self):
         return self._trainer

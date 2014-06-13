@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bson.objectid import ObjectId
 import os
 
 __dir__ = os.path.dirname(__file__)
@@ -27,7 +26,6 @@ class Window(object):
         self._metric = metric
         self._start = start
         self._stop = stop
-        self._id = None
         self._anomalous = None
         self._detector_name = detector_name
 
@@ -58,13 +56,6 @@ class Window(object):
         Return the stop time in UTC of the window
         """
         return self._stop
-
-    @property
-    def id(self):
-        if self._id is None:
-            self._id = ObjectId()
-        return self._id
-
 
     @property
     def anomalous(self):
