@@ -2,7 +2,7 @@ import logging
 import re
 
 from morgoth.data.reader import Reader
-from morgoth.utc import from_epoch, to_epoch
+from morgoth.date_utils import from_epoch, to_epoch
 
 
 logger = logging.getLogger(__name__)

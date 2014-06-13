@@ -1,7 +1,7 @@
 
 from datetime import datetime, timedelta
 from morgoth.config import Config
-from morgoth.utc import utc
+from morgoth.date_utils import utc
 
 import random
 

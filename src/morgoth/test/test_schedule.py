@@ -15,6 +15,7 @@
 
 from datetime import timedelta
 from morgoth.schedule import Schedule, ScheduleError
+from morgoth.date_utils import total_seconds
 
 import unittest
 import gevent
@@ -36,19 +37,19 @@ class TestSchedule(unittest.TestCase):
         i = 0
         max_calls = 3
         while self.called < max_calls:
-            gevent.sleep(self.period.total_seconds() / 2)
+            gevent.sleep(total_seconds(self.period) / 2)
             if i > max_calls * 3:
                 raise AssertionError('Callback not called often enough')
             i += 1
 
         sched.stop()
-        time.sleep(self.period.total_seconds() / 2)
+        time.sleep(total_seconds(self.period) / 2)
         self.assertEqual(max_calls, self.called)
 
 
     def _callback(self):
         self.assertGreater(time.time(), self.last)
-        self.last += self.period.total_seconds()
+        self.last += total_seconds(self.period)
         self.called += 1
 
 

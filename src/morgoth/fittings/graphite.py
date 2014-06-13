@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import socket
-from morgoth.utc import utc
+from morgoth.date_utils import utc
 from morgoth.fittings.fitting import Fitting
 from gevent.server import StreamServer
 from datetime import datetime

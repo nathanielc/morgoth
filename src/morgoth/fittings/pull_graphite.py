@@ -16,11 +16,11 @@
 
 from dateutil.tz import tzoffset, gettz
 from datetime import timedelta, datetime
-from morgoth.utc import now, utc
+from morgoth.date_utils import now, utc
 from morgoth.fittings.fitting import Fitting
 from morgoth.schedule import Schedule
 from morgoth.utils import timedelta_from_str
-from morgoth.utc import from_epoch
+from morgoth.date_utils import from_epoch, total_seconds
 import urllib2
 import json
 
@@ -94,7 +94,7 @@ class PullGraphite(Fitting):
                 period,
                 metric_format,
                 lag,
-                offset.total_seconds(),
+                total_seconds(offset),
                 tz,
                 user,
                 password

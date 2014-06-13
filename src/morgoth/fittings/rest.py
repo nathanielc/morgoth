@@ -25,7 +25,7 @@ from morgoth.config import Config
 from morgoth.fittings.fitting import Fitting
 from morgoth.detectors import get_loader
 from morgoth.utils import timedelta_from_str
-from morgoth.utc import to_utc
+from morgoth.date_utils import to_utc, total_seconds
 
 import logging
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ def crossdomain(origin=None, methods=None, headers=None,
     if not isinstance(origin, basestring):
         origin = ', '.join(origin)
     if isinstance(max_age, timedelta):
-        max_age = max_age.total_seconds()
+        max_age = total_seconds(max_age)
 
     def get_methods():
         if methods is not None:

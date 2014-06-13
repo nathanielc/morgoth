@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from datetime import datetime, timedelta
-from morgoth.utc import now, utc
+from morgoth.date_utils import now, utc, total_seconds
 import gevent
 import time
 
@@ -38,7 +38,7 @@ class Schedule(object):
         @param period: timedelta object
         @param callback: callable action
         """
-        self._period = period.total_seconds()
+        self._period = total_seconds(period)
         self._callback = callback
         self._delay = delay
         self._running = False
@@ -75,7 +75,7 @@ class Schedule(object):
         """
         logger.debug("Starting schedule at %s" % when_utc)
         delta = when_utc - now()
-        gevent.spawn_later(delta.total_seconds(), self.start)
+        gevent.spawn_later(total_seconds(delta), self.start)
 
     def start(self):
         """

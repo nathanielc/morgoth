@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from datetime import datetime, timedelta
-from morgoth.utc import utc
+from morgoth.date_utils import utc
 import re
 
 import logging
