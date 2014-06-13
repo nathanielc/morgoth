@@ -1,6 +1,6 @@
 
 from morgoth.data.writer import DefaultWriter
-from morgoth.utc import to_epoch
+from morgoth.date_utils import to_epoch
 
 
 import logging

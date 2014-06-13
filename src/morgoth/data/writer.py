@@ -17,8 +17,7 @@
 from gevent.queue import JoinableQueue
 from gevent.event import Event
 import gevent
-import pymongo
-from morgoth.utc import utc
+from morgoth.date_utils import utc
 
 import logging
 logger = logging.getLogger(__name__)

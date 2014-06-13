@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from morgoth.window import Window
-from morgoth.utc import utc
+from morgoth.date_utils import utc
 import logging
 import unittest
 

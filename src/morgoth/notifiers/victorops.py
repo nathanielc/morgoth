@@ -19,7 +19,7 @@ import re
 import urllib2
 
 from morgoth.notifiers.notifier import Notifier
-from morgoth.utc import to_epoch
+from morgoth.date_utils import to_epoch
 
 
 logger = logging.getLogger(__name__)

@@ -18,7 +18,7 @@ from bson.son import SON
 from datetime import datetime, timedelta
 from morgoth.data.reader import Reader
 from morgoth.error import MorgothError
-from morgoth.utc import utc
+from morgoth.date_utils import utc
 import re
 import os
 

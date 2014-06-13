@@ -15,7 +15,7 @@
 
 from morgoth.schedule import Schedule
 from morgoth.utils import timedelta_from_str
-from morgoth.utc import now
+from morgoth.date_utils import now
 import morgoth.detectors
 import morgoth.notifiers
 
