@@ -21,3 +21,15 @@ class InfluxWriter(DefaultWriter):
             ],
         }]
         self._db.write_points_with_precision(data, time_precision='s')
+
+    def record_anomalous(self, metric, start, stop):
+        super(InfluxWriter, self).record_anomalous(metric, start, stop)
+
+        data = [{
+            'name' : 'morgoth_anomalies',
+            'columns' : ['metric', 'start', 'stop'],
+            'points' : [
+                [metric, to_epoch(start), to_epoch(stop)]
+            ]
+        }]
+        self._db.write_points_with_precision(data, time_precision='s')

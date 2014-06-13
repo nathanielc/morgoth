@@ -61,7 +61,7 @@ class EngineTestCase(object):
 
         start = datetime(2014, 5, 29, 1, tzinfo=utc)
 
-        metric = 'test_engine_' + engine.__class__.__name__ + str(random.randint(0, 100))
+        metric = 'test_engine_' + engine.__class__.__name__ + 'test_01'
         writer.insert(start, metric, 42)
         self.assertEqual(1, app.metrics_manager.new_metric_count)
 
@@ -75,7 +75,7 @@ class EngineTestCase(object):
 
     def _test_02(self, engine, app):
 
-        metric = 'test_engine_' + engine.__class__.__name__ + str(random.randint(0, 100))
+        metric = 'test_engine_' + engine.__class__.__name__ + 'test_02'
 
         writer = engine.get_writer()
         reader = engine.get_reader()
@@ -150,7 +150,7 @@ class EngineTestCase(object):
 
     def _test_04(self, engine, app):
 
-        metric = 'test_engine_' + engine.__class__.__name__ + str(random.randint(0, 100))
+        metric = 'test_engine_' + engine.__class__.__name__ + 'test_04'
 
         writer = engine.get_writer()
         reader = engine.get_reader()
@@ -226,6 +226,44 @@ class EngineTestCase(object):
 
         metrics = reader.get_metrics(r'test05_[5-9]')
         self.assertEqual(5, len(metrics))
+
+    def _test_06(self, engine, app):
+
+        writer = engine.get_writer()
+        reader = engine.get_reader()
+
+        metric = 'test_engine_' + engine.__class__.__name__ + 'test_06'
+        start = datetime(2014, 5, 29, 1, tzinfo=utc)
+        stop = datetime(2014, 5, 29, 2, tzinfo=utc)
+
+        writer.record_anomalous(metric, start, stop)
+
+        anomalies = reader.get_anomalies(metric)
+        self.assertEqual(1, len(anomalies))
+        self.assertEqual(start.isoformat(), anomalies[0]['start'])
+        self.assertEqual(stop.isoformat(), anomalies[0]['stop'])
+
+        anomalies = reader.get_anomalies(metric, start=start)
+        self.assertEqual(1, len(anomalies))
+        self.assertEqual(start.isoformat(), anomalies[0]['start'])
+        self.assertEqual(stop.isoformat(), anomalies[0]['stop'])
+
+        anomalies = reader.get_anomalies(metric, stop=stop)
+        self.assertEqual(1, len(anomalies))
+        self.assertEqual(start.isoformat(), anomalies[0]['start'])
+        self.assertEqual(stop.isoformat(), anomalies[0]['stop'])
+
+
+        anomalies = reader.get_anomalies(metric, start=start, stop=stop)
+        self.assertEqual(1, len(anomalies))
+        self.assertEqual(start.isoformat(), anomalies[0]['start'])
+        self.assertEqual(stop.isoformat(), anomalies[0]['stop'])
+
+        anomalies = reader.get_anomalies(metric, start=stop)
+        self.assertEqual(0, len(anomalies))
+
+        anomalies = reader.get_anomalies(metric, stop=start)
+        self.assertEqual(0, len(anomalies))
 
 
 

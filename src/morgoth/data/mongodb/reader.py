@@ -98,6 +98,10 @@ class MongoReader(Reader):
         if start and stop:
             query['stop'] = {'$gte' : start}
             query['start'] = {'$lte' : stop}
+        elif start:
+            query['start'] = {'$gte' : start}
+        elif stop:
+            query['stop'] = {'$lte' : stop}
 
         data = self._db.anomalies.find(query)
         anomalies = []

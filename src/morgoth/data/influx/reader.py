@@ -52,6 +52,36 @@ class InfluxReader(Reader):
 
 
 
+    def get_anomalies(self, metric, start=None, stop=None):
+        super(InfluxReader, self).get_anomalies(metric, start, stop)
+
+        anomalies = []
+
+        query = "select time, start, stop from morgoth_anomalies where metric = '%s'" % metric
+
+        time_clause = None
+        if start and stop:
+            time_clause = 'stop >= %d and start <= %d' % (to_epoch(start), to_epoch(stop))
+        elif start:
+            time_clause = 'start >= %d' % to_epoch(start)
+        elif stop:
+            time_clause = 'stop <= %d' % to_epoch(stop)
+
+        if time_clause:
+            query += 'and %s' % time_clause
+
+        result = self._db.query(query, time_precision='s')
+        if result:
+            for time, num, start, stop in result[0]['points']:
+                anomalies.append({
+                    'start' : from_epoch(start).isoformat(),
+                    'stop' : from_epoch(stop).isoformat(),
+                    'id' : str(time) + str(num)
+                })
+        return anomalies
+
+
+
 
     def get_histogram(self, metric, n_bins, start, stop):
         super(InfluxReader, self).get_histogram(metric, n_bins, start, stop)

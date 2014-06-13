@@ -39,6 +39,12 @@ class Reader(object):
     def get_anomalies(self, metric, start=None, stop=None):
         """
         Return list of anomalies for the given metric
+        each entry in the list should have the form:
+        {
+             'start' : ISO date string,
+             'stop'  : ISO date string,
+             'id'    : unique id for the anomaly
+        }
         """
         assert start is None or start.tzinfo == utc
         assert stop is None or stop.tzinfo == utc
