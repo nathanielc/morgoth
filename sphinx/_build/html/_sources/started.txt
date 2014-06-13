@@ -2,9 +2,9 @@
 Getting Started
 ###############
 
-To get started using Morgoth follow one of these simple exercises below
+To get started using morgoth follow one of these simple exercises below
 or start by reading the configuration, and components section of this documentation
-to learn how to start using Morgoth for your own project.
+to learn how to start using morgoth for your own project.
 
 .. contents::
 
@@ -51,17 +51,17 @@ The process should remain in the foreground and print out some simple debug mess
 Send graphite data to Morgoth
 -----------------------------
 
-There are three ways to get graphite data into Morgoth.
+There are three ways to get graphite data into morgoth.
 
-* Point your application at Morgoth with the graphite fitting running
+* Point your application at morgoth with the graphite fitting running
 * Use the pull graphite config fitting periodically query data from graphite
-* Configure the carbon-relay to send data to both Morgoth and your existing system
+* Configure the carbon-relay to send data to both morgoth and your existing system
 
 For simplicity in this tutorial we will follow the first option.
 
 Using the example config you should see that the graphite fitting is configured and listening on port 2003.
 
-Lets send some data to Morgoth:
+Lets send some data to morgoth:
 
 .. code-block:: sh
 
@@ -100,7 +100,7 @@ Now lets add more data and examine the dashboard to visualize the data.
 Now navigate to http://localhost:4000 to see the 10 seconds or so of data.
 (This dashboard is functional and thats all, if you have any design sinse at all I would gladly accept a pull request)
 
-Thats it, you can add data to Morgoth just like you would graphite.
+Thats it, you can add data to morgoth just like you would graphite.
 
 
 

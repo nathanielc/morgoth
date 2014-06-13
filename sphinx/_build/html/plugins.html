@@ -64,7 +64,7 @@ follow similiar patterns. Plugins are first class citizens as the core functiona
 of morgoth is implemented as plugins.</p>
 <div class="section" id="writting-a-plugins">
 <h2>Writting a plugins<a class="headerlink" href="#writting-a-plugins" title="Permalink to this headline">¶</a></h2>
-<p>Lets look at the basics of writting a plugin to Morgoth. There are three pieces
+<p>Lets look at the basics of writting a plugin to morgoth. There are three pieces
 to creating a plugin.</p>
 <ul class="simple">
 <li>The class to extend</li>
@@ -73,7 +73,7 @@ to creating a plugin.</p>
 </ul>
 <div class="section" id="the-class-to-extend">
 <h3>The class to extend<a class="headerlink" href="#the-class-to-extend" title="Permalink to this headline">¶</a></h3>
-<p>Each type of plugin in Morgoth will require that you extend a base class.
+<p>Each type of plugin in morgoth will require that you extend a base class.
 For example to create a new detector simply write a python class that impletements
 the <tt class="xref py py-class docutils literal"><span class="pre">Detector</span></tt> class.</p>
 </div>
@@ -102,7 +102,7 @@ defaults.</p>
 <div class="section" id="the-location-to-place-the-plugin">
 <h3>The location to place the plugin<a class="headerlink" href="#the-location-to-place-the-plugin" title="Permalink to this headline">¶</a></h3>
 <p>If a plugin is defined in the main configuration then it will be autoloaded at startup.
-In order for Morgoth to find the plugin is need to be in a specific location:</p>
+In order for morgoth to find the plugin is need to be in a specific location:</p>
 <ul class="simple">
 <li>In the approriate directory within to code base</li>
 <li>In a user configured directory</li>

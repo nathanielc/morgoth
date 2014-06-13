@@ -10,7 +10,7 @@ of morgoth is implemented as plugins.
 Writting a plugins
 ==================
 
-Lets look at the basics of writting a plugin to Morgoth. There are three pieces
+Lets look at the basics of writting a plugin to morgoth. There are three pieces
 to creating a plugin. 
 
 * The class to extend
@@ -22,7 +22,7 @@ The class to extend
 -------------------
 
 
-Each type of plugin in Morgoth will require that you extend a base class.
+Each type of plugin in morgoth will require that you extend a base class.
 For example to create a new detector simply write a python class that impletements
 the :class:`Detector <morgoth.detectors.detector.Detector>` class.
 
@@ -54,7 +54,7 @@ The location to place the plugin
 --------------------------------
 
 If a plugin is defined in the main configuration then it will be autoloaded at startup.
-In order for Morgoth to find the plugin is need to be in a specific location:
+In order for morgoth to find the plugin is need to be in a specific location:
 
 * In the approriate directory within to code base
 * In a user configured directory

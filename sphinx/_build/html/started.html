@@ -59,9 +59,9 @@
             
   <div class="section" id="getting-started">
 <h1><a class="toc-backref" href="#id1">Getting Started</a><a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<p>To get started using Morgoth follow one of these simple exercises below
+<p>To get started using morgoth follow one of these simple exercises below
 or start by reading the configuration, and components section of this documentation
-to learn how to start using Morgoth for your own project.</p>
+to learn how to start using morgoth for your own project.</p>
 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
@@ -120,15 +120,15 @@ change the config.</p>
 </div>
 <div class="section" id="send-graphite-data-to-morgoth">
 <h3><a class="toc-backref" href="#id5">Send graphite data to Morgoth</a><a class="headerlink" href="#send-graphite-data-to-morgoth" title="Permalink to this headline">¶</a></h3>
-<p>There are three ways to get graphite data into Morgoth.</p>
+<p>There are three ways to get graphite data into morgoth.</p>
 <ul class="simple">
-<li>Point your application at Morgoth with the graphite fitting running</li>
+<li>Point your application at morgoth with the graphite fitting running</li>
 <li>Use the pull graphite config fitting periodically query data from graphite</li>
-<li>Configure the carbon-relay to send data to both Morgoth and your existing system</li>
+<li>Configure the carbon-relay to send data to both morgoth and your existing system</li>
 </ul>
 <p>For simplicity in this tutorial we will follow the first option.</p>
 <p>Using the example config you should see that the graphite fitting is configured and listening on port 2003.</p>
-<p>Lets send some data to Morgoth:</p>
+<p>Lets send some data to morgoth:</p>
 <div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;graphite.test_data 42 `date +&#39;%s&#39;`&quot;</span> | nc localhost 2003
 </pre></div>
 </div>
@@ -158,7 +158,7 @@ change the config.</p>
 </div>
 <p>Now navigate to <a class="reference external" href="http://localhost:4000">http://localhost:4000</a> to see the 10 seconds or so of data.
 (This dashboard is functional and thats all, if you have any design sinse at all I would gladly accept a pull request)</p>
-<p>Thats it, you can add data to Morgoth just like you would graphite.</p>
+<p>Thats it, you can add data to morgoth just like you would graphite.</p>
 </div>
 </div>
 </div>

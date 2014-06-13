@@ -13,8 +13,8 @@ to make better decisions. Recently new open source projects have really taken of
 that allow applications to easily collect massive amount of data about the way their systems
 are behaving (see `elasticsearch <http://elasticsearch.org>`_, `logstash <http://logstash.net>`_,
 `graphite <http://graphite.wikidot.com>`_, many more...).
-But collecting the data is not enough, Morgoth attempts to provide a flexible
-system to consume application data and make inteligent decisions about the data. What Morgoth does with
+But collecting the data is not enough, morgoth attempts to provide a flexible
+system to consume application data and make inteligent decisions about the data. What morgoth does with
 the data is up to you. It can simply notify your team of discovered anomalies or reintegrate
 with the application to help it become self healing.
 
@@ -22,7 +22,7 @@ What makes Morgoth different from other similiar projects?
 ==========================================================
 
 Morgoth takes a very modular approach to anomaly detection. There is no
-single algorithm or method to detect anomalies. Morogth comes built in with several
+single algorithm or method to detect anomalies. Morgoth comes built in with several
 algorithms but can easily be extended to add more.
 
 Morgoth also tries to be very simple. It doesn't have tons of dependencies and most
@@ -38,14 +38,14 @@ MGOF (Multinomial Goodness of Fit), and has been adapted from this research
 Can Morgoth integrate with ...?
 ================================
 
-Morgoth can integrate with almost anything. Each component of Morgoth is plugable. Currently Morgoth
+Morgoth can integrate with almost anything. Each component of morgoth is plugable. Currently morgoth
 has several :doc:`fittings <fittings>` that integrate with graphite.
 
 
 Why the name 'Morgoth'?
 =======================
 
-The name Morgoth comes from the Lord of the Ring folklore. Morgoth is Sauron's master. Morgoth has been written
+The name morgoth comes from the Lord of the Ring folklore. Morgoth is Sauron's master. Morgoth has been written
 to replace an internal system named Sauron. This older system was called Sauron because it 'saw all' metrics in our
 systems. Morgoth is an attempt and improving on that design and is a complete rewrite of Sauron.
 

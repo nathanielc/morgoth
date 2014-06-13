@@ -7,8 +7,6 @@
 Morgoth's documentation!
 ========================
 
-Welcome to Morgoth's documentation.
-
 .. toctree::
    :maxdepth: 1
 

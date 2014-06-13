@@ -22,7 +22,7 @@ Features
 Sections
 ========
 
-There are four main sections to the Morgoth configuration.
+There are four main sections to the morgoth configuration.
 
 
 data_engine
@@ -43,7 +43,7 @@ At the moment only one data engine may be specified.
 metrics
 -------
 
-In this section you define what Morgoth will do with each of the metrics it receives.
+In this section you define what morgoth will do with each of the metrics it receives.
 
 
 Lets look an incomplete starting metrics config:
@@ -149,5 +149,5 @@ for each type of plugin
       data_engines:
          - /etc/morgoth/data_engines
 
-NOTE: The respective directories in the Morgoth code base will always be searched for plugins.
+NOTE: The respective directories in the morgoth code base will always be searched for plugins.
 
