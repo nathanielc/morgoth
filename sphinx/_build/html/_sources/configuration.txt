@@ -22,8 +22,6 @@ Features
 Sections
 ========
 
-There are four main sections to the morgoth configuration.
-
 
 data_engine
 -----------
@@ -151,3 +149,8 @@ for each type of plugin
 
 NOTE: The respective directories in the morgoth code base will always be searched for plugins.
 
+
+logging
+-------
+
+Finally a last section for configuring logging. Current the only option is to set the logging level. This will be extended later but for now all logs are just sent to stdout.

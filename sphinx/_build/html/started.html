@@ -70,6 +70,7 @@ to learn how to start using morgoth for your own project.</p>
 <li><a class="reference internal" href="#install-morgoth" id="id3">Install Morgoth</a></li>
 <li><a class="reference internal" href="#running-morgoth" id="id4">Running Morgoth</a></li>
 <li><a class="reference internal" href="#send-graphite-data-to-morgoth" id="id5">Send graphite data to Morgoth</a></li>
+<li><a class="reference internal" href="#detecting-your-first-anomaly" id="id6">Detecting your first anomaly</a></li>
 </ul>
 </li>
 </ul>
@@ -129,18 +130,18 @@ change the config.</p>
 <p>For simplicity in this tutorial we will follow the first option.</p>
 <p>Using the example config you should see that the graphite fitting is configured and listening on port 2003.</p>
 <p>Lets send some data to morgoth:</p>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;graphite.test_data 42 `date +&#39;%s&#39;`&quot;</span> | nc localhost 2003
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">echo</span> <span class="s2">&quot;graphite.test_data 42 `date +&#39;%s&#39;`&quot;</span> | nc 127.0.0.1 2003
 </pre></div>
 </div>
 <p>Now query the api to make sure we got the data...</p>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>curl -X GET http://localhost:8001/metrics
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>curl -X GET http://localhost:7001/metrics
 <span class="o">{</span>
    <span class="s2">&quot;metrics&quot;</span>: <span class="o">[</span>
       <span class="s2">&quot;graphite.test_data&quot;</span>
    <span class="o">]</span>
 <span class="o">}</span>
 
-<span class="nv">$ </span>curl -X GET http://localhost:8001/data/graphite.test_data
+<span class="nv">$ </span>curl -X GET http://localhost:7001/data/graphite.test_data
 <span class="o">{</span>
   <span class="s2">&quot;metric&quot;</span>: <span class="s2">&quot;graphite.test_data&quot;</span>,
   <span class="s2">&quot;data&quot;</span>: <span class="o">[</span>
@@ -153,12 +154,39 @@ change the config.</p>
 </pre></div>
 </div>
 <p>Now lets add more data and examine the dashboard to visualize the data.</p>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="k">for </span>i in <span class="o">{</span>1..10<span class="o">}</span>; <span class="k">do </span><span class="nb">echo</span> <span class="s2">&quot;graphite.test_data $i `date +&#39;%s&#39;`&quot;</span> | nc localhost 2003; sleep 1; <span class="k">done</span>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="k">for </span>i in <span class="o">{</span>1..9<span class="o">}</span>; <span class="k">do </span><span class="nb">echo</span> <span class="s2">&quot;graphite.test_data 0.$i `date +&#39;%s&#39;`&quot;</span> | nc 127.0.0.1 2003; sleep 1; <span class="k">done</span>
 </pre></div>
 </div>
-<p>Now navigate to <a class="reference external" href="http://localhost:4000">http://localhost:4000</a> to see the 10 seconds or so of data.
+<p>Now navigate to <a class="reference external" href="http://localhost:7000">http://localhost:7000</a> to see the 10 seconds or so of data.
 (This dashboard is functional and thats all, if you have any design sinse at all I would gladly accept a pull request)</p>
 <p>Thats it, you can add data to morgoth just like you would graphite.</p>
+</div>
+<div class="section" id="detecting-your-first-anomaly">
+<h3><a class="toc-backref" href="#id6">Detecting your first anomaly</a><a class="headerlink" href="#detecting-your-first-anomaly" title="Permalink to this headline">¶</a></h3>
+<p>Now lets detect and anomaly. The example config has just a single Threshold anomaly detector. As it is configured if 70%
+of the values during the data window are above &#8216;2&#8217; than it will consider the window anomalous.</p>
+<p>Lets use the load average data from your current system. Run this script to add the one minute load average every second to morgoth.</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="k">while </span><span class="nb">true</span>; <span class="k">do </span><span class="nb">echo</span> <span class="s2">&quot;graphite.load `cat /proc/loadavg | awk &#39;{print $1}&#39;` `date +&#39;%s&#39;`&quot;</span> | nc 127.0.0.1 2003; sleep 1; <span class="k">done</span> &amp;
+</pre></div>
+</div>
+<p>Now lets create some cpu activity and see if we can&#8217;t get morgoth to detect it. Run this bash script to spawn
+two infinite bash loops. We will kill these later.</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="k">for </span>i in <span class="o">{</span>1..2<span class="o">}</span>; <span class="k">do</span> <span class="o">{</span> <span class="k">while </span><span class="nb">true</span>; <span class="k">do </span><span class="nv">i</span><span class="o">=</span>0 ; <span class="k">done</span> &amp; <span class="o">}</span>; <span class="k">done</span>
+</pre></div>
+</div>
+<p>At this point either in the dashboard or the api you should see that the load avg metric is climbing.</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>curl -X GET http://localhost:7001/data/graphite.load
+</pre></div>
+</div>
+<p>Now watch the running morgoth process logs and in a few minutes you should see a critical log about an anomalous window.
+In the example configuration the detectors run on a 60s schedule. The duration parameter tells the detectors to
+consider a 60s window. The period parameter tells the detectors to run their alogrithm every 60s seconds. The delay option of 0
+tells the detectos to consider the most recent 60s window.</p>
+<p>The anomaly should also show up as an event along the time line in the dashboard.</p>
+<p>Kill the backgrounded jobs:</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span><span class="nb">kill</span> <span class="k">$(</span><span class="nb">jobs</span> -p<span class="k">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -179,6 +207,7 @@ change the config.</p>
 <li><a class="reference internal" href="#install-morgoth">Install Morgoth</a></li>
 <li><a class="reference internal" href="#running-morgoth">Running Morgoth</a></li>
 <li><a class="reference internal" href="#send-graphite-data-to-morgoth">Send graphite data to Morgoth</a></li>
+<li><a class="reference internal" href="#detecting-your-first-anomaly">Detecting your first anomaly</a></li>
 </ul>
 </li>
 </ul>
