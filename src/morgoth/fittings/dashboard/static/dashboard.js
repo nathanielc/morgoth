@@ -35,10 +35,10 @@ Metrics.prototype.draw = function () {
 
     var host = '10.1.50.42';
 
-    that.json("http://" + host + ":8001/metrics?pattern=" + metric_pattern, function(data) {
+    that.json("http://" + host + ":7001/metrics?pattern=" + metric_pattern, function(data) {
         metrics = data.metrics
         metrics.forEach(function(metric, index) {
-            var data_url = "http://" + host + ":8001/data/"
+            var data_url = "http://" + host + ":7001/data/"
                     + metric
                     + '?start=' + start.toString()
                     + '&stop=' + stop.toString()
@@ -59,7 +59,7 @@ Metrics.prototype.draw = function () {
                     console.log('no data received for ' + metric);
                 }
             });
-            var anomalies_url = "http://" + host + ":8001/anomalies/"
+            var anomalies_url = "http://" + host + ":7001/anomalies/"
                     + metric
                     + '?start=' + start.toString()
                     + '&stop=' + stop.toString()

@@ -5,7 +5,6 @@ from morgoth.data.reader import Reader
 from morgoth.utc import from_epoch, to_epoch
 
 
-logging.getLogger().setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'

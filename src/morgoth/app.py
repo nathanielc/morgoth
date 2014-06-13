@@ -130,11 +130,11 @@ class App(object):
 
 
 def main(config_path):
-    from morgoth import logger
-    logger.init()
-
     from morgoth.config import Config
     config = Config.load(config_path)
+
+    from morgoth import logger
+    logger.init(config)
 
     app = App(config)
     app.run()

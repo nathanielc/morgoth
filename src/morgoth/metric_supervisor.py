@@ -30,12 +30,14 @@ class MetricSupervisor(object):
     An instance of this class will be created for each
     entry in the 'metrics' section of the config
     """
-    def __init__(self, pattern, conf):
+    def __init__(self, writer, pattern, conf):
         """
 
+        @param writer: data engine writer instance
         @param pattern: the regex string that matches the metrics
         @param conf: the conf object from the 'metric' section
         """
+        self._writer = writer
         self._pattern = pattern
         self._detectors = []
         self._notifiers = []
@@ -134,22 +136,8 @@ class MetricSupervisor(object):
         if votes / len(self._detectors) > self._consensus:
             for notifier in self._notifiers:
                 notifier.notify(metric, windows)
-            self._record_anomalous(metric, start, stop)
+            self._writer.record_anomalous(metric, start, stop)
 
-    def _record_anomalous(self, metric, start, stop):
-        """
-        Record that a given metric is anomalous for the given window
-
-        @param metric: the name of the metric
-        @param start: the start time of the anomalous window
-        @param stop: the stop time of the anomalous window
-        """
-        # Add the anomaly to the db
-        self._db.anomalies.insert({
-            'metric' : metric,
-            'start' : start,
-            'stop' : stop,
-        })
 
 
 class NullMetricSupervisor(MetricSupervisor):

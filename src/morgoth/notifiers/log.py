@@ -23,8 +23,9 @@ class LogNotifier(Notifier):
     """
     Simply logs the occurence of anomaly
     """
-    def __init__(self, app):
-        super(LogNotifier, self).__init___(app)
+    def __init__(self, app, level):
+        super(LogNotifier, self).__init__(app)
+        self._level = getattr(logging, level.upper())
 
     @classmethod
     def from_conf(cls, conf, app):
@@ -33,12 +34,12 @@ class LogNotifier(Notifier):
 
         @param conf: a conf object
         """
-        return LogNotifier(app)
+        return LogNotifier(app, conf.get('level', 'INFO'))
 
 
     def notify(self, metric, windows):
         """
         Notify that the window is anomalous
         """
-        logger.info("Window: %s as determined by %s", metric, windows)
+        logger.log(self._level, "Window: %s is anomalous as determined by %s", metric, windows)
 

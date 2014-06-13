@@ -15,9 +15,9 @@
 
 import logging
 
-def init():
+def init(config):
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(_get_level(config))
     ch = logging.StreamHandler()
     formatter = logging.Formatter('[%(asctime)s|%(name)s:%(lineno)d][%(levelname)s] %(message)s')
     ch.setFormatter(formatter)
@@ -25,4 +25,9 @@ def init():
 
     print "Initialized Logging"
 
-
+def _get_level(config):
+    """
+    Return the logging level from the config
+    """
+    level = config.get(['logging', 'level'], 'INFO')
+    return getattr(logging, level.upper())

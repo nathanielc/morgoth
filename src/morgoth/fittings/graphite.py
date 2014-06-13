@@ -80,10 +80,13 @@ class Graphite(Fitting):
             if not line:
                 logger.debug("Client disconnected %s" % str(address))
                 break
-            metric, value, timestamp = line.split()
-            value = float(value)
-            dt_utc = datetime.fromtimestamp(int(timestamp), utc)
-            self._writer.insert(dt_utc, metric, value)
-            #logger.debug("%s %f %s" % (metric, float(value), dt_utc))
+            try:
+                metric, value, timestamp = line.split()
+                value = float(value)
+                dt_utc = datetime.fromtimestamp(int(timestamp), utc)
+                self._writer.insert(dt_utc, metric, value)
+                #logger.debug("%s %f %s" % (metric, float(value), dt_utc))
+            except ValueError:
+                logger.warn("Graphite received invalid data %s" % line)
         socket.close()
 

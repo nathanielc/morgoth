@@ -17,10 +17,12 @@ class MetricsManager(object):
         self._supervisors = OrderedDict()
         self._metrics = set()
 
+        writer = self._app.engine.get_writer()
+
         # Load supervisors from conf
         for pattern, conf in self._app.config.metrics.items():
             pattern = str(pattern)
-            self._supervisors[pattern] = MetricSupervisor(pattern, conf)
+            self._supervisors[pattern] = MetricSupervisor(writer, pattern, conf)
 
     def new_metrics(self, metrics):
         """

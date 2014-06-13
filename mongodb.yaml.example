@@ -1,0 +1,31 @@
+---
+data_engine:
+  InfluxEngine:
+    host: localhost
+    port: 27017
+    use_sharding: false
+
+metrics:
+  .*:
+      detectors:
+        Threshold:
+          threshold: 2
+          percentile: 70
+      notifiers:
+        LogNotifier:
+            level: CRITICAL
+      schedule:
+        duration: 60s
+        period: 60s
+        delay: 0s
+
+fittings:
+  Graphite:
+    port: 2003
+  Rest:
+    port: 7001
+  Dashboard:
+    port: 7000
+
+logging:
+    level: INFO
