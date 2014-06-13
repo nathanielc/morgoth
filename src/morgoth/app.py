@@ -130,6 +130,10 @@ class App(object):
 
 
 def main(config_path):
+    from morgoth.compat import patch
+    #patch()
+
+
     from morgoth.config import Config
     config = Config.load(config_path)
 

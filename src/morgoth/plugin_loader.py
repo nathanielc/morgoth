@@ -138,8 +138,12 @@ class PluginLoader(object):
                     found_mod = imp.find_module(entry, [search_dir])
                     if not found_mod:
                         continue
-                    mod = imp.load_module(name, *found_mod)
-                    mods.append(mod)
+                    try:
+                        mod = imp.load_module(name, *found_mod)
+                        mods.append(mod)
+                    except ImportError as e:
+                        logger.warn('Error loading plugin %s', e)
+
         return mods
 
     def _find_subclasses(self, mods, parent_class, ignored=set()):
