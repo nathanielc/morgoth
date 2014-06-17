@@ -187,7 +187,7 @@ class IncludeLoader(OrderedLoader):
     def _include_dir(self, node):
         directory = os.path.join(self._root, self.construct_scalar(node))
         data = []
-        for filename in os.listdir(directory):
+        for filename in sorted(os.listdir(directory)):
             extension = os.path.splitext(filename)[1]
             filepath = os.path.join(directory, filename)
             if extension not in self.extensions:

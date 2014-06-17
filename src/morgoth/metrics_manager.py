@@ -20,9 +20,15 @@ class MetricsManager(object):
         writer = self._app.engine.get_writer()
 
         # Load supervisors from conf
-        for pattern, conf in self._app.config.metrics.items():
-            pattern = str(pattern)
-            self._supervisors[pattern] = MetricSupervisor(writer, pattern, conf)
+        metrics_conf = self._app.config.metrics
+        if not metrics_conf.is_list:
+            metrics_conf = [metrics_conf]
+        logger.debug('Pattern matching order...')
+        for metric_conf in metrics_conf:
+            for pattern, conf in metric_conf.items():
+                pattern = str(pattern)
+                logger.debug(pattern)
+                self._supervisors[pattern] = MetricSupervisor(writer, pattern, conf)
 
     def new_metrics(self, metrics):
         """
