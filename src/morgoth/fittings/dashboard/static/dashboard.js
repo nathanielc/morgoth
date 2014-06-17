@@ -33,12 +33,14 @@ Metrics.prototype.draw = function () {
 
     var palette = new Rickshaw.Color.Palette();
 
-    var host = '10.1.50.42';
+    var api_endpoint = $('#api').val();
+    $('#api').change(function () { window.Metrics.redraw(); });
 
-    that.json("http://" + host + ":7001/metrics?pattern=" + metric_pattern, function(data) {
+
+    that.json(api_endpoint + "/metrics?pattern=" + metric_pattern, function(data) {
         metrics = data.metrics
         metrics.forEach(function(metric, index) {
-            var data_url = "http://" + host + ":7001/data/"
+            var data_url = api_endpoint + "/data/"
                     + metric
                     + '?start=' + start.toString()
                     + '&stop=' + stop.toString()
@@ -59,7 +61,7 @@ Metrics.prototype.draw = function () {
                     console.log('no data received for ' + metric);
                 }
             });
-            var anomalies_url = "http://" + host + ":7001/anomalies/"
+            var anomalies_url = api_endpoint + "/anomalies/"
                     + metric
                     + '?start=' + start.toString()
                     + '&stop=' + stop.toString()

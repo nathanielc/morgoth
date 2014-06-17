@@ -142,7 +142,7 @@ class PluginLoader(object):
                         mod = imp.load_module(name, *found_mod)
                         mods.append(mod)
                     except ImportError as e:
-                        logger.warn('Error loading plugin %s', e)
+                        logger.warn("Error loading plugin '%s': %s", name, e)
 
         return mods
 
