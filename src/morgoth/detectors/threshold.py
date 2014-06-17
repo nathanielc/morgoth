@@ -70,12 +70,11 @@ class Threshold(Detector):
         Check the data against the threshold
         """
         window = Window(metric, start, stop, self.__class__.__name__)
-        data = [ d[1] for d in self._reader.get_data(metric, start, stop)]
-        if not data:
-            logger.warn('Found 0 datapoints for metric %s in %s', metric, window)
+        percentile = self._reader.get_percentile(metric, self._percentile, start, stop)
+        if percentile is None:
+            logger.warn('Unable to get percentile for metric %s in %s', metric, window)
             window.anomalous = False
             return window.anomalous, window
-        percentile = numpy.percentile(numpy.array(data), self._percentile, axis=0)
         logger.debug('%dth percentile for %s is "%f"' , self._percentile, metric, percentile)
 
         window.anomalous = percentile > self._threshold

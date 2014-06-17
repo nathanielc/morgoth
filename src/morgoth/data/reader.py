@@ -60,3 +60,10 @@ class Reader(object):
         """
         assert start.tzinfo == utc
         assert stop.tzinfo == utc
+
+    def get_percentile(self, metric, percentile, start=None, stop=None):
+        """
+        Return the percentile of the data in the given range
+        """
+        assert start is None or start.tzinfo == utc
+        assert stop is None or stop.tzinfo == utc

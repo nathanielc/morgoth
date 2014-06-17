@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 from morgoth.config import Config
 from morgoth.date_utils import utc
+import numpy
 
 import random
 
@@ -17,7 +18,7 @@ class EngineTestType(type):
         newattrs = {}
         for attrname, value in attrs.items():
             newattrs[attrname] = value
-            if attrname.startswith('_test'):
+            if attrname.startswith('_test_07'):
                 newattrs[attrname[1:]] = lambda self, attrname=attrname: self._do_test(attrname)
 
         return super(EngineTestType, cls).__new__(cls, name, bases, newattrs)
@@ -264,6 +265,39 @@ class EngineTestCase(object):
 
         anomalies = reader.get_anomalies(metric, stop=start)
         self.assertEqual(0, len(anomalies))
+
+
+    def _test_07(self, engine, app):
+
+        writer = engine.get_writer()
+        reader = engine.get_reader()
+
+        metric = 'test_engine_' + engine.__class__.__name__ + 'test_07'
+        data = numpy.linspace(1, 100, 100)
+        start = datetime(2014, 5, 29, 1, tzinfo=utc)
+        stop = datetime(2014, 5, 29, 9, tzinfo=utc)
+        step = (stop - start) / len(data)
+
+        curr = start
+        for d in data:
+            writer.insert(curr, metric, d)
+            curr += step
+
+
+        writer.flush()
+        _data = reader.get_data(metric)
+
+        percentile_50 = reader.get_percentile(metric, 50)
+        self.assertAlmostEqual(50, percentile_50)
+        percentile_75 = reader.get_percentile(metric, 75)
+        self.assertAlmostEqual(75, percentile_75)
+        percentile_90 = reader.get_percentile(metric, 90)
+        self.assertAlmostEqual(90, percentile_90)
+        percentile_95 = reader.get_percentile(metric, 95)
+        self.assertAlmostEqual(95, percentile_95)
+        percentile_99 = reader.get_percentile(metric, 99)
+        self.assertAlmostEqual(99, percentile_99)
+
 
 
 

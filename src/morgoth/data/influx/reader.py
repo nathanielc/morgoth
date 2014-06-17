@@ -20,6 +20,8 @@ class InfluxReader(Reader):
         result = self._db.query("list series")
         for row in result:
             metric = row['name']
+            if metric == 'morgoth_anomalies':
+                continue
             if pattern is None:
                 metrics.append(metric)
             elif re.search(pattern, metric):
@@ -113,4 +115,25 @@ class InfluxReader(Reader):
         return hist, total
 
 
+    def get_percentile(self, metric, percentile, start=None, stop=None):
+        super(InfluxReader, self).get_percentile(metric, percentile, start, stop)
+        query = "select percentile(value, %f) from %s " % (percentile, metric)
+        where = []
+        if start:
+            where.append("time > %ds" % (to_epoch(start)))
+        if stop:
+            where.append("time < %ds" % (to_epoch(stop)))
+
+        if where:
+            query += 'where ' + ' and '.join(where)
+
+
+        result = self._db.query(query, time_precision='s')
+
+        logger.debug(result)
+        percentile = None
+        if result:
+            percentile = result[0]['points'][0][1]
+
+        return percentile
 
