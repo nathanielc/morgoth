@@ -4,22 +4,23 @@
 
 <html>
     <head>
-        <link rel="shortcut icon" href="docs/_static/favicon.ico">
+        <link rel="shortcut icon" href="docs/_static/favicon.ico"/>
         <title>Morgoth - Anomaly Detection</title>
         <style>
             body {
                 background-image: url('static/dark.jpg');
-                color: #DDD;
+                color: #000;
                 margin: 0px;
                 padding: 0px;
+                font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
             }
             .clear {
                 clear: both;
             }
             .center {
-                width: 600px;
+                width: 800px;
                 margin: 0px auto;
-                background-color: rgba(150, 150, 150, 0.5);
+                background-color: rgba(255, 255, 255, 0.7);
                 padding: 30px;
             }
             .logo {
@@ -32,12 +33,29 @@
                 background-image: url('static/fork_gh.png');
                 width: 149px;
                 height: 149px;
-                float: right;
+                right: 0;
+                top: 0;
+                position: fixed;
             }
             .content {
                 margin-top: 10px;
                 opacity: 1;
             }
+            h2 {
+                font-size: 28px;
+            }
+            a {
+                color: #000086;
+            }
+            a:visited {
+                color: #610000;
+            }
+            .footer {
+                font-size: 12px;
+                padding: 20px;
+                text-align: center;
+            }
+
         </style>
     </head>
 
@@ -50,13 +68,49 @@
             <div class='content'>
                 <div class='logo'>
                 </div>
+
                 <h2>What is Morgoth?</h2>
-                <p>Morgoth provides simple and flexible anomaly detection for time series metrics data.</p>
+                    <p>Morgoth is open source software that provides simple and flexible anomaly detection for time series metric data.</p>
+
+                <h2>Getting Started</h2>
+                    <p>Follow a tutorial on using Morgoth with Graphite <a href="docs/started.html">here</a></p>
+
+                <h2>Why use Morgoth?</h2>
+                    <ul>
+                        <li>Morgoth is simple</li>
+                        <li>Morgoth integrates with your existing infrastructure</li>
+                        <li>Morgoth has powerfull anomaly detection built-in</li>
+                        <li>Morgoth is extensible</li>
+                    </ul>
+
+                <h2>Powerful anomaly detection built-in huh?</h2>
+                    <p>That's right. Primarily the MGOF algorithm is what has proven to
+                    be so useful.</p>
+
+                    <p>In a nut shell MGOF (Multinomial Goodness of Fit, as I am calling it) is an pattern learning algorithm adept at detecting anomalies in non Gaussian data.</p>
+
+                    <p>Using standard deviations or 3-sigma algorithms is a very common way of detecting anmalies in metric data.
+                    These techniques assume the data they operate on follows a <a href='http://en.wikipedia.org/wiki/Normal_distribution'>Gaussian distribution</a>.
+                    Unfortunately much metric data is not Gaussian. Take cpu usage for example. Servers perfoming work from a queue tend to be nearly idle
+                    then spike to 100% cpu usage and then drop back down. Most of the time the server is either near 0% utilization or 100% following a
+                    <a href='http://en.wikipedia.org/wiki/Bimodal_distribution'>bimodal distribution</a>. If cpu usage were gaussian then the cpu would spend most
+                    of the time around 50% utilized and rarley 10% or 90% utilized.</p>
+
+                    <p>The MGOF alorithm assumes no distribution of the data. Rather the way is detects anomalies is to calculate the distribution for
+                    different windows of time. Then compare each of those distributions to the distribution of the window in question using a simple
+                    <a href='http://en.wikipedia.org/wiki/Chi-squared_test'>chi-squared test</a>.</p>
+
+                    <p>In summary the MGOF algorithm is well suited for data collected from systems and applications because it doesn't assume a distribution of the data.</p>
+
+                <h2>Join the community</h2>
+                    <a href="https://groups.google.com/forum/#!forum/morgoth">Mailing list</a>
+                    <p>IRC on freenode in ##morgoth</p>
+
                 <h2>Read the docs</h2>
-                <a href="docs/">Documentation</a>
+                    <a href="docs/">Documentation</a>
             </div>
-            <div class="Footer">
-                <b>Copyright - 2014</b>
+            <div class="footer">
+                <div><b>Copyright - 2014</b></div>
             </div>
         </div>
 
