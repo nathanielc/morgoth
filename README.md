@@ -35,13 +35,14 @@ What is MGOF?
 -------------
 
 In a nut shell MGOF (Multinomial Goodness of Fit, as I am calling it) is an pattern
-learning algorithm adept and detecting anomalies in non Gaussian data.
+learning algorithm adept at detecting anomalies in non Gaussian data.
 
 Using standard deviations or 3-sigma algorithms is a very common way of detecting anmalies in metric data.
-These techniques assume the data they operate on follows a Gaussian distribution. Unfortunately much metric
-data is not Gaussian. Take cpu usage for example. Servers perfoming work from a queue tend to be nearly idle
+These techniques assume the data they operate on follows a Gaussian distribution (http://en.wikipedia.org/wiki/Normal_distribution).
+Unfortunately much metric data is not Gaussian. Take cpu usage for example. Servers perfoming work from a queue tend to be nearly idle
 then spike to 100% cpu usage and then drop back down. Most of the time the server is either near 0% utilization
-or 100% following a bimodal distribution, (http://en.wikipedia.org/wiki/Bimodal_distribution).
+or 100% following a bimodal distribution, (http://en.wikipedia.org/wiki/Bimodal_distribution). If cpu usage
+were gaussian then the cpu would spend most of the time around 50% utilized and rarley 10% or 90% utilized.
 
 The MGOF alorithm assumes no distribution of the data. Rather the way is detects anomalies is to calculate the
 distribution for different windows of time. Then compare each of those distributions to the distribution of the window in question
