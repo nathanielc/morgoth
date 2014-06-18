@@ -12,6 +12,7 @@ Morgoth's documentation!
 
    about
    started
+   community
    configuration
    plugins
    detectors
