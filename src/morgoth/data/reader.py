@@ -35,6 +35,7 @@ class Reader(object):
         """
         assert start is None or start.tzinfo == utc
         assert stop is None or stop.tzinfo == utc
+        assert step is None or type(step) == timedelta
 
     def get_anomalies(self, metric, start=None, stop=None):
         """

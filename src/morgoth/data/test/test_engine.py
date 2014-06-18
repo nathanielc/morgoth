@@ -1,4 +1,5 @@
 
+from dateutil import parser
 from datetime import datetime, timedelta
 from morgoth.config import Config
 from morgoth.date_utils import utc
@@ -18,7 +19,7 @@ class EngineTestType(type):
         newattrs = {}
         for attrname, value in attrs.items():
             newattrs[attrname] = value
-            if attrname.startswith('_test_07'):
+            if attrname.startswith('_test'):
                 newattrs[attrname[1:]] = lambda self, attrname=attrname: self._do_test(attrname)
 
         return super(EngineTestType, cls).__new__(cls, name, bases, newattrs)
@@ -286,6 +287,7 @@ class EngineTestCase(object):
 
         writer.flush()
         _data = reader.get_data(metric)
+        self.assertEqual(len(data), len(_data))
 
         percentile_50 = reader.get_percentile(metric, 50)
         self.assertAlmostEqual(50, percentile_50)
@@ -298,7 +300,47 @@ class EngineTestCase(object):
         percentile_99 = reader.get_percentile(metric, 99)
         self.assertAlmostEqual(99, percentile_99)
 
+    def _test_08(self, engine, app):
 
+        writer = engine.get_writer()
+        reader = engine.get_reader()
+
+        metric = 'test_engine_' + engine.__class__.__name__ + 'test_08'
+
+        data = numpy.linspace(1, 100, 100)
+        start = datetime(2014, 5, 29, 1, tzinfo=utc)
+        stop = datetime(2014, 5, 29, 9, tzinfo=utc)
+        step = (stop - start) / len(data)
+
+        curr = start
+        for d in data:
+            writer.insert(curr, metric, d)
+            curr += step
+
+
+        writer.flush()
+        _data = reader.get_data(metric)
+        self.assertEqual(len(data), len(_data))
+
+        def _test_step_size(size):
+            _data = reader.get_data(metric, step=step*size)
+            self.assertEqual(len(data)/size, len(_data))
+            self.assertAlmostEqual(sum(data), size*(sum([d[1] for d in _data])))
+
+        sizes = [1, 2, 4]
+
+        for size in sizes:
+            _test_step_size(size)
+
+
+        _data = reader.get_data(metric, start=start, step=step*2)
+        self.assertEqual(len(data)/2, len(_data))
+
+        _data = reader.get_data(metric, stop=stop, step=step*2)
+        self.assertEqual(len(data)/2, len(_data))
+
+        _data = reader.get_data(metric, start, stop, step=step*2)
+        self.assertEqual(len(data)/2, len(_data))
 
 
 class MockMetricsManager(object):

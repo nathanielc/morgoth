@@ -2,7 +2,7 @@ import logging
 import re
 
 from morgoth.data.reader import Reader
-from morgoth.date_utils import from_epoch, to_epoch
+from morgoth.date_utils import from_epoch, to_epoch, total_seconds
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,12 @@ class InfluxReader(Reader):
 
     def get_data(self, metric, start=None, stop=None, step=None):
         super(InfluxReader, self).get_data(metric, start, stop, step)
-        query = "select time, value from %s " % metric
+        selection = 'time, value'
+        group_by = None
+        if step:
+            selection = 'time, mean(value)'
+            group_by = ' group by time(%ds)' % total_seconds(step)
+        query = "select %s from %s " % (selection, metric)
         where = []
         if start:
             where.append("time > %ds" % (to_epoch(start)))
@@ -41,12 +46,19 @@ class InfluxReader(Reader):
         if where:
             query += 'where ' + ' and '.join(where)
 
+        if group_by:
+            query += group_by
+
 
         result = self._db.query(query, time_precision='s')
 
         time_data = []
         if result:
-            for epoch, _, value in result[0]['points']:
+            for row in result[0]['points']:
+                if group_by:
+                    epoch, value = row
+                else:
+                    epoch, _, value = row
                 time_data.insert(0, (from_epoch(epoch).isoformat(), value))
 
         return time_data

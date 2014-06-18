@@ -68,13 +68,15 @@ class MongoReader(Reader):
         count = 0
         total = 0.0
         boundary = None
-        if start and step:
+        if step:
+            if start is None:
+                start = data[0]['time']
             boundary = (start + step).replace(tzinfo=utc)
         raw_data = []
         for point in data:
             raw_data.append((point['time'].isoformat(), point['value']))
             if boundary and step:
-                if point['time'] > boundary:
+                if point['time'] >= boundary:
                     if count > 0:
                         time_data.append((boundary.isoformat(), total / count))
                     boundary += step
