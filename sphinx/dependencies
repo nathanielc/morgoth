@@ -5,6 +5,7 @@ dateutil
 gevent
 flask
 scipy
+numpy
 pyyaml
 wtforms
 
