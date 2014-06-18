@@ -342,6 +342,47 @@ class EngineTestCase(object):
         _data = reader.get_data(metric, start, stop, step=step*2)
         self.assertEqual(len(data)/2, len(_data))
 
+    def _test_09(self, engine, app):
+
+        writer = engine.get_writer()
+        reader = engine.get_reader()
+
+        metric = 'test_engine_' + engine.__class__.__name__ + 'test_09'
+
+        start = datetime(2014, 5, 29, 1, tzinfo=utc)
+        stop = datetime(2014, 5, 29, 2, tzinfo=utc)
+
+        writer.insert(start, metric, 42)
+        self.assertEqual(1, app.metrics_manager.new_metric_count)
+
+        writer.flush()
+        metrics = reader.get_metrics()
+        self.assertEqual([metric], metrics)
+
+        data = reader.get_data(metric)
+        self.assertEqual([(start.isoformat(), 42)], data)
+
+        writer.record_anomalous(metric, start, stop)
+
+        anomalies = reader.get_anomalies(metric)
+        self.assertEqual(1, len(anomalies))
+        self.assertEqual(start.isoformat(), anomalies[0]['start'])
+        self.assertEqual(stop.isoformat(), anomalies[0]['stop'])
+
+        # Delete metric
+        writer.delete_metric(metric)
+
+        metrics = reader.get_metrics()
+        self.assertEqual([], metrics)
+
+        data = reader.get_data(metric)
+        self.assertEqual([], data)
+
+        anomalies = reader.get_anomalies(metric)
+        self.assertEqual(0, len(anomalies))
+
+
+
 
 class MockMetricsManager(object):
     new_metric_count = 0

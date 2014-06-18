@@ -142,7 +142,6 @@ class InfluxReader(Reader):
 
         result = self._db.query(query, time_precision='s')
 
-        logger.debug(result)
         percentile = None
         if result:
             percentile = result[0]['points'][0][1]

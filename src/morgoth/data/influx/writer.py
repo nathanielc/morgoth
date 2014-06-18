@@ -33,3 +33,14 @@ class InfluxWriter(DefaultWriter):
             ]
         }]
         self._db.write_points_with_precision(data, time_precision='s')
+
+    def delete_metric(self, metric):
+
+        drop_query = 'drop series %s' % metric
+
+        self._db.query(drop_query)
+
+        query = "delete from morgoth_anomalies where metric = '%s'" % metric
+
+        #self._db.query(query)
+
