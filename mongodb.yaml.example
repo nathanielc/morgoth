@@ -1,6 +1,6 @@
 ---
 data_engine:
-  InfluxEngine:
+  MongoEngine:
     host: localhost
     port: 27017
     use_sharding: false
