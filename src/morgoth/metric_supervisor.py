@@ -75,6 +75,7 @@ class MetricSupervisor(object):
             )
         else:
             self._schedule = None
+            logger.warn('No schedule found for metric pattern "%s"' % self._pattern)
 
         # Load consensus
         self._consensus = conf.get('consensus', 0.5)
