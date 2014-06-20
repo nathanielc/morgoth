@@ -72,11 +72,11 @@ class InfluxReader(Reader):
 
         time_clause = None
         if start and stop:
-            time_clause = 'stop >= %ds and start <= %ds' % (to_epoch(start), to_epoch(stop))
+            time_clause = 'stop >= %d and start <= %d' % (to_epoch(start), to_epoch(stop))
         elif start:
-            time_clause = 'start >= %ds' % to_epoch(start)
+            time_clause = 'start >= %d' % to_epoch(start)
         elif stop:
-            time_clause = 'stop <= %ds' % to_epoch(stop)
+            time_clause = 'stop <= %d' % to_epoch(stop)
 
         if time_clause:
             query += 'and %s' % time_clause
@@ -101,7 +101,7 @@ class InfluxReader(Reader):
         m_min = result[0]['points'][0][1]
         m_max = result[0]['points'][0][2]
 
-        step_size = ((m_max ) - m_min) / float(n_bins)
+        step_size = ((m_max ) - m_min) / float(n_bins - 1)
 
         query = "select count(value), histogram(value, %f) from %s where time > %ds and time < %ds" % (
             step_size,
@@ -122,7 +122,7 @@ class InfluxReader(Reader):
             i = int(round((bucket_start - m_min) / step_size))
             s += count
             assert (i not in indices) and i >= 0 and i < n_bins, \
-                'min: %f, max: %f, step: %f, n_bins: %d, bucket_start: %f, i: %d, indices: %s, result: %s, query: %s' % (
+                    'min: %f, max: %f, step: %f, n_bins: %d, bucket_start: %f, i: %d, indices: %s, bins: %d, result: %s, query: %s' % (
                     m_min,
                     m_max,
                     step_size,
@@ -130,6 +130,7 @@ class InfluxReader(Reader):
                     bucket_start,
                     i,
                     indices,
+                    len(result[0]['points']),
                     result,
                     query,
                 )

@@ -19,7 +19,7 @@ class EngineTestType(type):
         newattrs = {}
         for attrname, value in attrs.items():
             newattrs[attrname] = value
-            if attrname.startswith('_test_04'):
+            if attrname.startswith('_test'):
                 newattrs[attrname[1:]] = lambda self, attrname=attrname: self._do_test(attrname)
 
         return super(EngineTestType, cls).__new__(cls, name, bases, newattrs)
@@ -196,7 +196,7 @@ class EngineTestCase(object):
 
         self.assertEqual(len(expected_hist), len(hist))
         for i in range(len(expected_hist)):
-            self.assertAlmostEqual(expected_hist[i], hist[i], places=2)
+            self.assertAlmostEqual(expected_hist[i], hist[i], places=1)
 
 
     def _test_05(self, engine, app):
