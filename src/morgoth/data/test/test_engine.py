@@ -19,7 +19,7 @@ class EngineTestType(type):
         newattrs = {}
         for attrname, value in attrs.items():
             newattrs[attrname] = value
-            if attrname.startswith('_test'):
+            if attrname.startswith('_test_04'):
                 newattrs[attrname[1:]] = lambda self, attrname=attrname: self._do_test(attrname)
 
         return super(EngineTestType, cls).__new__(cls, name, bases, newattrs)

@@ -75,7 +75,7 @@ class MetricSupervisor(object):
             )
         else:
             self._schedule = None
-            logger.warn('No schedule found for metric pattern "%s"' % self._pattern)
+            logger.warn('No schedule found for metric pattern "%s"', self._pattern)
 
         # Load consensus
         self._consensus = conf.get('consensus', 0.5)
@@ -84,7 +84,7 @@ class MetricSupervisor(object):
 
     def add_metric(self, metric):
         """
-        Add new metric to the manager
+        Add new metric to the supervisor
         """
         self._metrics.add(metric)
 
@@ -93,8 +93,8 @@ class MetricSupervisor(object):
         Start watching the metrics for anomanlies
         """
         if not self._started and self._schedule:
-            logger.debug(
-                "Starting MetricManager %s with detectors %s and notifiers %s",
+            logger.info(
+                "Starting MetricSupervisor %s with detectors %s and notifiers %s",
                 self._pattern,
                 self._detectors,
                 self._notifiers,
@@ -111,7 +111,7 @@ class MetricSupervisor(object):
         """
         stop = now() - self._delay
         start = stop - self._duration
-        logger.debug("Checking metrics for next window %s:%s", start, stop)
+        logger.info("Checking metrics for window %s -- %s:%s", self._pattern, start, stop)
         for metric in self._metrics:
             gevent.spawn(self._check_window, metric, start, stop)
 
@@ -143,7 +143,7 @@ class MetricSupervisor(object):
 
 class NullMetricSupervisor(MetricSupervisor):
     """
-    A noop implementation of the MetricManager
+    A noop implementation of the MetricSupervisor
     """
     def __init__(self):
         """

@@ -142,7 +142,6 @@ class PullGraphite(Fitting):
             return
         for dataset in data:
             metric_name = self._metric_format % dataset['target']
-            logger.debug("Inserting datapoints for %s", metric_name)
             for value, timestamp in dataset['datapoints']:
                 if value is not None:
                     dt_utc = from_epoch(timestamp)
