@@ -3,7 +3,7 @@ python:
   - "2.6"
   - "2.7"
 before_install:
-  - sudo apt-get install -qq python-numpy python-scipy python-gevent=1.0.1
+  - sudo apt-get install -qq python-numpy python-scipy
 install: "pip install -r requirements.txt"
 script: ./unittest.sh
 virtualenv:
