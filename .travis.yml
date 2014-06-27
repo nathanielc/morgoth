@@ -6,6 +6,6 @@ before_install:
   - sudo apt-get install -qq python-numpy python-scipy
 install: "pip install -r requirements.txt"
 script: ./unittest.sh
-#virtualenv:
-#  system_site_packages: true
+virtualenv:
+  system_site_packages: true
 
