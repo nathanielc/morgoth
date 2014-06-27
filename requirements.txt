@@ -1,0 +1,7 @@
+python-dateutil
+gevent==1.0.1
+flask
+numpy
+scipy
+pyyaml
+wtforms
