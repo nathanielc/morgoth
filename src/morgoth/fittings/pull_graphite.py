@@ -75,10 +75,11 @@ class PullGraphite(Fitting):
         self._password = password
         self._schedule = Schedule(self._period, self._pull)
         self._writer = self._app.engine.get_writer()
+        logger.debug('Initialized PullGraphite with pattern: %s', self._metric_pattern)
 
     @classmethod
     def from_conf(cls, conf, app):
-        metric_pattern = conf.get('metric_pattern', '*')
+        metric_pattern = conf.metric_pattern
         graphite_url = conf.get('graphite_url', 'http://localhost')
         period = timedelta_from_str(conf.get('period', '5m'))
         metric_format = conf.get('metric_format', '%s')
