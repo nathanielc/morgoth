@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey
+monkey.patch_all()
 from gevent.event import Event
 import gevent
 
@@ -38,7 +39,7 @@ class App(object):
         self._config = config
         self._engine = None
         self._metrics_manager = None
-
+        self._logger = None
 
     def _handler(self):
         self._finished_event.clear()
@@ -78,7 +79,6 @@ class App(object):
             import logging
             self._logger = logging.getLogger(__name__)
 
-
             self._logger.info('Setup signal handlers')
             import signal
             gevent.signal(signal.SIGINT, self._handler)
@@ -94,11 +94,11 @@ class App(object):
             self._engine = load_data_engine(self)
             self._engine.initialize()
 
-
             self._logger.info('Setup metrics manager')
             from morgoth.metrics_manager import MetricsManager
             self._metrics_manager = MetricsManager(self)
-            self._logger.info('Inform the metric manager of existing metrics on startup')
+            self._logger.info('Inform the metric manager of existing \
+                    metrics on startup')
             reader = self.engine.get_reader()
             metrics = reader.get_metrics()
             self._logger.debug(metrics)
@@ -126,7 +126,6 @@ class App(object):
         except Exception as e:
             self._logger.critical('Error launching morgoth')
             self._logger.exception(e)
-
 
 
 def main(config_path):

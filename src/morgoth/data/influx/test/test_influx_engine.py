@@ -42,7 +42,10 @@ class InfluxEngineTest(EngineTestCase, unittest.TestCase):
                 engine_conf.database
             )
 
-        conn.delete_database(engine_conf.database)
+        try:
+            conn.delete_database(engine_conf.database)
+        except:
+            pass
 
 if __name__ == '__main__':
     unittest.main()

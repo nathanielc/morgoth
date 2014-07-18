@@ -4,7 +4,10 @@ python:
   - "2.7"
 before_install:
   - sudo apt-get install -qq python-numpy python-scipy
-install: "pip install -r requirements.txt"
+install:
+  - "pip install -r requirements.txt"
+  - "pip install -r mongodb-requirements.txt"
+  - "pip install -r influxdb-requirements.txt"
 script: ./unittest.sh
 virtualenv:
   system_site_packages: true

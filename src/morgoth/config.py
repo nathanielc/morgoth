@@ -152,8 +152,12 @@ class OrderedLoader(yaml.Loader):
         if isinstance(node, yaml.MappingNode):
             self.flatten_mapping(node)
         else:
-            raise yaml.constructor.ConstructorError(None, None,
-                'expected a mapping node, but found %s' % node.id, node.start_mark)
+            raise yaml.constructor.ConstructorError(
+                None,
+                None,
+                'expected a mapping node, but found %s' % node.id,
+                node.start_mark
+            )
 
         mapping = OrderedDict()
         for key_node, value_node in node.value:

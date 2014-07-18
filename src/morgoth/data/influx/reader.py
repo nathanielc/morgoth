@@ -101,7 +101,7 @@ class InfluxReader(Reader):
         m_min = result[0]['points'][0][1]
         m_max = result[0]['points'][0][2]
 
-        step_size = ((m_max ) - m_min) / float(n_bins - 1)
+        step_size = (m_max - m_min) / float(n_bins - 1)
 
         query = "select count(value), histogram(value, %f) from %s where time > %ds and time < %ds" % (
             step_size,
@@ -109,6 +109,7 @@ class InfluxReader(Reader):
             to_epoch(start),
             to_epoch(stop),
         )
+        logger.debug(query)
         result = self._db.query(query, time_precision='s')
         if not result:
             return [0] * n_bins, 0
@@ -122,7 +123,7 @@ class InfluxReader(Reader):
             i = int(round((bucket_start - m_min) / step_size))
             s += count
             assert (i not in indices) and i >= 0 and i < n_bins, \
-                    'min: %f, max: %f, step: %f, n_bins: %d, bucket_start: %f, i: %d, indices: %s, bins: %d, result: %s, query: %s' % (
+                'min: %f, max: %f, step: %f, n_bins: %d, bucket_start: %f, i: %d, indices: %s, bins: %d, result: %s, query: %s' % (
                     m_min,
                     m_max,
                     step_size,
