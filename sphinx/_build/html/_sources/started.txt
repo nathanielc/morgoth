@@ -14,7 +14,7 @@ Setting anomaly detection of error rates for your app
 Install Morgoth
 ---------------
 
-Next checkout the code and add it to your PYTHONPATH.
+First checkout the code and add it to your PYTHONPATH.
 
 .. code-block:: sh
 
@@ -28,6 +28,8 @@ Now lets install dependecies.
 
 
 If you use pip there are three requirements.txt files you can install like so:
+
+.. code-block:: sh
 
    $ pip install -r requirements.txt
    $ pip install -r mongodb-requirements.txt
