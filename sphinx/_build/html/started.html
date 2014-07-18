@@ -81,12 +81,18 @@ to learn how to start using morgoth for your own project.</p>
 <h2><a class="toc-backref" href="#id2">Setting anomaly detection of error rates for your app</a><a class="headerlink" href="#setting-anomaly-detection-of-error-rates-for-your-app" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="install-morgoth">
 <h3><a class="toc-backref" href="#id3">Install Morgoth</a><a class="headerlink" href="#install-morgoth" title="Permalink to this headline">¶</a></h3>
-<p>First lets install morgoth and its dependecies.</p>
+<p>Next checkout the code and add it to your PYTHONPATH.</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>git clone https://github.com/nvcook42/morgoth.git
+<span class="nv">$ </span><span class="nb">cd </span>morgoth
+<span class="nv">$ </span><span class="nb">source</span> ./pythonpath.sh
+</pre></div>
+</div>
+<p>Now lets install dependecies.</p>
 <div class="highlight-python"><pre>
-python2.6
+python 2.6 or 2.7
 
 dateutil
-gevent
+gevent 1.0.1
 flask
 scipy
 numpy
@@ -98,12 +104,11 @@ influxdb -- If using InfluxDB data engine
 
 </pre>
 </div>
-<p>Next checkout the code and add it to your PYTHONPATH.</p>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>git clone https://github.com/nvcook42/morgoth.git
-<span class="nv">$ </span><span class="nb">cd </span>morgoth
-<span class="nv">$ </span><span class="nb">source</span> ./pythonpath.sh
-</pre></div>
-</div>
+<p>If you use pip there are three requirements.txt files you can install like so:</p>
+<blockquote>
+<div>$ pip install -r requirements.txt
+$ pip install -r mongodb-requirements.txt
+$ pip install -r influxdb-requirements.txt</div></blockquote>
 </div>
 <div class="section" id="running-morgoth">
 <h3><a class="toc-backref" href="#id4">Running Morgoth</a><a class="headerlink" href="#running-morgoth" title="Permalink to this headline">¶</a></h3>
@@ -111,14 +116,14 @@ influxdb -- If using InfluxDB data engine
 by default they point to localhost for their data store. For InfluxDB you will
 have to either create a database named morgoth with user and password morgoth, or
 change the config.</p>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>cp &lt;mongodb,influxdb&gt;.example.yaml myproject.yaml
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>cp &lt;mongodb,influxdb&gt;.yaml.example myproject.yaml
 </pre></div>
 </div>
 <p>Once you have setup your config start up morgoth</p>
 <div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>./morgoth -c myproject.yaml
 </pre></div>
 </div>
-<p>The process should remain in the foreground and print out some simple debug messages.</p>
+<p>The process should remain in the foreground and print out some simple log messages.</p>
 </div>
 <div class="section" id="send-graphite-data-to-morgoth">
 <h3><a class="toc-backref" href="#id5">Send graphite data to Morgoth</a><a class="headerlink" href="#send-graphite-data-to-morgoth" title="Permalink to this headline">¶</a></h3>
