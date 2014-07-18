@@ -1,2 +1,4 @@
+#!/bin/bash
 
-export PYTHONPATH=./src:$PYTHONPATH
+DIR=$(cd $(dirname $0) && pwd)
+export PYTHONPATH=$DIR/src:$PYTHONPATH
