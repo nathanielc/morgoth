@@ -14,10 +14,6 @@ Setting anomaly detection of error rates for your app
 Install Morgoth
 ---------------
 
-First lets install morgoth and its dependecies.
-
-.. literalinclude:: dependencies
-
 Next checkout the code and add it to your PYTHONPATH.
 
 .. code-block:: sh
@@ -25,6 +21,17 @@ Next checkout the code and add it to your PYTHONPATH.
    $ git clone https://github.com/nvcook42/morgoth.git
    $ cd morgoth
    $ source ./pythonpath.sh
+
+Now lets install dependecies.
+
+.. literalinclude:: dependencies
+
+
+If you use pip there are three requirements.txt files you can install like so:
+
+   $ pip install -r requirements.txt
+   $ pip install -r mongodb-requirements.txt
+   $ pip install -r influxdb-requirements.txt
 
 Running Morgoth
 ---------------
@@ -36,7 +43,7 @@ change the config.
 
 .. code-block:: sh
 
-   $ cp <mongodb,influxdb>.example.yaml myproject.yaml
+   $ cp <mongodb,influxdb>.yaml.example myproject.yaml
 
 
 Once you have setup your config start up morgoth
@@ -45,7 +52,7 @@ Once you have setup your config start up morgoth
 
    $ ./morgoth -c myproject.yaml
 
-The process should remain in the foreground and print out some simple debug messages.
+The process should remain in the foreground and print out some simple log messages.
 
 
 Send graphite data to Morgoth
