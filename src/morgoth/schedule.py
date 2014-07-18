@@ -16,7 +16,6 @@
 from datetime import datetime, timedelta
 from morgoth.date_utils import now, utc, total_seconds
 import gevent
-import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -58,7 +57,7 @@ class Schedule(object):
             )
         period_td = timedelta(seconds=self._period)
         if period_td > self.DAY:
-            when =  midnight + self.DAY
+            when = midnight + self.DAY
             logger.warn("Schedule period greater than a day, aligning with the next midnight")
         else:
             when = midnight

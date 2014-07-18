@@ -1,6 +1,6 @@
 
 from morgoth.config import Config
-from morgoth.data.test.test_engine import EngineTestCase
+from morgoth.data.test.int_test_engine import EngineTestCase
 from morgoth.data.influx.engine import InfluxEngine
 
 import unittest

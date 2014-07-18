@@ -37,13 +37,13 @@ class TestSchedule(unittest.TestCase):
         i = 0
         max_calls = 3
         while self.called < max_calls:
-            gevent.sleep(total_seconds(self.period) / 2)
+            gevent.sleep(total_seconds(self.period) / 2.0)
             if i > max_calls * 3:
-                raise AssertionError('Callback not called often enough')
+                raise AssertionError('Callback not called often enough, Only called %d times after waiting %0.2f seconds' % (self.called, i/2.0))
             i += 1
 
         sched.stop()
-        time.sleep(total_seconds(self.period) / 2)
+        time.sleep(total_seconds(self.period) / 2.0)
         self.assertEqual(max_calls, self.called)
 
 
