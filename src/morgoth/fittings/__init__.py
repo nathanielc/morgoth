@@ -36,7 +36,7 @@ def load_fittings(app):
     pl = PluginLoader(app, dirs, Fitting)
     fittings = []
     try:
-        fittings = pl.load(app.config.fittings)
+        fittings = pl.load(app.config.get('fittings', {}))
     except KeyError:
         logger.warn('No fittings found')
     except Exception as e:

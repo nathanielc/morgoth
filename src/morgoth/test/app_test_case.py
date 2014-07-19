@@ -35,11 +35,12 @@ class AppTestCase(unittest.TestCase):
         return (app, tdir, config_path)
 
     def _run_app(self, config_path):
-        from morgoth import logger
-        logger.init()
 
         from morgoth.config import Config
         config = Config.load(config_path)
+
+        from morgoth import logger
+        logger.init(config)
 
         app = App(config)
         gevent.spawn(app.run)
