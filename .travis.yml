@@ -8,7 +8,9 @@ install:
   - "pip install -r requirements.txt"
   - "pip install -r mongodb-requirements.txt"
   - "pip install -r influxdb-requirements.txt"
-script: ./unittest.sh
+script: ./test.sh
 virtualenv:
   system_site_packages: true
+services:
+  - mongodb
 
