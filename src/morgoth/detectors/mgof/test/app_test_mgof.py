@@ -12,16 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+import unittest
+from datetime import datetime, timedelta
 
 from morgoth.config import Config
-from morgoth.test.app_test_case import AppTestCase
+from morgoth.date_utils import utc
 from morgoth.detectors.mgof.mgof import MGOF
-from datetime import datetime, timedelta
-import unittest
-import os
-import tempfile
+from morgoth.test.app_test_case import AppTestCase
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -94,11 +94,12 @@ metrics:
     def test_mgof_01(self):
 
         for conf in [self.mongo_conf, self.influx_conf]:
-            app, tdir, config_path = self.set_up_app(self.mongo_conf)
+            print('Starting test for conf %s' % conf)
+            app, tdir, config_path = self.set_up_app(conf)
             writer = app.engine.get_writer()
             try:
                 metric = 'test_mgof'
-                start = datetime(2013, 9, 1)
+                start = datetime(2013, 9, 1, tzinfo=utc)
                 self.create_metric_data(writer, metric, start)
                 mgof = MGOF.from_conf(Config.loads(self.mgof_conf), app)
 
@@ -113,6 +114,7 @@ metrics:
                 anomalous, window = mgof.is_anomalous(metric, na_start, na_end)
                 self.assertFalse(anomalous)
                 self.assertFalse(window.anomalous)
+
             finally:
                 writer.delete_metric(metric)
 
