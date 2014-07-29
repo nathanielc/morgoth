@@ -8,6 +8,5 @@ cd influxdb
 
 ./configure
 make build
-ls -l .
-./influxdb &
+screen ./influxdb
 
