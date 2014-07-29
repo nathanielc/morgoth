@@ -1,11 +1,13 @@
 #!/bin/bash
 
-git clone https://github.com/nvcook42/influxdb.git
-#git clone https://github.com/influxdb/influxdb.git
 
+mkdir -p $GOPATH/src/github.com/influxdb
+cd $GOPATH/src/github.com/influxdb
+git clone https://github.com/nvcook42/influxdb.git
 cd influxdb
+
 ./configure
 make build
 ls -l .
-./daemon
+./influxdb &
 
