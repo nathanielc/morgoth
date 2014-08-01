@@ -174,7 +174,6 @@ class MongoReader(Reader):
             raw_data.append(point['value'])
 
         i = int(math.ceil(percentile / 100.0 * len(raw_data))) - 1
-        logger.debug("%f, %d, %d", percentile, i, len(raw_data))
         return raw_data[i]
 
 

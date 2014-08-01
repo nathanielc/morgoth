@@ -169,7 +169,7 @@ class MongoWriter(DefaultWriter):
         })
 
     def delete_metric(self, metric):
-        logger.debug('Deleting metric %s', metric)
+        #logger.debug('Deleting metric %s', metric)
         self._db.metrics.remove({'metric' : metric})
         self._db.windows.remove({'value.metric' : metric})
         self._db.meta.remove({'_id' : metric})
