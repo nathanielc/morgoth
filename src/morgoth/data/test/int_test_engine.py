@@ -164,17 +164,17 @@ class EngineTestCase(object):
 
         expected_data = []
         cur = start
-        for i in numpy.linspace(-10, 10, num=count):
-            value = i**3
+        for i in numpy.linspace(-6, 3, num=count):
+            value = i
             expected_data.append((cur, value))
             writer.insert(cur, metric, value)
             cur += timedelta(seconds=1)
 
-        #self.assertEqual(count, app.metrics_manager.new_metric_count)
+        self.assertEqual(count, app.metrics_manager.new_metric_count)
 
         writer.flush()
         metrics = reader.get_metrics()
-        #self.assertEqual([metric], metrics)
+        self.assertEqual([metric], metrics)
 
         n_bins = 10
 
@@ -188,25 +188,15 @@ class EngineTestCase(object):
         logger.debug(hist)
         logger.debug(hist_count)
 
-        #self.assertEqual(count, hist_count)
-        #self.assertAlmostEqual(1, sum(hist), places=1)
+        self.assertEqual(count, hist_count)
+        self.assertAlmostEqual(1, sum(hist), places=1)
+        self.assertEqual(n_bins, len(hist))
 
-        expected_hist = [
-                0.3178217821782178,
-                0.1297029702970297,
-                0.1,
-                0.0801980198019802,
-                0.0801980198019802,
-                0.0702970297029703,
-                0.060396039603960394,
-                0.0504950495049505,
-                0.060396039603960394,
-                0.0504950495049505
-            ]
+        expected_hist = [1/10.0] * 10
 
-        #self.assertEqual(len(expected_hist), len(hist))
+        self.assertEqual(len(expected_hist), len(hist))
         for i in range(len(expected_hist)):
-            #self.assertAlmostEqual(expected_hist[i], hist[i], places=1)
+            self.assertAlmostEqual(expected_hist[i], hist[i], places=1)
             pass
 
         step = (stop - start)/5
@@ -305,6 +295,8 @@ class EngineTestCase(object):
         _data = reader.get_data(metric)
         self.assertEqual(len(data), len(_data))
 
+        percentile_10 = reader.get_percentile(metric, 10)
+        self.assertAlmostEqual(10, percentile_10)
         percentile_50 = reader.get_percentile(metric, 50)
         self.assertAlmostEqual(50, percentile_50)
         percentile_75 = reader.get_percentile(metric, 75)
@@ -315,6 +307,9 @@ class EngineTestCase(object):
         self.assertAlmostEqual(95, percentile_95)
         percentile_99 = reader.get_percentile(metric, 99)
         self.assertAlmostEqual(99, percentile_99)
+
+        percentile_15_5 = reader.get_percentile(metric, 15.5)
+        self.assertAlmostEqual(16, percentile_15_5)
 
     def _test_08(self, engine, app):
 

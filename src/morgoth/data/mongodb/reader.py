@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 from morgoth.data.reader import Reader
 from morgoth.error import MorgothError
 from morgoth.date_utils import utc
+import math
 import re
 import os
 
@@ -126,7 +127,7 @@ class MongoReader(Reader):
         version = meta['version']
 
 
-        step_size = ((m_max * 1.01) - m_min) / float(n_bins)
+        step_size = (m_max - m_min) / float(n_bins)
 
         map_values = {
             'step_size' : step_size,
@@ -144,7 +145,6 @@ class MongoReader(Reader):
         map_code = Code(self.map % map_values)
         finalize_code = Code(self.finalize % finalize_values)
 
-
         query = {
             'metric' : metric,
             'time' : {'$gte' : start, '$lt' : stop},
@@ -156,6 +156,27 @@ class MongoReader(Reader):
         if result:
             return result[0]['value']['prob_dist'], result[0]['value']['count']
         return [0] * n_bins, 0
+
+    def get_percentile(self, metric, percentile, start=None, stop=None):
+        super(MongoReader, self).get_percentile(metric, percentile, start, stop)
+
+        time_query = {}
+        if start:
+            time_query['$gte'] = start
+        if stop:
+            time_query['$lte'] = stop
+        query = {'metric' : metric}
+        if time_query:
+            query['time'] = time_query
+        data = self._db.metrics.find(query).sort('value')
+        raw_data = []
+        for point in data:
+            raw_data.append(point['value'])
+
+        i = int(math.ceil(percentile / 100.0 * len(raw_data))) - 1
+        logger.debug("%f, %d, %d", percentile, i, len(raw_data))
+        return raw_data[i]
+
 
 # Initialize js code
 if MongoReader.map is None:

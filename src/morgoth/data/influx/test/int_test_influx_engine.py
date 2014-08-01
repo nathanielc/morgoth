@@ -30,6 +30,7 @@ class InfluxEngineTest(EngineTestCase, unittest.TestCase):
 
         conn.create_database(engine_conf.database)
         conn.add_database_user(engine_conf.user, engine_conf.password)
+        conn.set_database_admin(engine_conf.user)
         return super(InfluxEngineTest, self)._create_engine(engine_class, engine_conf, app)
 
 

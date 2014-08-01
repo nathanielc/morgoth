@@ -6,6 +6,10 @@ function () {
     var discrete = Math.floor(
             (this.value - %(m_min)f) / %(step_size)f
         );
+    // Handle case where value == max
+    if (discrete == %(n_bins)d) {
+        discrete--;
+    }
     prob_dist[discrete] += 10
     emit('histogram', {
         discrete : discrete,

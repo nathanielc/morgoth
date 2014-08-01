@@ -16,8 +16,7 @@ class InfluxReader(Reader):
     def get_metrics(self, pattern=None):
         metrics = []
         result = self._db.query("list series")
-        for row in result:
-            metric = row['name']
+        for _, metric in result[0]['points']:
             if metric == 'morgoth_anomalies':
                 continue
             if pattern is None:
@@ -47,8 +46,12 @@ class InfluxReader(Reader):
         if group_by:
             query += group_by
 
+        result = None
 
-        result = self._db.query(query, time_precision='s')
+        try:
+            result = self._db.query(query, time_precision='s')
+        except Exception as e:
+            pass
 
         time_data = []
         if result:
@@ -101,15 +104,16 @@ class InfluxReader(Reader):
         m_min = result[0]['points'][0][1]
         m_max = result[0]['points'][0][2]
 
-        step_size = (m_max - m_min) / float(n_bins - 1)
+        step_size = (m_max - m_min) / float(n_bins)
 
-        query = "select count(value), histogram(value, %f) from %s where time > %ds and time < %ds" % (
+        query = "select count(value), histogram(value, %f, %f, %f) from %s where time > %ds and time < %ds" % (
             step_size,
+            m_min,
+            m_max,
             metric,
             to_epoch(start),
             to_epoch(stop),
         )
-        logger.debug(query)
         result = self._db.query(query, time_precision='s')
         if not result:
             return [0] * n_bins, 0
@@ -117,26 +121,12 @@ class InfluxReader(Reader):
         total = result[0]['points'][0][1]
         empty_value = 1.0 / float(total * 10 + n_bins)
         hist = [empty_value] * n_bins
-        s = 0
-        indices = set()
         for _, total, bucket_start, count in result[0]['points']:
             i = int(round((bucket_start - m_min) / step_size))
-            s += count
-            assert (i not in indices) and i >= 0 and i < n_bins, \
-                'min: %f, max: %f, step: %f, n_bins: %d, bucket_start: %f, i: %d, indices: %s, bins: %d, result: %s, query: %s' % (
-                    m_min,
-                    m_max,
-                    step_size,
-                    n_bins,
-                    bucket_start,
-                    i,
-                    indices,
-                    len(result[0]['points']),
-                    result,
-                    query,
-                )
-            indices.add(i)
-            hist[i] = count * 10 / float(total * 10 + n_bins)
+            # Handle last bucket including max value
+            if i == n_bins:
+                i -= 1
+            hist[i] += count * 10.0 / float(total * 10 + n_bins)
 
         return hist, total
 
