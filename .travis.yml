@@ -7,12 +7,14 @@ before_install:
   - sudo apt-get install -y protobuf-compiler valgrind screen
   - ./start_influx_service.sh
 install:
-  - "pip install -r requirements.txt"
-  - "pip install -r mongodb-requirements.txt"
-  - "pip install -r influxdb-requirements.txt"
+  - pip install -r requirements.txt
+  - pip install -r mongodb-requirements.txt
+  - pip install -r influxdb-requirements.txt
 script: ./test.sh
 virtualenv:
   system_site_packages: true
 services:
   - mongodb
+after_script:
+  - killall screen
 
