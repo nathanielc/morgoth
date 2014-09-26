@@ -1,37 +1,45 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
+	log "github.com/cihub/seelog"
 )
 
-func LoadFromFile(path string) (*Config, error) {
-	config_file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-
-	}
-	data, err := ioutil.ReadAll(config_file)
-	if err != nil {
-		return nil, err
-	}
-	return Load(data)
+// Base config struct for the entire morgoth config
+type Config struct {
+	DataEngine DataEngine `yaml:"data_engine"`
+	Metrics    []Metric   `yaml:"metrics"`
+	Fittings   []Fitting  `yaml:"fittings"`
 }
 
-func Load(data []byte) (*Config, error) {
-	config := new(Config)
+func (self *Config) Default() {
+	self.DataEngine.Default()
+	for i := range self.Metrics{
+		self.Metrics[i].Default()
+	}
+	for i := range self.Fittings {
+		self.Fittings[i].Default()
+	}
+}
 
-	err := yaml.Unmarshal(data, config)
-	if err != nil {
-		return nil, err
+func (self Config) Validate() error {
+	log.Debugf("Validating Config %v", self)
+	valid := self.DataEngine.Validate()
+	if valid != nil {
+		return valid
 	}
 
-	config.Default()
-	err = config.Validate()
-	if err != nil {
-		return nil, err
+	for i := range self.Metrics {
+		valid := self.Metrics[i].Validate()
+		if valid != nil {
+			return valid
+		}
 	}
 
-	return config, nil
+	for i := range self.Fittings {
+		valid := self.Fittings[i].Validate()
+		if valid != nil {
+			return valid
+		}
+	}
+	return nil
 }

@@ -5,7 +5,11 @@ import (
 	"testing"
 )
 
-func TestDefaultShouldDefaultErrorOnNonPointer(t *testing.T) {
+//////////////////////////////////////////////////////////
+// SetDefault Tests
+//////////////////////////////////////////////////////////
+
+func TestDefaultShouldDefaultErrorOnNonPtr(t *testing.T) {
 	assert := assert.New(t)
 
 	type S struct {
@@ -210,4 +214,111 @@ func TestDefaultShouldDefaultMultipleFields(t *testing.T) {
 	err = SetDefault(&s, "C")
 	assert.Nil(err)
 	assert.Equal(s.C, 1)
+}
+
+
+//////////////////////////////////////////////////////////
+// HasDefault Tests
+//////////////////////////////////////////////////////////
+
+func TestHasDefaultShouldWorkWithPtr(t *testing.T) {
+
+	assert := assert.New(t)
+
+	type S struct {
+		A int `default:"1"`
+	}
+
+	s := S{}
+	assert.Equal(s.A, 0)
+
+	def, err := HasDefault(&s, "A")
+	assert.Nil(err)
+	assert.True(def)
+}
+
+func TestHasDefaultShouldWorkWithoutPtr(t *testing.T) {
+
+	assert := assert.New(t)
+
+	type S struct {
+		A int `default:"1"`
+	}
+
+	s := S{}
+	assert.Equal(s.A, 0)
+
+	def, err := HasDefault(s, "A")
+	assert.Nil(err)
+	assert.True(def)
+}
+
+//////////////////////////////////////////////////////////
+// SetAllDefaults Tests
+//////////////////////////////////////////////////////////
+
+
+func TestSetAllDefaultsShouldErrorOnNonPtr(t *testing.T) {
+	assert := assert.New(t)
+
+	type S struct {
+		A string `default:"i am a string"`
+	}
+
+	s := S{}
+	assert.Equal(s.A, "")
+
+	err := SetAllDefaults(s)
+	assert.NotNil(err)
+
+}
+
+func TestSetAllDefaultsShouldDefaultAll(t *testing.T) {
+	assert := assert.New(t)
+
+	type S struct {
+		A string `default:"i am a string"`
+		B string
+		C int `default:"1"`
+	}
+
+	s := S{}
+	assert.Equal(s.A, "")
+	assert.Equal(s.B, "")
+	assert.Equal(s.C, 0)
+
+	err := SetAllDefaults(&s)
+	assert.Nil(err)
+
+	assert.Equal(s.A, "i am a string")
+	assert.Equal(s.B, "")
+	assert.Equal(s.C, 1)
+
+}
+
+func TestSetAllDefaultsShouldIgnoreNotDefaults(t *testing.T) {
+	assert := assert.New(t)
+
+	type S struct {
+		A string `default:"i am a string"`
+		B string
+		C int `default:"1"`
+	}
+
+	s := S{
+		A: "original",
+		B: "non default",
+		C: 42,
+	}
+	assert.Equal(s.A, "original")
+	assert.Equal(s.B, "non default")
+	assert.Equal(s.C, 42)
+
+	err := SetAllDefaults(&s)
+	assert.Nil(err)
+
+	assert.Equal(s.A, "i am a string")
+	assert.Equal(s.B, "non default")
+	assert.Equal(s.C, 1)
+
 }

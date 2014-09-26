@@ -3,7 +3,6 @@ package validator
 import (
 	"errors"
 	"fmt"
-	log "github.com/cihub/seelog"
 	"reflect"
 )
 
@@ -41,27 +40,24 @@ func ValidateAll(obj interface{}) error {
 		return errors.New("Cannot validate non struct")
 	}
 
-	allValid := true
 	num := value.NumField()
-	for i := 0; i < num && allValid; i++ {
+	for i := 0; i < num; i++ {
 		field := value.Field(i)
 		inter := field.Interface()
 		v, ok := inter.(Validator)
 		if ok {
 			valid := v.Validate()
-			allValid = valid == nil
+			if valid != nil {
+				t := reflect.TypeOf(obj)
+				ft := reflect.TypeOf(inter)
+				return errors.New(fmt.Sprintf("Field %v of %v is not valid: %s", ft, t, valid.Error()))
+			}
 		} else {
 			t := reflect.TypeOf(obj)
 			ft := reflect.TypeOf(inter)
-			log.Warnf("Field %v of %v is not a validator", ft, t)
-			allValid = false
+			return errors.New(fmt.Sprintf("Field %v of %v is not a validator", ft, t))
 		}
 	}
 
-	if allValid {
-		return nil
-	}
-
-	t := reflect.TypeOf(obj)
-	return errors.New(fmt.Sprintf("Not all fields of %v are valid", t))
+	return nil
 }
