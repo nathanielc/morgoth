@@ -3,9 +3,9 @@ package defaults
 import (
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
-	"log"
 )
 
 const tag string = "default"
@@ -99,7 +99,6 @@ func HasDefault(obj interface{}, fieldName string) (bool, error) {
 	defaultStr := field.Tag.Get(tag)
 	return len(defaultStr) > 0, nil
 }
-
 
 // Set the defaults of all fields of obj that have been defined
 func SetAllDefaults(obj interface{}) error {

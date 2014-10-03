@@ -2,11 +2,11 @@ package config
 
 import (
 	log "github.com/cihub/seelog"
-	"regexp"
-	"gopkg.in/validator.v2"
 	"github.com/nvcook42/morgoth/defaults"
-
+	"gopkg.in/validator.v2"
+	"regexp"
 )
+
 type Schedule struct {
 	Duration uint `yaml:"duration" validate:"min=1" default:"60"`
 	Period   uint `yaml:"period"   validate:"min=1" default:"60"`
@@ -17,7 +17,6 @@ func (self Pattern) Validate() error {
 	_, err := regexp.Compile(string(self))
 	return err
 }
-
 
 //Sets any invalid fields to their defualt value
 func (self *Schedule) Default() {

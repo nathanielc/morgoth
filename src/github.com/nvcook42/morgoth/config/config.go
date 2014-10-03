@@ -2,18 +2,19 @@ package config
 
 import (
 	log "github.com/cihub/seelog"
+	"github.com/nvcook42/morgoth/engine"
 )
 
 // Base config struct for the entire morgoth config
 type Config struct {
-	DataEngine DataEngine `yaml:"data_engine"`
-	Metrics    []Metric   `yaml:"metrics"`
-	Fittings   []Fitting  `yaml:"fittings"`
+	DataEngine engine.DataEngine `yaml:"data_engine"`
+	Metrics    []Metric          `yaml:"metrics"`
+	Fittings   []Fitting         `yaml:"fittings"`
 }
 
 func (self *Config) Default() {
 	self.DataEngine.Default()
-	for i := range self.Metrics{
+	for i := range self.Metrics {
 		self.Metrics[i].Default()
 	}
 	for i := range self.Fittings {

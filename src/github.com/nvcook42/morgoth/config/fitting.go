@@ -25,15 +25,15 @@ func (self FittingType) Validate() error {
 
 // The Fittings subsection of the config
 type Fitting struct {
-	Type     FittingType
-	REST     *rest.RESTConf         `yaml:"rest,omitempty"`
-	Graphite *graphite.GraphiteConf `yaml:"graphite,omitempty"`
+	Type FittingType
+	REST *rest.RESTConf `yaml:"rest,omitempty"`
+	//	Graphite *graphite.GraphiteConf `yaml:"graphite,omitempty"`
 }
 
 func (self *Fitting) Default() {
 	switch self.Type {
 	case REST:
-		self.REST.Default()
+		//self.REST.Default()
 	}
 }
 
