@@ -2,11 +2,13 @@ package dynamic_type
 
 import (
 	"errors"
+	"fmt"
 	"github.com/nvcook42/morgoth/registery"
+	"github.com/nvcook42/morgoth/config/types"
 )
 
 var (
-	conf registery.Configuration
+	conf types.Configuration
 )
 
 
@@ -21,7 +23,7 @@ func (self *confUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) error ) e
 func UnmarshalDynamicType(
 	reg *registery.Registery,
 	unmarshal func(interface{}) error,
-) (string, registery.Configuration, error) {
+) (string, types.Configuration, error) {
 
 	typeData := make(map[string]interface{})
 	err := unmarshal(&typeData)
@@ -30,7 +32,7 @@ func UnmarshalDynamicType(
 	}
 
 	if len(typeData) != 1 {
-		return "", nil, errors.New("Only one key can be specified")
+		return "", nil, errors.New(fmt.Sprintf("Exactly one key must be specified. Found: %v", typeData))
 	}
 	var typeName string
 	for key := range typeData {

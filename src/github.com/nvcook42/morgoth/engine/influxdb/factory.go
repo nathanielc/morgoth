@@ -2,17 +2,17 @@ package influxdb
 
 import (
 	"github.com/nvcook42/morgoth/engine"
-	"github.com/nvcook42/morgoth/registery"
+	"github.com/nvcook42/morgoth/config/types"
 )
 
 type InfluxDBFactory struct {
 }
 
-func (self *InfluxDBFactory) NewConf() registery.Configuration {
+func (self *InfluxDBFactory) NewConf() types.Configuration {
 	return new(InfluxDBConf)
 }
 
-func (self *InfluxDBFactory) GetInstance(config registery.Configuration) (interface{}, error) {
+func (self *InfluxDBFactory) GetInstance(config types.Configuration) (interface{}, error) {
 	return new(InfluxDBEngine), nil
 }
 

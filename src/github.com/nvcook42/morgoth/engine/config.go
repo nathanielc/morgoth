@@ -3,7 +3,7 @@ package engine
 import (
 	//log "github.com/cihub/seelog"
 	"errors"
-	"github.com/nvcook42/morgoth/registery"
+	"github.com/nvcook42/morgoth/config/types"
 	"github.com/nvcook42/morgoth/config/dynamic_type"
 )
 
@@ -11,7 +11,7 @@ import (
 // The Data Engine subsection of the config
 type EngineConf struct {
 	Type string
-	Conf registery.Configuration
+	Conf types.Configuration
 }
 
 func (self *EngineConf) Default() {

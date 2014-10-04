@@ -24,8 +24,7 @@ func (self *InfluxDBConf) Default() {
 	if err != nil {
 		errs := err.(validator.ErrorMap)
 		for fieldName := range errs {
-			switch fieldName {
-			case "Host", "Port":
+			if ok, _ := defaults.HasDefault(self, fieldName); ok {
 				log.Infof("Using default for InfluxDBConf.%s", fieldName)
 				defaults.SetDefault(self, fieldName)
 			}
