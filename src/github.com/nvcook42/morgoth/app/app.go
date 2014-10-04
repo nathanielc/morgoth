@@ -6,7 +6,7 @@ import (
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
 	//"gopkg.in/yaml.v2"
-	_ "github.com/nvcook42/morgoth/engine/list"
+	_ "github.com/nvcook42/morgoth/plugins"
 )
 
 type App struct {

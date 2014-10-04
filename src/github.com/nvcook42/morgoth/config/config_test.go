@@ -2,8 +2,6 @@ package config
 
 import (
 	log "github.com/cihub/seelog"
-	"github.com/nvcook42/morgoth/engine/influxdb"
-	"github.com/nvcook42/morgoth/engine/mongodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -46,8 +44,6 @@ data_engine:
 	//assert.Equal(config.DataEngine.InfluxDB.Password, "secret")
 	//assert.Equal(config.DataEngine.InfluxDB.Database, "morgoth")
 	//assert.Equal(config.DataEngine.Type, InfluxDB)
-	idb := influxdb.InfluxDBConf{}
-	assert.Equal(idb.Port, 0)
 
 	assert.Nil(config.Validate())
 }
@@ -74,8 +70,6 @@ data_engine:
 	//assert.Equal(config.DataEngine.MongoDB.Database, "morgoth")
 	//assert.Equal(config.DataEngine.MongoDB.IsSharded, false)
 	//assert.Equal(config.DataEngine.Type, MongoDB)
-	mdb := mongodb.MongoDBConf{}
-	assert.Equal(mdb.Port, 0)
 
 	assert.Nil(config.Validate())
 }
