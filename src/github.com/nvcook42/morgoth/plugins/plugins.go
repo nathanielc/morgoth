@@ -5,6 +5,6 @@ package plugins
 
 import (
 	_ "github.com/nvcook42/morgoth/engine/list"
-	_ "github.com/nvcook42/morgoth/detectors/list"
-	_ "github.com/nvcook42/morgoth/fittings/list"
+	_ "github.com/nvcook42/morgoth/detector/list"
+	_ "github.com/nvcook42/morgoth/fitting/list"
 )

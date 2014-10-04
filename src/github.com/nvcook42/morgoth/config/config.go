@@ -3,17 +3,19 @@ package config
 import (
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/engine"
+	"github.com/nvcook42/morgoth/metric"
+	"github.com/nvcook42/morgoth/fitting"
 )
 
 // Base config struct for the entire morgoth config
 type Config struct {
-	DataEngine engine.DataEngine `yaml:"data_engine"`
-	Metrics    []Metric          `yaml:"metrics"`
-	Fittings   []Fitting         `yaml:"fittings"`
+	EngineConf engine.EngineConf      `yaml:"data_engine"`
+	Metrics    []metric.MetricConf    `yaml:"metrics"`
+	Fittings   []fitting.FittingConf  `yaml:"fittings"`
 }
 
 func (self *Config) Default() {
-	self.DataEngine.Default()
+	self.EngineConf.Default()
 	for i := range self.Metrics {
 		self.Metrics[i].Default()
 	}
@@ -24,7 +26,7 @@ func (self *Config) Default() {
 
 func (self Config) Validate() error {
 	log.Debugf("Validating Config %v", self)
-	valid := self.DataEngine.Validate()
+	valid := self.EngineConf.Validate()
 	if valid != nil {
 		return valid
 	}

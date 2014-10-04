@@ -9,25 +9,25 @@ import (
 
 
 // The Data Engine subsection of the config
-type DataEngine struct {
+type EngineConf struct {
 	Type string
 	Conf registery.Configuration
 }
 
-func (self *DataEngine) Default() {
+func (self *EngineConf) Default() {
 	if self.Conf != nil {
 		self.Conf.Default()
 	}
 }
 
-func (self DataEngine) Validate() error {
+func (self EngineConf) Validate() error {
 	if self.Conf == nil {
 		return errors.New("No conf found")
 	}
 	return self.Conf.Validate()
 }
 
-func (self *DataEngine) GetEngine() (Engine, error) {
+func (self *EngineConf) GetEngine() (Engine, error) {
 	factory, err := Registery.GetFactory(self.Type)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (self *DataEngine) GetEngine() (Engine, error) {
 	return engine.(Engine), err
 }
 
-func (self *DataEngine) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (self *EngineConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	engineType, config, err := dynamic_type.UnmarshalDynamicType(Registery, unmarshal)
 	if err != nil {
 		return err

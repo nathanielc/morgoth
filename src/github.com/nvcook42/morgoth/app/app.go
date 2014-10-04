@@ -16,7 +16,7 @@ type App struct {
 
 func New(config *config.Config) (*App, error) {
 	app := App{config:config}
-	eng, err := app.config.DataEngine.GetEngine()
+	eng, err := app.config.EngineConf.GetEngine()
 	if err != nil {
 		return nil, err
 	}
