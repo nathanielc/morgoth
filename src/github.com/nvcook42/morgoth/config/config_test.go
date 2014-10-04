@@ -3,6 +3,7 @@ package config
 import (
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/engine/influxdb"
+	"github.com/nvcook42/morgoth/engine/mongodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -27,8 +28,7 @@ func TestConfigShouldParseDataEngineInfluxDB(t *testing.T) {
 	var data = `
 ---
 data_engine:
-  type: influxdb
-  engine:
+  influxdb:
     host: localhost
     port: 4242
     user: influx
@@ -58,8 +58,7 @@ func TestConfigShouldParseDataEngineMongoDB(t *testing.T) {
 	var data = `
 ---
 data_engine:
-  type: mongodb
-  engine:
+  mongodb:
     host: localhost
     port: 27017
     database: morgoth
@@ -75,6 +74,8 @@ data_engine:
 	//assert.Equal(config.DataEngine.MongoDB.Database, "morgoth")
 	//assert.Equal(config.DataEngine.MongoDB.IsSharded, false)
 	//assert.Equal(config.DataEngine.Type, MongoDB)
+	mdb := mongodb.MongoDBConf{}
+	assert.Equal(mdb.Port, 0)
 
 	assert.Nil(config.Validate())
 }
@@ -98,8 +99,7 @@ func TestConfigShouldParseDetectorConf(t *testing.T) {
 	var data = `
 ---
 data_engine:
-  type: mongodb
-  engine:
+  mongodb:
     database: morgoth
     use_sharding: false
 metrics:
@@ -126,8 +126,7 @@ func TestConfigShouldParseScheduleConf(t *testing.T) {
 	var data = `
 ---
 data_engine:
-  type: mongodb
-  engine:
+  mongodb:
     database: morgoth
     use_sharding: false
 metrics:

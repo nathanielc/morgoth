@@ -1,7 +1,6 @@
 package dynamic_type
 
 import (
-	log "github.com/cihub/seelog"
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/registery"
@@ -39,7 +38,7 @@ func (self *testFactory) GetInstance(config registery.Configuration) (interface{
 }
 
 func (self *testStruct) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	engineType, config, err := UnmarshalDynamicType("asdf", self.registery, unmarshal)
+	engineType, config, err := UnmarshalDynamicType(self.registery, unmarshal)
 	self.assert.Nil(err)
 	self.assert.Equal("jim", engineType)
 	if !self.assert.NotNil(config) {
@@ -57,8 +56,7 @@ func TestDynamicType(t *testing.T) {
 
 	ts := testStruct{assert, registery}
 	var data = `
-type: jim
-asdf:
+jim:
   a: 1
   b: 2
   c: 4
@@ -67,32 +65,6 @@ asdf:
 	assert.Nil(err)
 	
 
-	
-
-}
-
-func TestYaml(t *testing.T) {
-	assert := assert.New(t)
-
-var data = `
-asdf:
-  a: 1
-  b: 2
-  c: 4
-qwerty:
-  a: 5
-  b: 8
-  c: 6
-`
-	type s struct {
-		data map[string]testConfig
-	}
-	ts := new(s)
-	ts.data = make(map[string]testConfig)
-	err := yaml.Unmarshal([]byte(data), &ts.data)
-	assert.Nil(err)
-
-	log.Debugf("TS: %v", *ts)
 	
 
 }

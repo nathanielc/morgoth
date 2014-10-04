@@ -1,6 +1,7 @@
 package registery
 
 import (
+	log "github.com/cihub/seelog"
 	"errors"
 	"fmt"
 )
@@ -16,6 +17,7 @@ func New() *Registery {
 }
 
 func (self *Registery) RegisterFactory(name string, factory Factory) error {
+	log.Infof("Registering Factory %s", name)
 	if _, ok := self.factories[name]; ok {
 		return errors.New(fmt.Sprintf("Factory of name %s already registered"))
 	}

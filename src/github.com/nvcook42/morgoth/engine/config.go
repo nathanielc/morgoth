@@ -37,7 +37,7 @@ func (self *DataEngine) GetEngine() (Engine, error) {
 }
 
 func (self *DataEngine) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	engineType, config, err := dynamic_type.UnmarshalDynamicType("engine", Registery, unmarshal)
+	engineType, config, err := dynamic_type.UnmarshalDynamicType(Registery, unmarshal)
 	if err != nil {
 		return err
 	}

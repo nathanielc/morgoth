@@ -1,45 +1,56 @@
 package dynamic_type
 
 import (
+	"errors"
 	"github.com/nvcook42/morgoth/registery"
-	log "github.com/cihub/seelog"
 )
 
-type typeshell struct {
-	Type string `yaml:"type"`
+var (
+	conf registery.Configuration
+)
+
+
+type confUnmarshaler struct {
+}
+
+func (self *confUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) error ) error {
+	return unmarshal(conf)
 }
 
 
 func UnmarshalDynamicType(
-	key string,
 	reg *registery.Registery,
 	unmarshal func(interface{}) error,
 ) (string, registery.Configuration, error) {
-	defer log.Flush()
 
-	ts := typeshell{}
-	err := unmarshal(&ts)
+	typeData := make(map[string]interface{})
+	err := unmarshal(&typeData)
 	if err != nil {
 		return "", nil, err
 	}
 
-	log.Debugf("dynamic_type Type: %s", ts.Type)
+	if len(typeData) != 1 {
+		return "", nil, errors.New("Only one key can be specified")
+	}
+	var typeName string
+	for key := range typeData {
+		typeName = key
+	}
 
-	factory, err := reg.GetFactory(ts.Type)
+	factory, err := reg.GetFactory(typeName)
 	if err != nil {
 		return "", nil, err
 	}
 
-	data := make(map[string]registery.Configuration)
-	data[key] = factory.NewConf()
+	confData := make(map[string]confUnmarshaler)
+	conf = factory.NewConf()
 
-	err = unmarshal(&data)
+	err = unmarshal(&confData)
 	if err != nil {
 		return "", nil, err
 	}
 
-	log.Debugf("key: %s type: %s, config: %v", key, ts.Type, data)
-	return ts.Type, data[key].(registery.Configuration), nil
+	return typeName, conf, nil
 }
 
 
