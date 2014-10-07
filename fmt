@@ -1,2 +1,2 @@
 #!/bin/bash
-find src/github.com/nvcook42/morgoth -type d | cut -c 5- | xargs go fmt
+go fmt ./...
