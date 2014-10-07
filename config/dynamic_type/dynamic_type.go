@@ -103,4 +103,3 @@ type confUnmarshaler struct {
 func (self *confUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return unmarshal(conf)
 }
-
