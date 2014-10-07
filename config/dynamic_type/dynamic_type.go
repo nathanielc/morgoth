@@ -9,6 +9,8 @@ import (
 	"github.com/nvcook42/morgoth/registery"
 )
 
+// Base object for unmarshaling dyanmic yaml
+// into a Configuration object.
 type DynamicConfiguration struct {
 	Type      string
 	Conf      types.Configuration
@@ -28,6 +30,8 @@ func (self DynamicConfiguration) Validate() error {
 	return self.Conf.Validate()
 }
 
+// Performs the unmarshaling into self given a registery and
+// the unmarshal function.
 func (self *DynamicConfiguration) PerformUnmarshalYAML(registery *registery.Registery, unmarshal func(interface{}) error) error {
 	t, config, err := UnmarshalDynamicType(registery, unmarshal)
 	if err != nil {
@@ -36,21 +40,6 @@ func (self *DynamicConfiguration) PerformUnmarshalYAML(registery *registery.Regi
 	self.Type = t
 	self.Conf = config
 	return nil
-}
-
-///////////////////////////
-// Internals
-///////////////////////////
-
-var (
-	conf types.Configuration
-)
-
-type confUnmarshaler struct {
-}
-
-func (self *confUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	return unmarshal(conf)
 }
 
 // Unmarshal YAML configuration into a dynamically named configuration struct
@@ -99,3 +88,19 @@ func UnmarshalDynamicType(
 
 	return typeName, conf, nil
 }
+
+///////////////////////////
+// Internals
+///////////////////////////
+
+var (
+	conf types.Configuration
+)
+
+type confUnmarshaler struct {
+}
+
+func (self *confUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	return unmarshal(conf)
+}
+
