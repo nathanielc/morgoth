@@ -1,8 +1,8 @@
 package mongodb
 
 import (
-	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/config/types"
+	"github.com/nvcook42/morgoth/engine"
 )
 
 type MongoDBFactory struct {

@@ -1,36 +1,13 @@
 package fitting
 
 import (
-	"errors"
-	"github.com/nvcook42/morgoth/config/types"
 	"github.com/nvcook42/morgoth/config/dynamic_type"
 )
 
 type FittingConf struct {
-	Type string
-	Conf types.Configuration
+	dynamic_type.DynamicConfiguration
 }
-
-func (self *FittingConf) Default() {
-	if self.Conf != nil {
-		self.Conf.Default()
-	}
-}
-
-func (self FittingConf) Validate() error {
-	if self.Conf == nil {
-		return errors.New("No fitting conf found")
-	}
-	return self.Conf.Validate()
-}
-
 
 func (self *FittingConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	fittingType, config, err := dynamic_type.UnmarshalDynamicType(Registery, unmarshal)
-	if err != nil {
-		return err
-	}
-	self.Type = fittingType
-	self.Conf = config
-	return nil
+	return self.PerformUnmarshalYAML(Registery, unmarshal)
 }

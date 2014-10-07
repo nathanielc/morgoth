@@ -58,4 +58,3 @@ fittings:
 	assert.NotNil(err)
 
 }
-

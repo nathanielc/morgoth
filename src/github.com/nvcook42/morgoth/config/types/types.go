@@ -9,7 +9,6 @@ type Validator interface {
 	Validate() error
 }
 
-
 type Configuration interface {
 	defaults.Defaulter
 	Validator

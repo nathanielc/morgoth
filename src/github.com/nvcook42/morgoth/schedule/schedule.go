@@ -12,7 +12,6 @@ type Schedule struct {
 	Delay    uint `yaml:"delay"    validate:"min=0" default:"60"`
 }
 
-
 //Sets any invalid fields to their defualt value
 func (self *Schedule) Default() {
 	err := self.Validate()

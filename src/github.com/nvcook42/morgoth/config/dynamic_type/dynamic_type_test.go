@@ -1,14 +1,14 @@
 package dynamic_type
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/registery"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
+	"testing"
 )
 
 type testStruct struct {
-	assert *assert.Assertions
+	assert    *assert.Assertions
 	registery *registery.Registery
 }
 
@@ -24,7 +24,6 @@ func (self *testConfig) Default() {
 func (self testConfig) Validate() error {
 	return nil
 }
-
 
 type testFactory struct {
 }
@@ -63,8 +62,5 @@ jim:
 `
 	err := yaml.Unmarshal([]byte(data), &ts)
 	assert.Nil(err)
-	
-
-	
 
 }

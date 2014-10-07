@@ -1,3 +1,5 @@
+// The defaults package provides a way for default values to be
+// defined in the tags of struct fields.
 package defaults
 
 import (
@@ -11,6 +13,7 @@ import (
 const tag string = "default"
 
 // Sets default values on a struct
+//
 // NOTE: This method is not for validation
 // hence no errors are returned
 type Defaulter interface {
@@ -19,6 +22,21 @@ type Defaulter interface {
 
 // Set the tag defined default of a field specified by fieldName on
 // the struct pointed to by obj, regardless of the current value of the field.
+//
+// Example:
+//   type MyConfigStruct struct {
+//       A int    `default:"42"`
+//       B string `default:"this is a string literal"`
+//   }
+//
+//   c := MyConfigStruct{}
+//   SetDefault(&c, "A")
+//   SetDefault(&c, "B")
+//
+//   fmt.Printf("%v", c) // {42 this is a string literal}
+//
+// See the test cases for more examples.
+//
 // NOTE: It is considered an error to call SetDefault if no default has been
 // defined. Use HasDefault if neccessary
 func SetDefault(obj interface{}, fieldName string) error {

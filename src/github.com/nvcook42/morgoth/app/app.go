@@ -1,11 +1,9 @@
 package app
 
 import (
-	//"errors"
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
-	//"gopkg.in/yaml.v2"
 	_ "github.com/nvcook42/morgoth/plugins"
 )
 
@@ -15,7 +13,7 @@ type App struct {
 }
 
 func New(config *config.Config) (*App, error) {
-	app := App{config:config}
+	app := App{config: config}
 	eng, err := app.config.EngineConf.GetEngine()
 	if err != nil {
 		return nil, err

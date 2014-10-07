@@ -2,15 +2,15 @@ package metric
 
 import (
 	"errors"
-	"regexp"
-	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/detector"
+	"github.com/nvcook42/morgoth/schedule"
+	"regexp"
 )
 
 // Represents a single metric conf section
 type MetricConf struct {
-	Pattern   Pattern    `yaml:"pattern"`
-	Schedule  schedule.Schedule   `yaml:"schedule"`
+	Pattern   Pattern                 `yaml:"pattern"`
+	Schedule  schedule.Schedule       `yaml:"schedule"`
 	Detectors []detector.DetectorConf `yaml:"detectors"`
 }
 
@@ -38,6 +38,7 @@ func (self MetricConf) Validate() error {
 }
 
 type Pattern string
+
 func (self Pattern) Validate() error {
 	if len(self) == 0 {
 		return errors.New("Pattern cannot be empty")
