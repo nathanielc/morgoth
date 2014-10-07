@@ -1,0 +1,38 @@
+{
+	"ImportPath": "github.com/nvcook42/morgoth",
+	"GoVersion": "go1.2.2",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/cihub/seelog",
+			"Comment": "go1.1-48-g14e0891",
+			"Rev": "14e08919e23178f4311df308dae5386affb51511"
+		},
+		{
+			"ImportPath": "github.com/stretchr/objx",
+			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "de7fcff264cd05cc0c90c509ea789a436a0dd206"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/mock",
+			"Rev": "de7fcff264cd05cc0c90c509ea789a436a0dd206"
+		},
+		{
+			"ImportPath": "gopkg.in/check.v1",
+			"Rev": "91ae5f88a67b14891cfd43895b01164f6c120420"
+		},
+		{
+			"ImportPath": "gopkg.in/validator.v2",
+			"Rev": "277e608355a896ecd1387e965c4a187136bffab2"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "eca94c41d994ae2215d455ce578ae6e2dc6ee516"
+		}
+	]
+}

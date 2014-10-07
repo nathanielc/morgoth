@@ -11,9 +11,6 @@ func (m *Configuration) Default() {
 }
 
 func (m *Configuration) Validate() error {
-	ret := m.Called()
-
-	r0 := ret.Error(0)
-
-	return r0
+	m.Called()
+	return nil
 }

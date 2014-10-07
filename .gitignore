@@ -8,3 +8,5 @@ docs/html
 build
 pkg
 bin
+.vagrant
+Godeps

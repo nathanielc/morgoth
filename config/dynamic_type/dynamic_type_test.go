@@ -1,7 +1,10 @@
-package dynamic_type
+package dynamic_type_test
 
 import (
 	"github.com/nvcook42/morgoth/registery"
+	"github.com/nvcook42/morgoth/config/types"
+	"github.com/nvcook42/morgoth/config/types/mocks"
+	"github.com/nvcook42/morgoth/config/dynamic_type"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 	"testing"
@@ -28,16 +31,16 @@ func (self testConfig) Validate() error {
 type testFactory struct {
 }
 
-func (self *testFactory) NewConf() registery.Configuration {
+func (self *testFactory) NewConf() types.Configuration {
 	return new(testConfig)
 }
 
-func (self *testFactory) GetInstance(config registery.Configuration) (interface{}, error) {
+func (self *testFactory) GetInstance(config types.Configuration) (interface{}, error) {
 	return nil, nil
 }
 
 func (self *testStruct) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	engineType, config, err := UnmarshalDynamicType(self.registery, unmarshal)
+	engineType, config, err := dynamic_type.UnmarshalDynamicType(self.registery, unmarshal)
 	self.assert.Nil(err)
 	self.assert.Equal("jim", engineType)
 	if !self.assert.NotNil(config) {
@@ -63,4 +66,69 @@ jim:
 	err := yaml.Unmarshal([]byte(data), &ts)
 	assert.Nil(err)
 
+}
+
+func TestDynamicConfiguratonShouldDefault(t *testing.T) {
+//	assert := assert.New(t)
+
+	mockConf := new(mocks.Configuration)
+
+	dc := dynamic_type.DynamicConfiguration{
+		Type: "test",
+		Conf: mockConf,
+	}
+
+	mockConf.On("Default").Return()
+
+	dc.Default()
+
+	mockConf.Mock.AssertExpectations(t)
+
+}
+
+func TestDynamicConfiguratonShouldValidate(t *testing.T) {
+	assert := assert.New(t)
+
+	mockConf := new(mocks.Configuration)
+
+	dc := dynamic_type.DynamicConfiguration{
+		Type: "test",
+		Conf: mockConf,
+	}
+
+	mockConf.On("Validate").Return()
+
+	err := dc.Validate()
+	assert.Nil(err)
+
+	mockConf.Mock.AssertExpectations(t)
+
+}
+
+func TestDynamicConfiguratonDefaultShouldIgnoreNilConf(t *testing.T) {
+	assert := assert.New(t)
+
+	dc := dynamic_type.DynamicConfiguration{
+		Type: "test",
+		Conf: nil,
+	}
+
+
+	dc.Default()
+	//No panics means pass
+	assert.True(true)
+}
+
+func TestDynamicConfiguratonValidateShouldFailNilConf(t *testing.T) {
+	assert := assert.New(t)
+
+	dc := dynamic_type.DynamicConfiguration{
+		Type: "test",
+		Conf: nil,
+	}
+	
+
+
+	err := dc.Validate()
+	assert.NotNil(err)
 }

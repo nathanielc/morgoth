@@ -1,7 +1,8 @@
-package config
+package config_test
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/nvcook42/morgoth/config"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ data_engine:
   mongodb:
 	use_sharding: false
 `
-	config, err := Load([]byte(data))
+	config, err := config.Load([]byte(data))
 	assert.NotNil(err)
 	assert.Nil(config)
 }
@@ -26,7 +27,7 @@ func TestConfigShouldNotValidateBadEngineConf(t *testing.T) {
 data_engine:
   bad_key: 1
 `
-	_, err := Load([]byte(data))
+	_, err := config.Load([]byte(data))
 	assert.NotNil(err)
 
 }
@@ -40,7 +41,7 @@ metrics:
   - {}
   - {}
 `
-	_, err := Load([]byte(data))
+	_, err := config.Load([]byte(data))
 	assert.NotNil(err)
 
 }
@@ -54,7 +55,7 @@ fittings:
 	unknown: {}
 	bad: {}
 `
-	_, err := Load([]byte(data))
+	_, err := config.Load([]byte(data))
 	assert.NotNil(err)
 
 }
