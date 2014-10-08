@@ -5,6 +5,7 @@ import (
 )
 
 type Engine interface {
+	Initialize() error
 	GetReader() Reader
 	GetWriter() Writer
 }

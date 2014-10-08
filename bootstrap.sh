@@ -19,4 +19,5 @@ godep restore
 
 chown -R vagrant:vagrant /gopath
 
-godep go test ./...
+./test
+./run

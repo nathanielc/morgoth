@@ -1,6 +1,6 @@
 ---
-data_engine:
-  InfluxEngine:
+engine:
+  influxdb:
     host: localhost
     port: 8086
     user: root
@@ -8,26 +8,17 @@ data_engine:
     database: morgoth
 
 metrics:
-  .*:
-      detectors:
-        Threshold:
-          threshold: 2
-          percentile: 70
-      notifiers:
-        LogNotifier:
-            level: CRITICAL
-      schedule:
-        duration: 60s
-        period: 60s
-        delay: 0s
+  - pattern: .*
+    detectors:
+    notifiers:
+    schedule:
+      duration: 60
+      period: 60
+      delay: 0
 
 fittings:
-  Graphite:
-    port: 2003
-  Rest:
-    port: 7001
-  Dashboard:
-    port: 7000
+  - rest:
+      port: 7001
 
 logging:
     level: INFO

@@ -7,6 +7,10 @@ import (
 type InfluxDBEngine struct {
 }
 
+func (self *InfluxDBEngine) Initialize() error {
+	return nil
+}
+
 func (self *InfluxDBEngine) GetReader() engine.Reader {
 	return nil
 }

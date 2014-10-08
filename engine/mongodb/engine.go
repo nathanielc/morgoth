@@ -7,6 +7,10 @@ import (
 type MongoDBEngine struct {
 }
 
+func (self *MongoDBEngine) Initialize() error {
+	return nil
+}
+
 func (self *MongoDBEngine) GetReader() engine.Reader {
 	return nil
 }
