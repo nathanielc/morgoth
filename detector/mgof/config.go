@@ -7,7 +7,7 @@ import (
 )
 
 type MGOFConf struct {
-	CHI float64 `default:"0.5"`
+	CHI float64 `yaml:"chi" validate:"min=0,max=1,nonzero" default:"0.5"`
 }
 
 func (self *MGOFConf) Default() {

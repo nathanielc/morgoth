@@ -10,3 +10,4 @@ pkg
 bin
 .vagrant
 Godeps
+*.test

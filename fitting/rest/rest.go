@@ -1,4 +1,10 @@
 package rest
 
-type RESTConf struct {
+type RESTFitting struct {
+}
+
+func (self *RESTFitting) Start() {
+}
+
+func (self *RESTFitting) Stop() {
 }

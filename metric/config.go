@@ -10,7 +10,7 @@ import (
 // Represents a single metric conf section
 type MetricConf struct {
 	Pattern   Pattern                 `yaml:"pattern"`
-	Schedule  schedule.Schedule       `yaml:"schedule"`
+	Schedule  schedule.ScheduleConf   `yaml:"schedule"`
 	Detectors []detector.DetectorConf `yaml:"detectors"`
 }
 

@@ -10,7 +10,7 @@ type MongoDBConf struct {
 	Host      string `validate:"min=1"           default:"localhost"`
 	Port      uint   `validate:"min=1,max=65535" default:"27017"`
 	Database  string `validate:"min=1"`
-	IsSharded bool   `default:"false"`
+	IsSharded bool   `yaml:"is_sharded"         default:"false"`
 }
 
 func (self *MongoDBConf) Validate() error {

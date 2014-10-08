@@ -3,7 +3,7 @@ package dynamic_type_test
 import (
 	"github.com/nvcook42/morgoth/config/dynamic_type"
 	"github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/config/types/mocks"
+	"github.com/nvcook42/morgoth/mocks/config/types"
 	"github.com/nvcook42/morgoth/registery"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
