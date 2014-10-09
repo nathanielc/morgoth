@@ -1,3 +1,4 @@
+// Define exported types from `metric' to avoid cyclic imports
 package types
 
 type MetricID string
