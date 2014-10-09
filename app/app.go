@@ -4,17 +4,32 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
+	mtypes "github.com/nvcook42/morgoth/metric/types"
+	"github.com/nvcook42/morgoth/metric"
 	_ "github.com/nvcook42/morgoth/plugins"
 )
 
 type App struct {
 	config *config.Config
-	Engine engine.Engine
+	engine engine.Engine
+	manager mtypes.Manager
 }
 
 func New(config *config.Config) *App {
 	app := App{config: config}
 	return &app
+}
+
+func (self *App) GetReader() engine.Reader {
+	return self.engine.GetReader()
+}
+
+func (self *App) GetWriter() engine.Writer {
+	return self.engine.GetWriter()
+}
+
+func (self *App) GetManager() mtypes.Manager {
+	return self.manager
 }
 
 func (self *App) Run() error {
@@ -24,13 +39,14 @@ func (self *App) Run() error {
 	if err != nil {
 		return err
 	}
-	self.Engine = eng
-	err = self.Engine.Initialize()
+	self.engine = eng
+	err = self.engine.Initialize()
 	if err != nil {
 		return err
 	}
 
 	log.Info("Setup metrics manager")
+	self.manager = metrics.NewManager(self.config, self)
 
 	log.Info("Starting all fittings")
 

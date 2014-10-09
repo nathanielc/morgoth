@@ -2,7 +2,5 @@
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
-echo "Formatting code"
-./fmt
 echo "Testing all packages..."
 godep go list ./... | grep -vP '(\/(app|plugins|mocks|list)(\/|$))|(morgoth$)' | xargs go test
