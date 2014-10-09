@@ -46,7 +46,7 @@ func (self *App) Run() error {
 	}
 
 	log.Info("Setup metrics manager")
-	self.manager = metrics.NewManager(self.config, self)
+	self.manager = metric.NewManager(self.config.Metrics, self)
 
 	log.Info("Starting all fittings")
 
