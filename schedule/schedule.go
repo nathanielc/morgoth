@@ -2,24 +2,20 @@ package schedule
 
 import (
 	"errors"
+	log "github.com/cihub/seelog"
 	"time"
 )
 
 type ScheduleFunc func()
 
 type Schedule struct {
-	f       ScheduleFunc
-	period  time.Duration
-	running bool
+	Callback ScheduleFunc
+	Duration time.Duration
+	Delay    time.Duration
+	Period   time.Duration
+	running  bool
 }
 
-func NewSchedule(f ScheduleFunc, period time.Duration) *Schedule {
-	s := new(Schedule)
-	s.f = f
-	s.period = period
-	s.running = false
-	return s
-}
 
 func (self *Schedule) Start() error {
 	if self.running {
@@ -28,9 +24,14 @@ func (self *Schedule) Start() error {
 	self.running = true
 
 	go func() {
-		ticker := time.NewTicker(self.period)
+		defer func() {
+			if r := recover(); r != nil {
+				log.Errorf("Error during schedule Callback %v", r)
+			}
+		}()
+		ticker := time.NewTicker(self.Period)
 		for self.running {
-			self.f()
+			self.Callback()
 			<-ticker.C
 		}
 		ticker.Stop()

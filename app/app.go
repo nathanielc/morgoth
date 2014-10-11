@@ -46,7 +46,9 @@ func (self *App) Run() error {
 	}
 
 	log.Info("Setup metrics manager")
-	self.manager = metric.NewManager(self.config.Metrics, self)
+	supervisors := self.config.GetSupervisors(self)
+	log.Debugf("Supervisors: %v", supervisors)
+	self.manager = metric.NewManager(supervisors, self)
 
 	log.Info("Starting all fittings")
 

@@ -1,33 +1,36 @@
 package metric
 
 import (
+	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/metric/set"
 	app "github.com/nvcook42/morgoth/app/types"
-	mtypes "github.com/nvcook42/morgoth/metric/types"
+	metric "github.com/nvcook42/morgoth/metric/types"
 )
 
-type Manager struct {
+type ManagerStruct struct {
 	metrics *set.Set
-	supervisors map[Pattern]*Supervisor
+	supervisors map[Pattern]Supervisor
 	app app.App
 }
 
-func NewManager(metrics []MetricConf, app app.App) *Manager {
-	m := new(Manager)
-	m.metrics = set.New(0)
-	m.app = app
+func NewManager(supervisors []Supervisor, app app.App) metric.Manager {
+	log.Debugf("NewManager: %v, %v", supervisors, app)
+	m := &ManagerStruct{
+		metrics: set.New(0),
+		supervisors: make(map[Pattern]Supervisor, len(supervisors)),
+		app: app,
+	}
 
-	//Create supervisor foreach conf
-	m.supervisors = make(map[Pattern]*Supervisor, len(metrics))
-	for idx := range metrics {
-		mc := metrics[idx]
-		m.supervisors[mc.Pattern] = NewSupervisor(m.app.GetWriter(), mc)
+	for i := range supervisors {
+		supervisor := supervisors[i]
+		pattern := supervisor.GetPattern()
+		m.supervisors[pattern] = supervisor
 	}
 
 	return m
 }
 
-func (self *Manager) NewMetric(id mtypes.MetricID) {
+func (self *ManagerStruct) NewMetric(id metric.MetricID) {
 	if !self.metrics.Has(id) {
 		//Found real new metric
 	}

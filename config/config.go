@@ -5,6 +5,7 @@ import (
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/fitting"
 	"github.com/nvcook42/morgoth/metric"
+	app "github.com/nvcook42/morgoth/app/types"
 )
 
 // Base config struct for the entire morgoth config
@@ -45,4 +46,13 @@ func (self Config) Validate() error {
 		}
 	}
 	return nil
+}
+
+func (self *Config) GetSupervisors(app app.App) []metric.Supervisor {
+	supervisors := make([]metric.Supervisor, 0, len(self.Metrics))
+	for i := range self.Metrics {
+		supervisors = append(supervisors, self.Metrics[i].GetSupervisor(app))
+	}
+
+	return supervisors
 }
