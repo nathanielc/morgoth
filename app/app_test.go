@@ -1,10 +1,10 @@
 package app_test
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/app"
 	"github.com/nvcook42/morgoth/config"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestAppStart(t *testing.T) {
@@ -38,7 +38,5 @@ fittings:
 
 	err = app.Run()
 	assert.Nil(err)
-	
+
 }
-
-

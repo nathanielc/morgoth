@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type ScheduleFunc func()
+type ScheduleFunc func(time.Duration)
 
 type Schedule struct {
 	Callback ScheduleFunc
@@ -15,7 +15,6 @@ type Schedule struct {
 	Period   time.Duration
 	running  bool
 }
-
 
 func (self *Schedule) Start() error {
 	if self.running {
@@ -31,7 +30,7 @@ func (self *Schedule) Start() error {
 		}()
 		ticker := time.NewTicker(self.Period)
 		for self.running {
-			self.Callback()
+			self.Callback(self.Duration)
 			<-ticker.C
 		}
 		ticker.Stop()

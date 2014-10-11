@@ -4,14 +4,14 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
-	mtypes "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/metric"
+	mtypes "github.com/nvcook42/morgoth/metric/types"
 	_ "github.com/nvcook42/morgoth/plugins"
 )
 
 type App struct {
-	config *config.Config
-	engine engine.Engine
+	config  *config.Config
+	engine  engine.Engine
 	manager mtypes.Manager
 }
 
@@ -48,7 +48,7 @@ func (self *App) Run() error {
 	log.Info("Setup metrics manager")
 	supervisors := self.config.GetSupervisors(self)
 	log.Debugf("Supervisors: %v", supervisors)
-	self.manager = metric.NewManager(supervisors, self)
+	self.manager = metric.NewManager(supervisors)
 
 	log.Info("Starting all fittings")
 

@@ -15,4 +15,3 @@ var (
 func init() {
 	Registery = registery.New()
 }
-

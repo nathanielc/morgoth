@@ -11,13 +11,13 @@ func TestScheduleShouldStartAndStop(t *testing.T) {
 	assert := assert.New(t)
 
 	calledCount := 0
-	testF := func() {
+	testF := func(time.Duration) {
 		calledCount++
 	}
 	unit := time.Millisecond
 	s := schedule.Schedule{
 		Callback: testF,
-		Period: unit,
+		Period:   unit,
 	}
 
 	assert.NotNil(s)
@@ -35,10 +35,9 @@ func TestScheduleShouldStartAndStop(t *testing.T) {
 func TestScheduleShouldNotDoubleStart(t *testing.T) {
 	assert := assert.New(t)
 
-
 	s := schedule.Schedule{
-		Callback: func() {},
-		Period: time.Millisecond,
+		Callback: func(time.Duration) {},
+		Period:   time.Millisecond,
 	}
 
 	assert.NotNil(s)

@@ -30,6 +30,24 @@ func (self DynamicConfiguration) Validate() error {
 	return self.Conf.Validate()
 }
 
+// Return instance via the Registery from the parsed config
+func (self *DynamicConfiguration) PerformGetInstance(registery *registery.Registery) (interface{}, error) {
+	factory, err := registery.GetFactory(self.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	instance, err := factory.GetInstance(self.Conf)
+	if err != nil {
+		return nil, err
+	}
+	if instance == nil {
+		return nil, errors.New("Instance is nil")
+	}
+
+	return instance, nil
+}
+
 // Performs the unmarshaling into self given a registery and
 // the unmarshal function.
 func (self *DynamicConfiguration) PerformUnmarshalYAML(registery *registery.Registery, unmarshal func(interface{}) error) error {

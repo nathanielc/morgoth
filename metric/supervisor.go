@@ -8,6 +8,9 @@ import (
 	"github.com/nvcook42/morgoth/schedule"
 )
 
+// A supervisors schedules all the actions
+// associated with detecting, notifing etc metrics
+// that match their pattern
 type Supervisor interface {
 	GetPattern() Pattern
 	AddMetric(types.MetricID)
@@ -15,11 +18,11 @@ type Supervisor interface {
 }
 
 type SupervisorStruct struct {
-	pattern Pattern
-	writer engine.Writer
+	pattern   Pattern
+	writer    engine.Writer
 	detectors []detector.Detector
 	notifiers []notifier.Notifier
-	schedule schedule.Schedule
+	schedule  schedule.Schedule
 }
 
 func NewSupervisor(
@@ -31,15 +34,14 @@ func NewSupervisor(
 ) *SupervisorStruct {
 
 	s := &SupervisorStruct{
-		pattern: pattern,
-		writer: writer,
+		pattern:   pattern,
+		writer:    writer,
 		detectors: detectors,
 		notifiers: notifiers,
-		schedule: schedule,
+		schedule:  schedule,
 	}
 	return s
 }
-
 
 func (self *SupervisorStruct) GetPattern() Pattern {
 	return self.pattern

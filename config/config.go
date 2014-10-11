@@ -2,10 +2,10 @@ package config
 
 import (
 	log "github.com/cihub/seelog"
+	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/fitting"
 	"github.com/nvcook42/morgoth/metric"
-	app "github.com/nvcook42/morgoth/app/types"
 )
 
 // Base config struct for the entire morgoth config

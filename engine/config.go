@@ -2,6 +2,8 @@ package engine
 
 import (
 	//log "github.com/cihub/seelog"
+	"errors"
+	"fmt"
 	"github.com/nvcook42/morgoth/config/dynamic_type"
 )
 
@@ -15,10 +17,14 @@ func (self *EngineConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (self *EngineConf) GetEngine() (Engine, error) {
-	factory, err := Registery.GetFactory(self.Type)
+	instance, err := self.PerformGetInstance(Registery)
 	if err != nil {
 		return nil, err
 	}
-	engine, err := factory.GetInstance(self.Conf)
-	return engine.(Engine), err
+
+	engine, ok := instance.(Engine)
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("Instance %v is not of type Engine", instance))
+	}
+	return engine, nil
 }

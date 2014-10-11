@@ -33,4 +33,3 @@ func (set *Set) Each(f EachFunc) {
 		f(item)
 	}
 }
-
