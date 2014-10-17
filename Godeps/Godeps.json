@@ -6,6 +6,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
+			"Comment": "v2.0.5-14-g89aa984",
+			"Rev": "89aa984f73ec6f56dee0a00d048a6862c0ce1b31"
+		},
+		{
 			"ImportPath": "github.com/cihub/seelog",
 			"Comment": "go1.1-48-g14e0891",
 			"Rev": "14e08919e23178f4311df308dae5386affb51511"
@@ -21,10 +26,6 @@
 		{
 			"ImportPath": "github.com/stretchr/testify/mock",
 			"Rev": "de7fcff264cd05cc0c90c509ea789a436a0dd206"
-		},
-		{
-			"ImportPath": "gopkg.in/check.v1",
-			"Rev": "91ae5f88a67b14891cfd43895b01164f6c120420"
 		},
 		{
 			"ImportPath": "gopkg.in/validator.v2",

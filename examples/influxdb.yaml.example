@@ -18,7 +18,7 @@ metrics:
 
 fittings:
   - rest:
-      port: 7001
+      port: 7000
 
 logging:
     level: INFO

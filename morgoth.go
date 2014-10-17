@@ -11,7 +11,7 @@ import (
 func main() {
 	defer log.Flush()
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "usage:")
+		fmt.Fprintf(os.Stderr, "usage:\n")
 		os.Exit(1)
 	}
 	config, err := config.LoadFromFile(os.Args[1])

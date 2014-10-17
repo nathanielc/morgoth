@@ -2,10 +2,12 @@ package fitting
 
 import (
 	"github.com/nvcook42/morgoth/registery"
+	app "github.com/nvcook42/morgoth/app/types"
 )
 
 type Fitting interface {
-	Start()
+	Name() string
+	Start(app.App)
 	Stop()
 }
 

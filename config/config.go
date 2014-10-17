@@ -49,10 +49,22 @@ func (self Config) Validate() error {
 }
 
 func (self *Config) GetSupervisors(app app.App) []metric.Supervisor {
-	supervisors := make([]metric.Supervisor, 0, len(self.Metrics))
+	supervisors := make([]metric.Supervisor, len(self.Metrics))
 	for i := range self.Metrics {
-		supervisors = append(supervisors, self.Metrics[i].GetSupervisor(app))
+		supervisors[i] = self.Metrics[i].GetSupervisor(app)
 	}
 
 	return supervisors
+}
+
+func (self *Config) GetFittings() []fitting.Fitting {
+	fittings := make([]fitting.Fitting, len(self.Fittings))
+	for i := range self.Fittings {
+		fitting, err := self.Fittings[i].GetFitting()
+		if err == nil {
+			fittings[i] = fitting
+		}
+	}
+
+	return fittings
 }
