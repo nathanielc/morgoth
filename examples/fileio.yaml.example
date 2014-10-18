@@ -1,0 +1,20 @@
+---
+engine:
+  fileio:
+    dir: /tmp/morgoth/fileiodb/
+
+metrics:
+  - pattern: .*
+    detectors:
+    notifiers:
+    schedule:
+      duration: 60
+      period: 60
+      delay: 0
+
+fittings:
+  - rest:
+      port: 7000
+
+logging:
+    level: INFO
