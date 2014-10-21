@@ -62,7 +62,7 @@ func (self *RESTFitting) Stop() {
 
 func getTime(req *rest.Request, name string) (time.Time, error) {
 
-	value := req.Form.Get(name)
+	value := req.URL.Query().Get(name)
 	if len(value) == 0 {
 		return time.Time{}, nil
 	}
@@ -73,7 +73,7 @@ func getTime(req *rest.Request, name string) (time.Time, error) {
 	}
 	tm := time.Unix(timestamp, 0)
 
-	return tm, nil
+	return tm.UTC(), nil
 }
 
 ////////////////////////////////
@@ -94,7 +94,6 @@ func (self *RESTFitting) metrics(w rest.ResponseWriter, req *rest.Request) {
 func (self *RESTFitting) metricData(w rest.ResponseWriter, req *rest.Request) {
 
 	metric := metric.MetricID(req.PathParam("metric"))
-	log.Debugf("%v", req.Form)
 	start, err := getTime(req, "start")
 	if err != nil {
 		rest.Error(w, "Could not parse 'start'"+err.Error(), 400)
@@ -107,7 +106,7 @@ func (self *RESTFitting) metricData(w rest.ResponseWriter, req *rest.Request) {
 		rest.Error(w, "Could not parse 'stop'"+err.Error(), 400)
 		return
 	}
-	log.Debugf("Stop: %v", start)
+	log.Debugf("Stop: %v", stop)
 
 	data := make(map[string]interface{}, 1)
 	data["metric"] = metric
@@ -125,9 +124,23 @@ func (self *RESTFitting) anomalies(w rest.ResponseWriter, req *rest.Request) {
 
 	metric := metric.MetricID(req.PathParam("metric"))
 
+	start, err := getTime(req, "start")
+	if err != nil {
+		rest.Error(w, "Could not parse 'start'"+err.Error(), 400)
+		return
+	}
+	log.Debugf("Start: %v", start)
+
+	stop, err := getTime(req, "stop")
+	if err != nil {
+		rest.Error(w, "Could not parse 'stop'"+err.Error(), 400)
+		return
+	}
+	log.Debugf("Stop: %v", stop)
+
 	data := make(map[string]interface{}, 1)
 	data["metric"] = metric
-	anomalies := self.reader.GetAnomalies(metric, time.Time{}, time.Time{})
+	anomalies := self.reader.GetAnomalies(metric, start, stop)
 	formatedAnomalies := make([]map[string]interface{}, len(anomalies))
 	for i, anomaly := range anomalies {
 		formatedAnomalies[i] = map[string]interface{}{

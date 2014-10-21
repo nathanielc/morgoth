@@ -1,6 +1,7 @@
 package rest_test
 
 import (
+	"fmt"
 	log "github.com/cihub/seelog"
 	"github.com/nu7hatch/gouuid"
 	"github.com/nvcook42/morgoth/engine"
@@ -93,8 +94,8 @@ rest:
 	metricID := metric.MetricID("m1")
 
 	zeroTime := time.Time{}
-	start := zeroTime.Add(time.Second)
-	stop := zeroTime.Add(time.Hour * 2)
+	start := zeroTime.Add(time.Second).UTC()
+	stop := zeroTime.Add(time.Hour * 2).UTC()
 
 	reader.On("GetData", metricID, start, stop, 0).
 		Return([]engine.Point{
@@ -117,8 +118,9 @@ rest:
 	time.Sleep(time.Millisecond)
 
 	params := url.Values{}
-	params.Set("start", start.Format("1405544146"))
-	params.Set("stop", stop.Format("1405544146"))
+	params.Set("start", fmt.Sprint(start.Unix()))
+	params.Set("stop", fmt.Sprint(stop.Unix()))
+
 	resp, err := http.Get("http://localhost:7071/data/m1?" + params.Encode())
 	if !assert.Nil(err) {
 		assert.Fail(err.Error())
@@ -131,7 +133,7 @@ rest:
 	}
 	assert.Equal(200, resp.StatusCode)
 	assert.Equal(
-		"{\n  \"data\": [\n    [\n      \"0001-01-01T00:00:00Z\",\n      1\n    ],\n    [\n      \"0001-01-01T00:01:00Z\",\n      2\n    ],\n    [\n      \"0001-01-01T01:00:00Z\",\n      3\n    ]\n  ],\n  \"metric\": \"m1\"\n}",
+		"{\n  \"data\": [\n    [\n      \"0001-01-01T00:00:01Z\",\n      1\n    ],\n    [\n      \"0001-01-01T00:01:01Z\",\n      2\n    ],\n    [\n      \"0001-01-01T01:00:01Z\",\n      3\n    ]\n  ],\n  \"metric\": \"m1\"\n}",
 		string(body),
 	)
 }
@@ -155,10 +157,18 @@ rest:
 	metricID := metric.MetricID("m1")
 
 	zeroTime := time.Time{}
+	start := zeroTime.UTC()
+	stop := zeroTime.Add(time.Hour).UTC()
+
 	u1, _ := uuid.ParseHex("6ab63420-8857-4f41-429d-5e3ea63944f6")
 	u2, _ := uuid.ParseHex("202c4521-ff5a-4038-47be-95d2dc5b79a8")
 	u3, _ := uuid.ParseHex("aaf47e42-a458-4e63-4ede-f5d3ea5c649e")
-	reader.On("GetAnomalies", metricID, zeroTime, zeroTime.Add(time.Hour)).
+
+	params := url.Values{}
+	params.Set("start", fmt.Sprint(start.Unix()))
+	params.Set("stop", fmt.Sprint(stop.Unix()))
+
+	reader.On("GetAnomalies", metricID, start.UTC(), stop.UTC()).
 		Return([]engine.Anomaly{
 		{u1, zeroTime.Add(1 * time.Minute), zeroTime.Add(2 * time.Minute)},
 		{u2, zeroTime.Add(3 * time.Minute), zeroTime.Add(4 * time.Minute)},
@@ -178,7 +188,7 @@ rest:
 	go rest.Start(app)
 	time.Sleep(time.Millisecond)
 
-	resp, err := http.Get("http://localhost:7072/anomalies/m1")
+	resp, err := http.Get("http://localhost:7072/anomalies/m1?" + params.Encode())
 	if !assert.Nil(err) {
 		assert.Fail(err.Error())
 	}
