@@ -1,9 +1,9 @@
 package engine
 
 import (
-	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/registery"
 	"time"
+	"github.com/nu7hatch/gouuid"
 )
 
 type Engine interface {
@@ -26,7 +26,7 @@ type Point struct {
 }
 
 type Anomaly struct {
-	Metric metric.MetricID
+	UUID   *uuid.UUID
 	Start  time.Time
 	Stop   time.Time
 }

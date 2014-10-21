@@ -16,6 +16,15 @@ func (self *EngineConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return self.PerformUnmarshalYAML(Registery, unmarshal)
 }
 
+func FromYAML(yaml string) (*EngineConf, error) {
+	conf := new(EngineConf)
+	err := dynamic_type.PerformFromYAML(yaml, conf)
+	if err != nil {
+		return nil, err
+	}
+	return conf, nil
+}
+
 func (self *EngineConf) GetEngine() (Engine, error) {
 	instance, err := self.PerformGetInstance(Registery)
 	if err != nil {

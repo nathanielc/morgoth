@@ -14,6 +14,15 @@ func (self *FittingConf) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	return self.PerformUnmarshalYAML(Registery, unmarshal)
 }
 
+func FromYAML(yaml string) (*FittingConf, error) {
+	conf := new(FittingConf)
+	err := dynamic_type.PerformFromYAML(yaml, conf)
+	if err != nil {
+		return nil, err
+	}
+	return conf, nil
+}
+
 func (self *FittingConf) GetFitting() (Fitting, error) {
 	instance, err := self.PerformGetInstance(Registery)
 	if err != nil {

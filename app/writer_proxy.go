@@ -19,3 +19,10 @@ func (self *writerProxy) Insert(datetime time.Time, metric metric.MetricID, valu
 	self.manager.NewMetric(metric)
 	self.writer.Insert(datetime, metric, value)
 }
+
+func (self *writerProxy) RecordAnomalous(metric metric.MetricID, start, stop time.Time) {
+	self.writer.RecordAnomalous(metric, start, stop)
+}
+func (self *writerProxy) DeleteMetric(metric metric.MetricID) {
+	self.writer.DeleteMetric(metric)
+}

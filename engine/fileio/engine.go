@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	log "github.com/cihub/seelog"
+	"github.com/nu7hatch/gouuid"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"io/ioutil"
@@ -68,7 +69,13 @@ func (self *FileIOEngine) RecordAnomalous(metric metric.MetricID, start, stop ti
 		log.Error(err)
 		return
 	}
-	fmt.Fprintf(file, "%f %f\n", dateString(start), dateString(stop))
+	uuid, err := uuid.NewV4()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	fmt.Fprintf(file, "%s %f %f\n", uuid.String(), dateString(start), dateString(stop))
 	file.Close()
 }
 
@@ -111,16 +118,18 @@ func (self *FileIOEngine) GetData(metric metric.MetricID, start, stop time.Time,
 			continue
 		}
 
-		if datetime.Before(start) || datetime.After(stop) {
-			continue
-		}
+		if (datetime.Before(stop) && datetime.After(start)) || // Double bounded
+			(start.IsZero() && datetime.Before(stop)) || // Single bound
+			(stop.IsZero() && datetime.After(start)) || // Single bound
+			(start.IsZero() && stop.IsZero()) { // No bounds
 
-		value, err := strconv.ParseFloat(parts[1], 64)
-		if err != nil {
-			log.Error(err)
-			continue
+			value, err := strconv.ParseFloat(parts[1], 64)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			data = append(data, engine.Point{datetime, value})
 		}
-		data = append(data, engine.Point{datetime, value})
 	}
 	return data
 }
@@ -135,12 +144,17 @@ func (self *FileIOEngine) GetAnomalies(metric metric.MetricID, start, stop time.
 	for file.Scan() {
 		line := file.Text()
 		parts := strings.Split(line, " ")
-		anomalyStart, err := parseDate(parts[0])
+		uuid, err := uuid.ParseHex(parts[0])
 		if err != nil {
 			log.Error(err)
 			continue
 		}
-		anomalyStop, err := parseDate(parts[0])
+		anomalyStart, err := parseDate(parts[1])
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		anomalyStop, err := parseDate(parts[2])
 		if err != nil {
 			log.Error(err)
 			continue
@@ -148,7 +162,7 @@ func (self *FileIOEngine) GetAnomalies(metric metric.MetricID, start, stop time.
 
 		if (anomalyStop.After(start) || anomalyStop.Equal(start)) &&
 			(anomalyStart.Before(stop) || anomalyStart.Equal(stop)) {
-			data = append(data, engine.Anomaly{metric, start, stop})
+			data = append(data, engine.Anomaly{uuid, start, stop})
 		}
 	}
 	return data

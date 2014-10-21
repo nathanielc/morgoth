@@ -14,6 +14,15 @@ func (self *NotifierConf) UnmarshalYAML(unmarshal func(interface{}) error) error
 	return self.PerformUnmarshalYAML(Registery, unmarshal)
 }
 
+func FromYAML(yaml string) (*NotifierConf, error) {
+	conf := new(NotifierConf)
+	err := dynamic_type.PerformFromYAML(yaml, conf)
+	if err != nil {
+		return nil, err
+	}
+	return conf, nil
+}
+
 func (self *NotifierConf) GetNotifier() (Notifier, error) {
 	instance, err := self.PerformGetInstance(Registery)
 	if err != nil {

@@ -16,6 +16,20 @@
 			"Rev": "14e08919e23178f4311df308dae5386affb51511"
 		},
 		{
+			"ImportPath": "github.com/hrautila/linalg",
+			"Comment": "r09-21-g1d32533",
+			"Rev": "1d32533c447b8a452d2d7f194fb0f3e482321942"
+		},
+		{
+			"ImportPath": "github.com/hrautila/matrix",
+			"Comment": "r09-40-gac1304b",
+			"Rev": "ac1304b29447564612d1ee77e2690d086fc34b7a"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
 			"ImportPath": "github.com/stretchr/objx",
 			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
 		},

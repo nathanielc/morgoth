@@ -7,7 +7,12 @@ import (
 	"fmt"
 	"github.com/nvcook42/morgoth/config/types"
 	"github.com/nvcook42/morgoth/registery"
+	"gopkg.in/yaml.v2"
 )
+
+type configContainer interface {
+	GetConf() types.Configuration
+}
 
 // Base object for unmarshaling dyanmic yaml
 // into a Configuration object.
@@ -28,6 +33,21 @@ func (self DynamicConfiguration) Validate() error {
 		return errors.New("No conf found")
 	}
 	return self.Conf.Validate()
+}
+
+func (self *DynamicConfiguration) GetConf() types.Configuration {
+	return self.Conf
+}
+
+func PerformFromYAML(yamlConf string, confStruct configContainer) error {
+	yaml.Unmarshal([]byte(yamlConf), confStruct)
+	conf := confStruct.GetConf()
+	conf.Default()
+	err := conf.Validate()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Return instance via the Registery from the parsed config

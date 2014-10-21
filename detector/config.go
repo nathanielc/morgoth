@@ -14,6 +14,15 @@ func (self *DetectorConf) UnmarshalYAML(unmarshal func(interface{}) error) error
 	return self.PerformUnmarshalYAML(Registery, unmarshal)
 }
 
+func FromYAML(yaml string) (*DetectorConf, error) {
+	conf := new(DetectorConf)
+	err := dynamic_type.PerformFromYAML(yaml, conf)
+	if err != nil {
+		return nil, err
+	}
+	return conf, nil
+}
+
 func (self *DetectorConf) GetDetector() (Detector, error) {
 	instance, err := self.PerformGetInstance(Registery)
 	if err != nil {
