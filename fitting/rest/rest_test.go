@@ -37,7 +37,7 @@ rest:
 
 	app := new(app.App)
 	reader := new(mengine.Reader)
-	writer := new(mengine.Reader)
+	writer := new(mengine.Writer)
 
 	app.On("GetReader").Return(reader).Once()
 	app.On("GetWriter").Return(writer).Once()
@@ -73,6 +73,10 @@ rest:
 		"{\n  \"metrics\": [\n    \"m1\",\n    \"m2\"\n  ]\n}",
 		string(body),
 	)
+
+	app.AssertExpectations(t)
+	reader.AssertExpectations(t)
+	writer.AssertExpectations(t)
 }
 
 func TestRestShouldReturnMetricData(t *testing.T) {
@@ -86,7 +90,7 @@ rest:
 
 	app := new(app.App)
 	reader := new(mengine.Reader)
-	writer := new(mengine.Reader)
+	writer := new(mengine.Writer)
 
 	app.On("GetReader").Return(reader).Once()
 	app.On("GetWriter").Return(writer).Once()
@@ -136,6 +140,10 @@ rest:
 		"{\n  \"data\": [\n    [\n      \"0001-01-01T00:00:01Z\",\n      1\n    ],\n    [\n      \"0001-01-01T00:01:01Z\",\n      2\n    ],\n    [\n      \"0001-01-01T01:00:01Z\",\n      3\n    ]\n  ],\n  \"metric\": \"m1\"\n}",
 		string(body),
 	)
+
+	app.AssertExpectations(t)
+	reader.AssertExpectations(t)
+	writer.AssertExpectations(t)
 }
 
 func TestRestShouldReturnMetricAnomalies(t *testing.T) {
@@ -149,7 +157,7 @@ rest:
 
 	app := new(app.App)
 	reader := new(mengine.Reader)
-	writer := new(mengine.Reader)
+	writer := new(mengine.Writer)
 
 	app.On("GetReader").Return(reader).Once()
 	app.On("GetWriter").Return(writer).Once()
@@ -203,4 +211,67 @@ rest:
 		string(body),
 	)
 
+	app.AssertExpectations(t)
+	reader.AssertExpectations(t)
+	writer.AssertExpectations(t)
+}
+
+func TestRestShouldDeleteMetric(t *testing.T) {
+	defer log.Flush()
+	assert := assert.New(t)
+
+	var yaml = `---
+rest:
+  port: 7073
+`
+
+	app := new(app.App)
+	reader := new(mengine.Reader)
+	writer := new(mengine.Writer)
+
+	app.On("GetReader").Return(reader).Once()
+	app.On("GetWriter").Return(writer).Once()
+
+	metricID := metric.MetricID("m1")
+
+	writer.On("DeleteMetric", metricID).Return().Once()
+
+	conf, err := fitting.FromYAML(yaml)
+	if !assert.Nil(err) {
+		assert.Fail(err.Error())
+	}
+	rest, err := conf.GetFitting()
+	if !assert.Nil(err) {
+		assert.Fail(err.Error())
+	}
+
+	go rest.Start(app)
+	time.Sleep(time.Millisecond)
+
+	u, err := url.Parse("http://localhost:7073/delete/" + string(metricID))
+	if !assert.Nil(err) {
+		assert.Fail(err.Error())
+	}
+	request := http.Request{
+		Method: "DELETE",
+		URL: u,
+	}
+
+	client := http.Client{}
+	resp, err := client.Do(&request)
+	if !assert.Nil(err) {
+		assert.Fail(err.Error())
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if !assert.Nil(err) {
+		assert.Fail(err.Error())
+	}
+	assert.Equal(200, resp.StatusCode)
+	assert.Equal(0, len(body))
+
+	app.AssertExpectations(t)
+	reader.AssertExpectations(t)
+	writer.AssertExpectations(t)
 }

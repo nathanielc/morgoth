@@ -27,6 +27,7 @@ func (self *RESTFitting) Name() string {
 
 func (self *RESTFitting) Start(app app.App) {
 	self.reader = app.GetReader()
+	self.writer = app.GetWriter()
 	self.handler = rest.ResourceHandler{
 		EnableStatusService: true,
 	}
@@ -36,7 +37,7 @@ func (self *RESTFitting) Start(app app.App) {
 		&rest.Route{"GET", "/data/:metric", self.metricData},
 		&rest.Route{"GET", "/anomalies/:metric", self.anomalies},
 		//&rest.Route{"POST", "/detect/:metric", self.detect},
-		//&rest.Route{"DELETE", "/delete/:metric", self.delete},
+		&rest.Route{"DELETE", "/delete/:metric", self.delete},
 	)
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", self.port))
 	if err != nil {
@@ -71,9 +72,9 @@ func getTime(req *rest.Request, name string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	tm := time.Unix(timestamp, 0)
+	tm := time.Unix(timestamp, 0).UTC()
 
-	return tm.UTC(), nil
+	return tm, nil
 }
 
 ////////////////////////////////
@@ -152,4 +153,11 @@ func (self *RESTFitting) anomalies(w rest.ResponseWriter, req *rest.Request) {
 	data["data"] = formatedAnomalies
 
 	w.WriteJson(data)
+}
+
+func (self *RESTFitting) delete(w rest.ResponseWriter, req *rest.Request) {
+	metric := metric.MetricID(req.PathParam("metric"))
+
+	self.writer.DeleteMetric(metric)
+
 }

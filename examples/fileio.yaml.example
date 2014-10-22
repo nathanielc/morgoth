@@ -15,6 +15,7 @@ metrics:
 fittings:
   - rest:
       port: 7000
+  - graphite: {}
 
 logging:
     level: INFO
