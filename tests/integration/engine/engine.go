@@ -1,16 +1,14 @@
 package engine
 
 import (
-	"testing"
-	"time"
-	metric "github.com/nvcook42/morgoth/metric/types"
-	"github.com/stretchr/testify/assert"
+	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/engine"
 	_ "github.com/nvcook42/morgoth/engine/list"
-	log "github.com/cihub/seelog"
+	metric "github.com/nvcook42/morgoth/metric/types"
+	"github.com/stretchr/testify/assert"
+	"testing"
+	"time"
 )
-
-
 
 type EngineTestSuite struct {
 	Engine engine.Engine
@@ -61,9 +59,8 @@ func (self EngineTestSuite) TestWriteReadOnePoint(t *testing.T) {
 	assert.Equal(1, len(metrics))
 	assert.Contains(metrics, metricID)
 
-
-	start := metricTime.Add(-time.Second*2)
-	stop := metricTime.Add(time.Second*2)
+	start := metricTime.Add(-time.Second * 2)
+	stop := metricTime.Add(time.Second * 2)
 	data := reader.GetData(metricID, start, stop, 0)
 
 	if assert.Equal(1, len(data)) {
@@ -78,7 +75,7 @@ func (self EngineTestSuite) TestRecordAnomaly(t *testing.T) {
 	assert := assert.New(t)
 
 	var metricID metric.MetricID = "metric_id"
-	stop := time.Now().UTC()
+	stop := time.Time{}.UTC()
 	start := stop.Add(-time.Second * 60)
 
 	writer := self.Engine.GetWriter()
@@ -92,13 +89,14 @@ func (self EngineTestSuite) TestRecordAnomaly(t *testing.T) {
 	anomalies := reader.GetAnomalies(metricID, start, stop)
 
 	if assert.Equal(1, len(anomalies)) {
-		assert.Equal(engine.Anomaly{metricID, start, stop}, anomalies[0])
+		assert.NotNil(anomalies[0].UUID)
+		assert.Equal(start, anomalies[0].Start)
+		assert.Equal(stop, anomalies[0].Stop)
 	}
 
-	newStart := start.Add(time.Minute)
-	newStop := stop.Add(time.Minute)
+	newStart := start.Add(time.Hour)
+	newStop := stop.Add(time.Hour)
 
 	anomalies = reader.GetAnomalies(metricID, newStart, newStop)
 	assert.Equal(0, len(anomalies))
 }
-

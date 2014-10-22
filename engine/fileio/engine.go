@@ -75,7 +75,7 @@ func (self *FileIOEngine) RecordAnomalous(metric metric.MetricID, start, stop ti
 		return
 	}
 
-	fmt.Fprintf(file, "%s %f %f\n", uuid.String(), dateString(start), dateString(stop))
+	fmt.Fprintf(file, "%s %s %s\n", uuid.String(), dateString(start), dateString(stop))
 	file.Close()
 }
 
@@ -136,7 +136,7 @@ func (self *FileIOEngine) GetData(metric metric.MetricID, start, stop time.Time,
 
 func (self *FileIOEngine) GetAnomalies(metric metric.MetricID, start, stop time.Time) []engine.Anomaly {
 	data := make([]engine.Anomaly, 0, 10)
-	path := self.pathForMetric(metric)
+	path := self.pathForMetricAnomalies(metric)
 	file, err := openForRead(path)
 	if err != nil {
 		return data
@@ -144,6 +144,7 @@ func (self *FileIOEngine) GetAnomalies(metric metric.MetricID, start, stop time.
 	for file.Scan() {
 		line := file.Text()
 		parts := strings.Split(line, " ")
+		log.Debug(line)
 		uuid, err := uuid.ParseHex(parts[0])
 		if err != nil {
 			log.Error(err)
