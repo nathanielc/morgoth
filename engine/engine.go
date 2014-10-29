@@ -2,12 +2,14 @@ package engine
 
 import (
 	"github.com/nvcook42/morgoth/registery"
+	"github.com/nvcook42/morgoth/schedule"
 	"time"
 	"github.com/nu7hatch/gouuid"
 )
 
 type Engine interface {
 	Initialize() error
+	ConfigureSchedule(schedule schedule.Schedule) error
 	GetReader() Reader
 	GetWriter() Writer
 }
@@ -33,5 +35,5 @@ type Anomaly struct {
 
 type Histogram struct {
 	Bins []float64
-	Count int
+	Count uint
 }

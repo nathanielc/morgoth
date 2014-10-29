@@ -2,25 +2,20 @@ package metric
 
 import (
 	log "github.com/cihub/seelog"
-	"errors"
 	app "github.com/nvcook42/morgoth/app/types"
+	"github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/notifier"
-	"github.com/nvcook42/morgoth/schedule"
-	"regexp"
 )
 
 // Represents a single metric conf section
 type MetricConf struct {
-	Pattern   Pattern                 `yaml:"pattern"`
-	Schedule  schedule.ScheduleConf   `yaml:"schedule"`
+	Pattern   types.Pattern           `yaml:"pattern"`
 	Detectors []detector.DetectorConf `yaml:"detectors"`
 	Notifiers []notifier.NotifierConf `yaml:"notifiers"`
 }
 
 func (self *MetricConf) Default() {
-	self.Schedule.Default()
-
 	for i := range self.Detectors {
 		self.Detectors[i].Default()
 	}
@@ -28,9 +23,6 @@ func (self *MetricConf) Default() {
 
 func (self MetricConf) Validate() error {
 	if valid := self.Pattern.Validate(); valid != nil {
-		return valid
-	}
-	if valid := self.Schedule.Validate(); valid != nil {
 		return valid
 	}
 	for i := range self.Detectors {
@@ -68,16 +60,7 @@ func (self *MetricConf) GetSupervisor(app app.App) Supervisor {
 		app.GetWriter(),
 		detectors,
 		notifiers,
-		self.Schedule.GetSchedule(),
+		app.GetSchedule(),
 	)
 }
 
-type Pattern string
-
-func (self Pattern) Validate() error {
-	if len(self) == 0 {
-		return errors.New("Pattern cannot be empty")
-	}
-	_, err := regexp.Compile(string(self))
-	return err
-}

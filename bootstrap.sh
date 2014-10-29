@@ -13,6 +13,9 @@ mkdir -p /gopath/{bin,pkg,src}
 yum install golang git mercurial -y
 yum install lapack-static -y
 
+go get github.com/vektra/mockery
+go install github.com/vektra/mockery
+
 go get github.com/tools/godep
 
 cd /gopath/src/github.com/nvcook42/morgoth/

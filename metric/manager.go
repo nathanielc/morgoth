@@ -2,6 +2,7 @@ package metric
 
 import (
 	log "github.com/cihub/seelog"
+	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/metric/set"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"regexp"
@@ -10,16 +11,18 @@ import (
 type ManagerStruct struct {
 	metrics     *set.Set
 	supervisors []pair
+	app         app.App
 }
 
 type pair struct {
-	Regexp *regexp.Regexp
+	Regexp     *regexp.Regexp
 	Supervisor Supervisor
 }
 
-func NewManager(supervisors []Supervisor) metric.Manager {
+func NewManager(app app.App, supervisors []Supervisor) metric.Manager {
 	log.Debugf("NewManager: %v", supervisors)
 	m := &ManagerStruct{
+		app:         app,
 		metrics:     set.New(0),
 		supervisors: make([]pair, len(supervisors)),
 	}
@@ -49,13 +52,13 @@ func (self *ManagerStruct) NewMetric(id metric.MetricID) {
 			log.Warnf("No matching metric pattern for metric '%s'", id)
 		}
 		supervisor.AddMetric(id)
-		supervisor.Start()
+		supervisor.Start(self.app)
 		self.metrics.Add(id)
 	}
 }
 
 func (self *ManagerStruct) matchSupervisor(id metric.MetricID) Supervisor {
-	for i := range self.supervisors{
+	for i := range self.supervisors {
 		pair := self.supervisors[i]
 		if pair.Regexp.Match([]byte(id)) {
 			return pair.Supervisor

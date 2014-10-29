@@ -1,6 +1,8 @@
 package mgof
 
 import (
+	"fmt"
+	"errors"
 	"github.com/nvcook42/morgoth/config/types"
 	"github.com/nvcook42/morgoth/detector"
 )
@@ -13,7 +15,14 @@ func (self *MGOFFactory) NewConf() types.Configuration {
 }
 
 func (self *MGOFFactory) GetInstance(config types.Configuration) (interface{}, error) {
-	return new(MGOF), nil
+	conf, ok := config.(*MGOFConf)
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("Configuration is not MGOFConf%v", config))
+	}
+	mgof := &MGOF{
+		config: conf,
+	}
+	return mgof, nil
 }
 
 func init() {

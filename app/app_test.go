@@ -1,7 +1,6 @@
-package app_test
+package app
 
 import (
-	"github.com/nvcook42/morgoth/app"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/stretchr/testify/assert"
 	mtypes "github.com/nvcook42/morgoth/metric/types"
@@ -37,7 +36,7 @@ fittings:
 	config, err := config.Load([]byte(data))
 	assert.Nil(err)
 
-	app := app.New(config)
+	app := New(config)
 	assert.NotNil(app)
 
 }
@@ -54,9 +53,9 @@ func TestAppShouldNotifyManagerOfNewMetrics(t * testing.T) {
 
 	manager := new(metric.Manager)
 
-	app := &app.App{
-		Engine: engine,
-		Manager: manager,
+	app := &App{
+		engine: engine,
+		manager: manager,
 	}
 
 	engine.On("GetWriter").Return(writer).Once()

@@ -1,7 +1,7 @@
 ---
 engine:
   influxdb:
-    host: localhost
+    host: 192.168.1.1
     port: 8086
     user: root
     password: root
@@ -10,15 +10,17 @@ engine:
 metrics:
   - pattern: .*
     detectors:
+      - kstest: {}
     notifiers:
     schedule:
-      duration: 60
-      period: 60
-      delay: 0
+      rotations:
+        - {period: 1m, resolution: 1s}
+      delay: 65s
 
 fittings:
   - rest:
       port: 7000
+  - graphite: {}
 
 logging:
     level: INFO

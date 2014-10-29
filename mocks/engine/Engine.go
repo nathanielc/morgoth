@@ -3,28 +3,37 @@ package mocks
 import "github.com/nvcook42/morgoth/engine"
 import "github.com/stretchr/testify/mock"
 
+import "github.com/nvcook42/morgoth/schedule"
+
 type Engine struct {
- mock.Mock
+	mock.Mock
 }
 
 func (m *Engine) Initialize() error {
- ret := m.Called()
+	ret := m.Called()
 
- r0 := ret.Error(0)
+	r0 := ret.Error(0)
 
- return r0
+	return r0
+}
+func (m *Engine) ConfigureSchedule(schedule schedule.Schedule) error {
+	ret := m.Called(schedule)
+
+	r0 := ret.Error(0)
+
+	return r0
 }
 func (m *Engine) GetReader() engine.Reader {
- ret := m.Called()
+	ret := m.Called()
 
- r0 := ret.Get(0).(engine.Reader)
+	r0 := ret.Get(0).(engine.Reader)
 
- return r0
+	return r0
 }
 func (m *Engine) GetWriter() engine.Writer {
- ret := m.Called()
+	ret := m.Called()
 
- r0 := ret.Get(0).(engine.Writer)
+	r0 := ret.Get(0).(engine.Writer)
 
- return r0
+	return r0
 }

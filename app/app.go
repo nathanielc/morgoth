@@ -4,34 +4,40 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
-	"github.com/nvcook42/morgoth/metric"
+	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/fitting"
+	"github.com/nvcook42/morgoth/metric"
 	mtypes "github.com/nvcook42/morgoth/metric/types"
 	_ "github.com/nvcook42/morgoth/plugins"
-	"sync"
 	"os"
 	"os/signal"
+	"sync"
 )
 
+
 type App struct {
-	config  *config.Config
-	Engine  engine.Engine
-	Manager mtypes.Manager
+	manager  mtypes.Manager
+	engine   engine.Engine
+	config   *config.Config
 	fittings []fitting.Fitting
+	schedule schedule.Schedule
 }
 
 func New(config *config.Config) *App {
 	app := App{
 		config: config,
 	}
+	app.schedule = config.GetSchedule()
 	return &app
 }
 
 func (self *App) GetReader() engine.Reader {
-	return self.Engine.GetReader()
+	return self.engine.GetReader()
 }
 
-
+func (self *App) GetSchedule() schedule.Schedule {
+	return self.schedule
+}
 //
 // Return proxy to writer so we can intercept the requests and
 // inform the metric manager of new metrics
@@ -39,8 +45,8 @@ func (self *App) GetReader() engine.Reader {
 func (self *App) GetWriter() engine.Writer {
 	//Ensure 1:1 mapping from proxy to engine writer
 	proxy := &writerProxy{
-		self.Engine.GetWriter(),
-		self.Manager,
+		self.engine.GetWriter(),
+		self.manager,
 	}
 	return proxy
 }
@@ -54,8 +60,8 @@ func (self *App) Run() error {
 	if err != nil {
 		return err
 	}
-	self.Engine = eng
-	err = self.Engine.Initialize()
+	self.engine = eng
+	err = self.engine.Initialize()
 	if err != nil {
 		return err
 	}
@@ -63,8 +69,13 @@ func (self *App) Run() error {
 	log.Info("Setup metrics manager")
 	supervisors := self.config.GetSupervisors(self)
 	log.Debugf("Supervisors: %v", supervisors)
-	self.Manager = metric.NewManager(supervisors)
+	self.manager = metric.NewManager(self, supervisors)
 
+	log.Info("Setup metric schedules")
+	err = self.engine.ConfigureSchedule(self.schedule)
+	if err != nil {
+		log.Errorf("Error configuring schedules %s", err.Error())
+	}
 
 	self.fittings = self.config.GetFittings()
 	log.Infof("Starting all fittings: %v", self.fittings)

@@ -14,14 +14,54 @@ func TestMGOFConfShouldDefault(t *testing.T) {
 
 	mc.Default()
 
-	assert.Equal(0.5, mc.CHI)
-
+	assert.Equal(0.95, mc.CHI2)
+	assert.Equal(10, mc.NBins)
+	assert.Equal(3, mc.NormalCount)
+	assert.Equal(20, mc.MaxFingerprints)
+	assert.Equal(0.0, mc.Min)
+	assert.Equal(0.0, mc.Max)
 }
 
-func TestMGOFConfValidateShouldFailBadCHI(t *testing.T) {
+func TestMGOFConfValidateShouldFailBadMinMax(t *testing.T) {
 	assert := assert.New(t)
 
-	mc := mgof.MGOFConf{CHI: 0}
+	mc := mgof.MGOFConf{Min: 0, Max: -1}
+
+	err := mc.Validate()
+	assert.NotNil(err)
+}
+
+func TestMGOFConfValidateShouldFailBadCHI2(t *testing.T) {
+	assert := assert.New(t)
+
+	mc := mgof.MGOFConf{CHI2: 0}
+
+	err := mc.Validate()
+	assert.NotNil(err)
+}
+
+func TestMGOFConfValidateShouldFailBadNBins(t *testing.T) {
+	assert := assert.New(t)
+
+	mc := mgof.MGOFConf{NBins: 0}
+
+	err := mc.Validate()
+	assert.NotNil(err)
+}
+
+func TestMGOFConfValidateShouldFailBadNormalCount(t *testing.T) {
+	assert := assert.New(t)
+
+	mc := mgof.MGOFConf{NormalCount: 0}
+
+	err := mc.Validate()
+	assert.NotNil(err)
+}
+
+func TestMGOFConfValidateShouldFailBadMaxFingerprints(t *testing.T) {
+	assert := assert.New(t)
+
+	mc := mgof.MGOFConf{MaxFingerprints: 0}
 
 	err := mc.Validate()
 	assert.NotNil(err)
@@ -30,7 +70,14 @@ func TestMGOFConfValidateShouldFailBadCHI(t *testing.T) {
 func TestMGOFConfValidateShouldPass(t *testing.T) {
 	assert := assert.New(t)
 
-	mc := mgof.MGOFConf{CHI: 0.9}
+	mc := mgof.MGOFConf{
+		Min:             -1.0,
+		Max:             1.0,
+		CHI2:            0.90,
+		NBins:           5,
+		NormalCount:     4,
+		MaxFingerprints: 15,
+	}
 
 	err := mc.Validate()
 	assert.Nil(err)
@@ -40,14 +87,24 @@ func TestMGOFConfShouldParse(t *testing.T) {
 	assert := assert.New(t)
 
 	var data string = `---
-chi: 0.42
+min: -10
+max: 10
+chi2: 0.42
+nbins: 5
+normal_count: 2
+max_fingerprints: 25
 `
 
-	mc := mgof.MGOFConf{CHI: 0.9}
+	mc := mgof.MGOFConf{}
 
 	err := yaml.Unmarshal([]byte(data), &mc)
 
 	assert.Nil(err)
 
-	assert.Equal(0.42, mc.CHI)
+	assert.Equal(-10.0, mc.Min)
+	assert.Equal(10.0, mc.Max)
+	assert.Equal(0.42, mc.CHI2)
+	assert.Equal(5, mc.NBins)
+	assert.Equal(2, mc.NormalCount)
+	assert.Equal(25, mc.MaxFingerprints)
 }

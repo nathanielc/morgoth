@@ -2,18 +2,30 @@ package schedule
 
 import (
 	"errors"
-	log "github.com/cihub/seelog"
+	"fmt"
 	"time"
 )
 
-type ScheduleFunc func(time.Duration)
+const (
+	day = time.Duration(24 * time.Hour)
+)
+
+type ScheduleFunc func(time.Time, time.Time)
+
+type Rotation struct {
+	Period     time.Duration
+	Resolution time.Duration
+}
+
+func (self *Rotation) String() string {
+	return fmt.Sprintf("rot.%d.%d", self.Resolution/time.Second, self.Period/time.Second)
+}
 
 type Schedule struct {
-	Callback ScheduleFunc
-	Duration time.Duration
-	Delay    time.Duration
-	Period   time.Duration
-	running  bool
+	Callback  ScheduleFunc
+	Delay     time.Duration
+	Rotations []Rotation
+	running   bool
 }
 
 func (self *Schedule) Start() error {
@@ -22,20 +34,27 @@ func (self *Schedule) Start() error {
 	}
 	self.running = true
 
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Errorf("Error during schedule Callback %v", r)
-			}
-		}()
-		ticker := time.NewTicker(self.Period)
-		for self.running {
-			self.Callback(self.Duration)
-			<-ticker.C
+	for _, rotation := range self.Rotations {
+		period := rotation.Period
+		start := time.Now()
+		if period > day {
+			start = start.Truncate(day)
+		} else {
+			start = start.Truncate(period)
 		}
-		ticker.Stop()
-	}()
-
+		start = start.Add(period)
+		go func(start time.Time, period time.Duration) {
+			now := time.Now()
+			time.Sleep(start.Add(self.Delay).Sub(now))
+			ticker := time.NewTicker(period)
+			for self.running {
+				self.Callback(start, start.Add(period))
+				start = start.Add(period)
+				<-ticker.C
+			}
+			ticker.Stop()
+		}(start, period)
+	}
 	return nil
 }
 

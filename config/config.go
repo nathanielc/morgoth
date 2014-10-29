@@ -6,6 +6,7 @@ import (
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/fitting"
 	"github.com/nvcook42/morgoth/metric"
+	"github.com/nvcook42/morgoth/schedule"
 )
 
 // Base config struct for the entire morgoth config
@@ -13,10 +14,12 @@ type Config struct {
 	EngineConf engine.EngineConf     `yaml:"engine"`
 	Metrics    []metric.MetricConf   `yaml:"metrics"`
 	Fittings   []fitting.FittingConf `yaml:"fittings"`
+	Schedule   schedule.ScheduleConf `yaml:"schedule"`
 }
 
 func (self *Config) Default() {
 	self.EngineConf.Default()
+	self.Schedule.Default()
 	for i := range self.Metrics {
 		self.Metrics[i].Default()
 	}
@@ -28,6 +31,11 @@ func (self *Config) Default() {
 func (self Config) Validate() error {
 	log.Debugf("Validating Config %v", self)
 	valid := self.EngineConf.Validate()
+	if valid != nil {
+		return valid
+	}
+
+	valid = self.Schedule.Validate()
 	if valid != nil {
 		return valid
 	}
@@ -67,4 +75,8 @@ func (self *Config) GetFittings() []fitting.Fitting {
 	}
 
 	return fittings
+}
+
+func (self *Config) GetSchedule() schedule.Schedule {
+	return self.Schedule.GetSchedule()
 }

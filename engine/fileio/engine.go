@@ -169,8 +169,8 @@ func (self *FileIOEngine) GetAnomalies(metric metric.MetricID, start, stop time.
 	return data
 }
 
-func (self *FileIOEngine) GetHistogram(metric metric.MetricID, nbins uint, start, stop time.Time) engine.Histogram {
-	return engine.Histogram{}
+func (self *FileIOEngine) GetHistogram(metric metric.MetricID, nbins uint, start, stop time.Time) *engine.Histogram {
+	return &engine.Histogram{}
 }
 
 func (self *FileIOEngine) GetPercentile(metric metric.MetricID, percentile float64, start, stop time.Time) float64 {
