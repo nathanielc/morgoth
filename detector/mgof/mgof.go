@@ -1,11 +1,13 @@
 package mgof
 
 import (
+	"encoding/json"
 	log "github.com/cihub/seelog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nvcook42/morgoth/stat"
 	"math"
 	"time"
 )
@@ -21,17 +23,22 @@ type MGOF struct {
 	writer       engine.Writer
 	config       *MGOFConf
 	fingerprints []fingerprint
+	threshold    float64
 }
 
 func (self *MGOF) Initialize(app app.App, rotation schedule.Rotation) error {
 	self.rotation = rotation
 	self.reader = app.GetReader()
 	self.writer = app.GetWriter()
+
+	self.threshold = stat.Xsquare_InvCDF(int64(self.config.NBins - 1))(self.config.CHI2)
+
+	self.load()
 	return nil
 }
 
 func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
-	log.Debugf("MGOF.Detect Rotation: %s FP %v", self.rotation, self.fingerprints)
+	log.Debugf("MGOF.Detect Rotation: %s FP %v", self.rotation.GetPrefix(), self.fingerprints)
 	nbins := self.config.NBins
 	hist := self.reader.GetHistogram(
 		&self.rotation,
@@ -43,7 +50,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		self.config.Max,
 	)
 
-	threshold := 1.0
+	fillEmptyValues(hist)
 
 	minRE := 0.0
 	bestMatch := -1
@@ -55,7 +62,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		}
 
 		re := relativeEntropy(hist, fingerprint.Hist)
-		if float64(2*hist.Count)*re < threshold {
+		if float64(2*hist.Count)*re < self.threshold {
 			isMatch = true
 		}
 		if bestMatch == -1 || re < minRE {
@@ -87,16 +94,47 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		}
 	}
 
+	go self.save()
 	return anomalous
 }
 
 func relativeEntropy(q, p *engine.Histogram) float64 {
 	entropy := 0.0
 	for i := range q.Bins {
-		if q.Bins[i] == 0 || p.Bins[i] == 0 {
-			continue
-		}
 		entropy += q.Bins[i] * math.Log(q.Bins[i]/p.Bins[i])
 	}
 	return entropy
+}
+
+func fillEmptyValues(hist *engine.Histogram) {
+	multiplier := 10.0
+	fakeTotal := float64(hist.Count)*multiplier + float64(len(hist.Bins))
+	empty := 1.0 / fakeTotal
+	for i := range hist.Bins {
+		hist.Bins[i] = empty + hist.Bins[i]*multiplier/fakeTotal
+	}
+}
+
+func (self *MGOF) save() {
+
+	data, err := json.Marshal(self.fingerprints)
+	if err != nil {
+		log.Error("Could not save MGOF", err.Error())
+	}
+	self.writer.StoreDoc(self.rotation.GetPrefix()+"mgof", data)
+}
+
+func (self *MGOF) load() {
+
+	data := self.reader.GetDoc(self.rotation.GetPrefix() + "mgof")
+	if len(data) != 0 {
+		err := json.Unmarshal(data, &self.fingerprints)
+		if err != nil {
+			log.Error("Could not load MGOF ", err.Error())
+		}
+	}
+	if len(self.fingerprints) > 0 &&
+		len(self.fingerprints[0].Hist.Bins) != int(self.config.NBins) {
+		self.fingerprints = make([]fingerprint, 0)
+	}
 }

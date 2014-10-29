@@ -7,6 +7,7 @@ import (
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
 	"math"
+	"encoding/json"
 	"sort"
 	"time"
 )
@@ -28,6 +29,7 @@ func (self *KSTest) Initialize(app app.App, rotation schedule.Rotation) error {
 	self.rotation = rotation
 	self.reader = app.GetReader()
 	self.writer = app.GetWriter()
+	self.load()
 	return nil
 }
 
@@ -78,8 +80,10 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		}
 	}
 
+	go self.save()
 	return anomalous
 }
+
 func (self *KSTest) getThresholdD(n, m int) float64 {
 	c := 0.0
 	switch self.config.Strictness {
@@ -120,4 +124,24 @@ func calcTestD(f1, f2 []float64) float64 {
 		}
 	}
 	return D
+}
+
+func (self *KSTest) save() {
+
+	data, err := json.Marshal(self.fingerprints)
+	if err != nil {
+		log.Error("Could not save KSTest", err.Error())
+	}
+	self.writer.StoreDoc(self.rotation.GetPrefix() + "kstest", data)
+}
+
+func (self *KSTest) load() {
+
+	data := self.reader.GetDoc(self.rotation.GetPrefix() + "kstest")
+	if len(data) != 0 {
+		err := json.Unmarshal(data, &self.fingerprints)
+		if err != nil {
+			log.Error("Could not load KSTest ", err.Error())
+		}
+	}
 }

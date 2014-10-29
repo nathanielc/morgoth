@@ -22,6 +22,11 @@ func (self *writerProxy) Insert(datetime time.Time, metric metric.MetricID, valu
 func (self *writerProxy) RecordAnomalous(metric metric.MetricID, start, stop time.Time) {
 	self.writer.RecordAnomalous(metric, start, stop)
 }
+
 func (self *writerProxy) DeleteMetric(metric metric.MetricID) {
 	self.writer.DeleteMetric(metric)
+}
+
+func (self *writerProxy) StoreDoc(key string, data []byte) {
+	self.writer.StoreDoc(key, data)
 }

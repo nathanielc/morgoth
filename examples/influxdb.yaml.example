@@ -12,7 +12,7 @@ schedule:
     - {period: 2m, resolution: 2s}
     - {period: 4m, resolution: 4s}
     - {period: 1d, resolution: 30m}
-  delay: 5s
+  delay: 15s
 
 metrics:
   - pattern: cpu.*

@@ -59,6 +59,7 @@ func (self *SupervisorStruct) Detect(rotation schedule.Rotation, start time.Time
 		for _, detector := range detectors {
 			if detector.Detect(metric, start, stop) {
 				log.Infof("Metric %s is anomalous", metric)
+				self.writer.RecordAnomalous(metric, start, stop)
 			}
 		}
 	})

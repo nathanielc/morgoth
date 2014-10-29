@@ -11,7 +11,7 @@ type MGOFConf struct {
 	Min             float64 `yaml:"min"`
 	Max             float64 `yaml:"max"`
 	CHI2            float64 `yaml:"chi2" validate:"min=0,max=1,nonzero" default:"0.95"`
-	NBins           uint    `yaml:"nbins" validate:"nonzero" default:"10"`
+	NBins           uint    `yaml:"nbins" validate:"nonzero" default:"15"`
 	NormalCount     uint    `yaml:"normal_count" validate:"nonzero" default:"3"`
 	MaxFingerprints uint    `yaml:"max_fingerprints" validate:"nonzero" default:"20"`
 }

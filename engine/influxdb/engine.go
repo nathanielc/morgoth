@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	metricPrefix                    = "m."
-	metricPrefixPtrn metric.Pattern = "^m\\."
+	documentSeries = "docs"
 )
 
 type InfluxDBEngine struct {
@@ -97,13 +96,49 @@ func (self *InfluxDBEngine) Insert(datetime time.Time, metric metric.MetricID, v
 	series.Points = [][]interface{}{
 		[]interface{}{datetime.Unix(), value},
 	}
-	self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
+	err := self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func (self *InfluxDBEngine) RecordAnomalous(metric metric.MetricID, start, stop time.Time) {
+	series := new(client.Series)
+	series.Name = metric.GetAnomalyPath()
+	series.Columns = []string{
+		"time",
+		"value",
+	}
+	series.Points = [][]interface{}{
+		[]interface{}{start.Unix(), float64(stop.Sub(start))},
+	}
+	err := self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func (self *InfluxDBEngine) DeleteMetric(metric metric.MetricID) {
+}
+
+func (self *InfluxDBEngine) StoreDoc(key string, data []byte) {
+	series := new(client.Series)
+	series.Name = documentSeries
+	series.Columns = []string{
+		"key",
+		"data",
+	}
+	series.Points = [][]interface{}{
+		[]interface{}{key, string(data)},
+	}
+	_, err := self.client.Query(fmt.Sprintf("delete from %s where time < now() - 1d", documentSeries))
+	if err != nil {
+		log.Error(err)
+	}
+	err = self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 //////////////////////
@@ -168,13 +203,16 @@ func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric met
 
 	series := result[0]
 	points := series.GetPoints()
-	hist.Bins = make([]float64, len(points))
+	hist.Bins = make([]float64, nbins)
 	for _, row := range points {
 		total := row[1].(float64)
 		bucketStart := row[2].(float64)
 		count := row[3].(float64)
 		i := int((bucketStart - min) / stepSize)
-		hist.Bins[i] = count / total
+		if i == int(nbins) { //Handle last bucket including max value
+			i--
+		}
+		hist.Bins[i] += count / total
 		hist.Count = uint(total)
 	}
 
@@ -183,4 +221,27 @@ func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric met
 }
 func (self *InfluxDBEngine) GetPercentile(rotation *schedule.Rotation, metric metric.MetricID, percentile float64, start, stop time.Time) float64 {
 	return 0.0
+}
+
+func (self *InfluxDBEngine) GetDoc(key string) []byte {
+	result, err := self.client.Query(
+		fmt.Sprintf("select data from %s where key = '%s' order desc limit 1", documentSeries, key),
+	)
+
+	if err != nil {
+		log.Error(err.Error())
+		return []byte{}
+	}
+	if len(result) == 0 {
+		return []byte{}
+	}
+
+	series := result[0]
+	points := series.GetPoints()
+	for _, row := range points {
+		data := []byte(row[2].(string))
+		return data
+	}
+
+	return []byte{}
 }
