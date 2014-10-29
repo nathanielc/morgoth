@@ -16,14 +16,14 @@ type fingerprint struct {
 }
 
 type MGOF struct {
-	rotation     *schedule.Rotation
+	rotation     schedule.Rotation
 	reader       engine.Reader
 	writer       engine.Writer
 	config       *MGOFConf
 	fingerprints []fingerprint
 }
 
-func (self *MGOF) Initialize(app app.App, rotation *schedule.Rotation) error {
+func (self *MGOF) Initialize(app app.App, rotation schedule.Rotation) error {
 	self.rotation = rotation
 	self.reader = app.GetReader()
 	self.writer = app.GetWriter()
@@ -31,9 +31,10 @@ func (self *MGOF) Initialize(app app.App, rotation *schedule.Rotation) error {
 }
 
 func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
+	log.Debugf("MGOF.Detect Rotation: %s FP %v", self.rotation, self.fingerprints)
 	nbins := self.config.NBins
 	hist := self.reader.GetHistogram(
-		self.rotation,
+		&self.rotation,
 		metric,
 		nbins,
 		start,

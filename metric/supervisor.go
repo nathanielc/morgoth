@@ -17,7 +17,7 @@ import (
 type Supervisor interface {
 	GetPattern() types.Pattern
 	AddMetric(types.MetricID)
-	Detect(rotation *schedule.Rotation, start time.Time, stop time.Time)
+	Detect(rotation schedule.Rotation, start time.Time, stop time.Time)
 }
 
 type SupervisorStruct struct {
@@ -53,8 +53,8 @@ func (self *SupervisorStruct) AddMetric(metric types.MetricID) {
 	self.metrics.Add(metric)
 }
 
-func (self *SupervisorStruct) Detect(rotation *schedule.Rotation, start time.Time, stop time.Time) {
-	detectors := self.detectors[*rotation]
+func (self *SupervisorStruct) Detect(rotation schedule.Rotation, start time.Time, stop time.Time) {
+	detectors := self.detectors[rotation]
 	self.metrics.Each(func(metric types.MetricID) {
 		for _, detector := range detectors {
 			if detector.Detect(metric, start, stop) {

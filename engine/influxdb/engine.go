@@ -133,7 +133,6 @@ func (self *InfluxDBEngine) GetData(rotation *schedule.Rotation, metric metric.M
 
 	series := result[0]
 	points := series.GetPoints()
-	log.Debug(len(points))
 	data := make([]engine.Point, len(points))
 	for i, row := range points {
 		sec := int64(row[0].(float64))

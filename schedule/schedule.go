@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	log "github.com/cihub/seelog"
 	"errors"
 	"fmt"
 	"time"
@@ -10,7 +11,7 @@ const (
 	day = time.Duration(24 * time.Hour)
 )
 
-type ScheduleFunc func(*Rotation, time.Time, time.Time)
+type ScheduleFunc func(Rotation, time.Time, time.Time)
 
 type Rotation struct {
 	Period     time.Duration
@@ -36,24 +37,25 @@ func (self *Schedule) Start() error {
 
 	for _, rotation := range self.Rotations {
 		period := rotation.Period
-		start := time.Now()
+		stop := time.Now()
 		if period > day {
-			start = start.Truncate(day)
+			stop = stop.Truncate(day)
 		} else {
-			start = start.Truncate(period)
+			stop = stop.Truncate(period)
 		}
-		start = start.Add(period)
-		go func(rotation *Rotation, start time.Time, period time.Duration) {
+		stop = stop.Add(period)
+		go func(rotation Rotation, stop time.Time, period time.Duration) {
 			now := time.Now()
-			time.Sleep(start.Add(self.Delay).Sub(now))
+			log.Debug("Starting schedule", rotation, stop.Add(self.Delay), stop.Add(self.Delay).Sub(now))
+			time.Sleep(stop.Add(self.Delay).Sub(now))
 			ticker := time.NewTicker(period)
 			for self.running {
-				self.Callback(rotation, start, start.Add(period))
-				start = start.Add(period)
+				self.Callback(rotation, stop.Add(-period), stop)
+				stop = stop.Add(period)
 				<-ticker.C
 			}
 			ticker.Stop()
-		}(&rotation, start, period)
+		}(rotation, stop, period)
 	}
 	return nil
 }

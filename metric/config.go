@@ -43,7 +43,7 @@ func (self *MetricSupervisorConf) GetSupervisor(app app.App) Supervisor {
 		for i := range self.Detectors {
 			detector, err := self.Detectors[i].GetDetector()
 			if err == nil {
-				detector.Initialize(app, &rotation)
+				detector.Initialize(app, rotation)
 				detectors = append(detectors, detector)
 			} else {
 				log.Errorf("Error getting configured detector: %s", err.Error())

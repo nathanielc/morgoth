@@ -69,7 +69,7 @@ func (self *ManagerStruct) matchSupervisor(id metric.MetricID) Supervisor {
 	return nil
 }
 
-func (self *ManagerStruct) detect(rotation *schedule.Rotation, start, stop time.Time) {
+func (self *ManagerStruct) detect(rotation schedule.Rotation, start, stop time.Time) {
 	for _, pair := range self.supervisors {
 		go pair.Supervisor.Detect(rotation, start, stop)
 	}

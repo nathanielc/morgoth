@@ -9,7 +9,7 @@ import (
 )
 
 type Detector interface {
-	Initialize(app.App, *schedule.Rotation) error
+	Initialize(app.App, schedule.Rotation) error
 	Detect(metric metric.MetricID, start, stop time.Time) bool
 }
 

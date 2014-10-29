@@ -22,9 +22,8 @@ func (self *MetricID) GetRawPath() string {
 // If rotation is nil assume no rotation and the raw path is returned
 func (self *MetricID) GetRotationPath(rotation *schedule.Rotation) string {
 	if rotation != nil {
-		return rotation.GetPrefix() + string(*self)
+		return rotation.GetPrefix() + self.GetRawPath()
 	}
-
 	return self.GetRawPath()
 }
 

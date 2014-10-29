@@ -31,6 +31,22 @@ effects = [
         scale
 ]
 
+steps = random.randint(3, 10)
+bases = []
+for i in range(steps):
+    bases.append((random.random()* 100, random.random() * 60 + 20))
+
+
+def base(t):
+    total = sum([p[1] for p in bases])
+    t = t % total
+    current = 0
+    for v, stop in bases:
+        current += stop
+        if t < current:
+            return v + random.random() * 3
+
+
 
 def main():
     conn = socket.socket()
@@ -41,10 +57,10 @@ def main():
 
 
     while True:
-        r = math.sin(time.time())
+        r = base(time.time())
         if time.time() > expire:
             expire = time.time() + random.random() * 120 + 10
-            if random.random() < 0.2:
+            if random.random() < 0.0:
                 effect = random.choice(effects)()
                 print time.time(), " New effect till", expire
             else:
@@ -52,7 +68,12 @@ def main():
 
         if effect:
             r = effect(r)
-        send(conn, 'test.a1', r)
+
+        if r > 100:
+            r = 100
+        elif r < 0:
+            r = 0
+        send(conn, 'cpu.c1', r)
         time.sleep(1)
 
 if __name__ == '__main__':

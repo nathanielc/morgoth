@@ -7,15 +7,25 @@ engine:
     password: root
     database: morgoth
 
+schedule:
+  rotations:
+    - {period: 2m, resolution: 2s}
+    - {period: 4m, resolution: 4s}
+    - {period: 1d, resolution: 30m}
+  delay: 5s
+
 metrics:
+  - pattern: cpu.*
+    detectors:
+      - mgof:
+          min: 0
+          max: 100
+    notifiers:
   - pattern: .*
     detectors:
       - kstest: {}
     notifiers:
-    schedule:
-      rotations:
-        - {period: 1m, resolution: 1s}
-      delay: 65s
+
 
 fittings:
   - rest:
