@@ -33,7 +33,7 @@ func (self *KSTest) Initialize(app app.App, rotation *schedule.Rotation) error {
 
 func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	log.Debugf("KSTest.Detect FP: %v", self.fingerprints)
-	points := self.reader.GetData(self.rotation, metric, start, stop, -1)
+	points := self.reader.GetData(self.rotation, metric, start, stop)
 	data := make([]float64, len(points))
 	for i, point := range points {
 		data[i] = point.Value

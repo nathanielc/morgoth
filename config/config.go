@@ -12,7 +12,7 @@ import (
 // Base config struct for the entire morgoth config
 type Config struct {
 	EngineConf engine.EngineConf     `yaml:"engine"`
-	Metrics    []metric.MetricConf   `yaml:"metrics"`
+	Metrics    []metric.MetricSupervisorConf   `yaml:"metrics"`
 	Fittings   []fitting.FittingConf `yaml:"fittings"`
 	Schedule   schedule.ScheduleConf `yaml:"schedule"`
 }

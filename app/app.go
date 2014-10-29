@@ -69,10 +69,10 @@ func (self *App) Run() error {
 	log.Info("Setup metrics manager")
 	supervisors := self.config.GetSupervisors(self)
 	log.Debugf("Supervisors: %v", supervisors)
-	self.manager = metric.NewManager(self, supervisors)
+	self.manager = metric.NewManager(&self.schedule, supervisors)
 
 	log.Info("Setup metric schedules")
-	err = self.engine.ConfigureSchedule(self.schedule)
+	err = self.engine.ConfigureSchedule(&self.schedule)
 	if err != nil {
 		log.Errorf("Error configuring schedules %s", err.Error())
 	}

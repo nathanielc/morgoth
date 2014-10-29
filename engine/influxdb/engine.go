@@ -8,6 +8,7 @@ import (
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
 	"math"
+	"regexp"
 	"time"
 )
 
@@ -38,7 +39,7 @@ func (self *InfluxDBEngine) GetWriter() engine.Writer {
 	return self
 }
 
-func (self *InfluxDBEngine) ConfigureSchedule(schedule schedule.Schedule) error {
+func (self *InfluxDBEngine) ConfigureSchedule(schedule *schedule.Schedule) error {
 
 	result, err := self.client.Query("list continuous queries")
 	if err != nil {
@@ -52,9 +53,15 @@ func (self *InfluxDBEngine) ConfigureSchedule(schedule schedule.Schedule) error 
 		}
 	}
 
+	pattern := regexp.QuoteMeta(metric.MetricPrefix)
 	for _, rotation := range schedule.Rotations {
 		resolution := int64(math.Ceil(rotation.Resolution.Seconds()))
-		q := fmt.Sprintf("select first(value) as value from /^m\\..*/ group by time(%ds) into %s.:series_name", resolution, rotation.String())
+		q := fmt.Sprintf(
+			"select first(value) as value from /^%s.*/ group by time(%ds) into %s:series_name",
+			pattern,
+			resolution,
+			rotation.GetPrefix(),
+		)
 		found := false
 		for _, e := range existing {
 			if e == q {
@@ -82,7 +89,7 @@ func (self *InfluxDBEngine) ConfigureSchedule(schedule schedule.Schedule) error 
 
 func (self *InfluxDBEngine) Insert(datetime time.Time, metric metric.MetricID, value float64) {
 	series := new(client.Series)
-	series.Name = metricPrefix + string(metric)
+	series.Name = metric.GetRawPath()
 	series.Columns = []string{
 		"time",
 		"value",
@@ -106,10 +113,10 @@ func (self *InfluxDBEngine) DeleteMetric(metric metric.MetricID) {
 func (self *InfluxDBEngine) GetMetrics() []metric.MetricID {
 	return nil
 }
-func (self *InfluxDBEngine) GetData(metric metric.MetricID, start, stop time.Time, step time.Duration) []engine.Point {
+func (self *InfluxDBEngine) GetData(rotation *schedule.Rotation, metric metric.MetricID, start, stop time.Time) []engine.Point {
 	result, err := self.client.Query(
-		fmt.Sprintf("select value from rot.1.60.m.%s where time > %ds and time < %ds",
-			metric,
+		fmt.Sprintf("select value from %s where time > %ds and time < %ds",
+			metric.GetRotationPath(rotation),
 			start.Unix(),
 			stop.Unix(),
 		),
@@ -139,19 +146,17 @@ func (self *InfluxDBEngine) GetData(metric metric.MetricID, start, stop time.Tim
 func (self *InfluxDBEngine) GetAnomalies(metric metric.MetricID, start, stop time.Time) []engine.Anomaly {
 	return nil
 }
-func (self *InfluxDBEngine) GetHistogram(rotation schedule.Rotation, metric metric.MetricID, nbins uint, start, stop time.Time, min, max float64) *engine.Histogram {
+func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric metric.MetricID, nbins uint, start, stop time.Time, min, max float64) *engine.Histogram {
 	hist := new(engine.Histogram)
 
 	stepSize := (max - min) / float64(nbins)
-
-	pattern := metric.GetString(rotation)
 
 	result, err := self.client.Query(
 		fmt.Sprintf("select count(value), histogram(value, %f, %f, %f) from %s where time > %ds and time < %ds",
 			stepSize,
 			min,
 			max,
-			pattern,
+			metric.GetRotationPath(rotation),
 			start.Unix(),
 			stop.Unix(),
 		),
@@ -177,6 +182,6 @@ func (self *InfluxDBEngine) GetHistogram(rotation schedule.Rotation, metric metr
 	return hist
 
 }
-func (self *InfluxDBEngine) GetPercentile(metric metric.MetricID, percentile float64, start, stop time.Time) float64 {
+func (self *InfluxDBEngine) GetPercentile(rotation *schedule.Rotation, metric metric.MetricID, percentile float64, start, stop time.Time) float64 {
 	return 0.0
 }

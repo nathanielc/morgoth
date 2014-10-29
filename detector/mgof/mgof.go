@@ -32,7 +32,15 @@ func (self *MGOF) Initialize(app app.App, rotation *schedule.Rotation) error {
 
 func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	nbins := self.config.NBins
-	hist := self.reader.GetHistogram(self.rotation, metric, nbins, start, stop)
+	hist := self.reader.GetHistogram(
+		self.rotation,
+		metric,
+		nbins,
+		start,
+		stop,
+		self.config.Min,
+		self.config.Max,
+	)
 
 	threshold := 1.0
 

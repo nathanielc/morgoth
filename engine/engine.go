@@ -9,7 +9,7 @@ import (
 
 type Engine interface {
 	Initialize() error
-	ConfigureSchedule(schedule schedule.Schedule) error
+	ConfigureSchedule(schedule *schedule.Schedule) error
 	GetReader() Reader
 	GetWriter() Writer
 }
