@@ -4,6 +4,7 @@ import "github.com/nvcook42/morgoth/engine"
 import "github.com/stretchr/testify/mock"
 
 import metric "github.com/nvcook42/morgoth/metric/types"
+import "github.com/nvcook42/morgoth/schedule"
 import "time"
 
 type Reader struct {
@@ -17,8 +18,8 @@ func (m *Reader) GetMetrics() []metric.MetricID {
 
 	return r0
 }
-func (m *Reader) GetData(metric metric.MetricID, start time.Time, stop time.Time, step time.Duration) []engine.Point {
-	ret := m.Called(metric, start, stop, step)
+func (m *Reader) GetData(rotation schedule.Rotation, metric metric.MetricID, start time.Time, stop time.Time, step time.Duration) []engine.Point {
+	ret := m.Called(rotation, metric, start, stop, step)
 
 	r0 := ret.Get(0).([]engine.Point)
 
@@ -31,15 +32,15 @@ func (m *Reader) GetAnomalies(metric metric.MetricID, start time.Time, stop time
 
 	return r0
 }
-func (m *Reader) GetHistogram(metric metric.MetricID, nbins uint, start time.Time, stop time.Time) *engine.Histogram {
-	ret := m.Called(metric, nbins, start, stop)
+func (m *Reader) GetHistogram(rotation schedule.Rotation, metric metric.MetricID, nbins uint, start time.Time, stop time.Time, min float64, max float64) *engine.Histogram {
+	ret := m.Called(rotation, metric, nbins, start, stop, min, max)
 
 	r0 := ret.Get(0).(*engine.Histogram)
 
 	return r0
 }
-func (m *Reader) GetPercentile(metric metric.MetricID, percentile float64, start time.Time, stop time.Time) float64 {
-	ret := m.Called(metric, percentile, start, stop)
+func (m *Reader) GetPercentile(rotation schedule.Rotation, metric metric.MetricID, percentile float64, start time.Time, stop time.Time) float64 {
+	ret := m.Called(rotation, metric, percentile, start, stop)
 
 	r0 := ret.Get(0).(float64)
 

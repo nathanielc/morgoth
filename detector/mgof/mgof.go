@@ -3,6 +3,7 @@ package mgof
 import (
 	log "github.com/cihub/seelog"
 	app "github.com/nvcook42/morgoth/app/types"
+	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"math"
@@ -15,13 +16,15 @@ type fingerprint struct {
 }
 
 type MGOF struct {
+	rotation     *schedule.Rotation
 	reader       engine.Reader
 	writer       engine.Writer
 	config       *MGOFConf
 	fingerprints []fingerprint
 }
 
-func (self *MGOF) Initialize(app app.App) error {
+func (self *MGOF) Initialize(app app.App, rotation *schedule.Rotation) error {
+	self.rotation = rotation
 	self.reader = app.GetReader()
 	self.writer = app.GetWriter()
 	return nil
@@ -29,7 +32,7 @@ func (self *MGOF) Initialize(app app.App) error {
 
 func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	nbins := self.config.NBins
-	hist := self.reader.GetHistogram(metric, nbins, start, stop)
+	hist := self.reader.GetHistogram(self.rotation, metric, nbins, start, stop)
 
 	threshold := 1.0
 

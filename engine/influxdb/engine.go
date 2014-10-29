@@ -139,17 +139,23 @@ func (self *InfluxDBEngine) GetData(metric metric.MetricID, start, stop time.Tim
 func (self *InfluxDBEngine) GetAnomalies(metric metric.MetricID, start, stop time.Time) []engine.Anomaly {
 	return nil
 }
-func (self *InfluxDBEngine) GetHistogram(metric metric.MetricID, nbins uint, start, stop time.Time) *engine.Histogram {
+func (self *InfluxDBEngine) GetHistogram(rotation schedule.Rotation, metric metric.MetricID, nbins uint, start, stop time.Time, min, max float64) *engine.Histogram {
 	hist := new(engine.Histogram)
 
-	m_min := -2.0
-	step_size := 1.0
+	stepSize := (max - min) / float64(nbins)
 
-	result, err := self.client.Query(fmt.Sprintf("select count(value), histogram(value, 1, -2, 2) from rot.10.300.%s where time > %ds and time < %ds",
-		metricPrefix+metric,
-		start.Unix(),
-		stop.Unix(),
-	))
+	pattern := metric.GetString(rotation)
+
+	result, err := self.client.Query(
+		fmt.Sprintf("select count(value), histogram(value, %f, %f, %f) from %s where time > %ds and time < %ds",
+			stepSize,
+			min,
+			max,
+			pattern,
+			start.Unix(),
+			stop.Unix(),
+		),
+	)
 
 	if err != nil {
 		log.Error(err.Error())
@@ -163,7 +169,7 @@ func (self *InfluxDBEngine) GetHistogram(metric metric.MetricID, nbins uint, sta
 		total := row[1].(float64)
 		bucketStart := row[2].(float64)
 		count := row[3].(float64)
-		i := int((bucketStart - m_min) / step_size)
+		i := int((bucketStart - min) / stepSize)
 		hist.Bins[i] = count / total
 		hist.Count = uint(total)
 	}

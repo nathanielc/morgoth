@@ -3,6 +3,7 @@ package kstest
 import (
 	log "github.com/cihub/seelog"
 	app "github.com/nvcook42/morgoth/app/types"
+	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"math"
@@ -16,13 +17,15 @@ type fingerprint struct {
 }
 
 type KSTest struct {
+	rotation     *schedule.Rotation
 	reader       engine.Reader
 	writer       engine.Writer
 	config       *KSTestConf
 	fingerprints []fingerprint
 }
 
-func (self *KSTest) Initialize(app app.App) error {
+func (self *KSTest) Initialize(app app.App, rotation *schedule.Rotation) error {
+	self.rotation = rotation
 	self.reader = app.GetReader()
 	self.writer = app.GetWriter()
 	return nil
@@ -30,7 +33,7 @@ func (self *KSTest) Initialize(app app.App) error {
 
 func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	log.Debugf("KSTest.Detect FP: %v", self.fingerprints)
-	points := self.reader.GetData(metric, start, stop, -1)
+	points := self.reader.GetData(self.rotation, metric, start, stop, -1)
 	data := make([]float64, len(points))
 	for i, point := range points {
 		data[i] = point.Value

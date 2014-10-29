@@ -12,30 +12,28 @@ import (
 	"time"
 )
 
-// A supervisors schedules all the actions
-// associated with detecting, notifing etc metrics
-// that match their pattern
+// A supervisor keeps track of all metrics that match its pattern
+// proxies Detect calls to the associated detectors
+// It also supervises the notification of anomalous metrics
 type Supervisor interface {
 	GetPattern() types.Pattern
 	AddMetric(types.MetricID)
-	Start(app.App)
+	Detect(rotation *schedule.Rotation, start, stop time.Time)
 }
 
 type SupervisorStruct struct {
 	pattern   types.Pattern
 	writer    engine.Writer
-	detectors []detector.Detector
+	detectors map[string][]detector.Detector
 	notifiers []notifier.Notifier
-	schedule  schedule.Schedule
 	metrics   *set.Set
 }
 
 func NewSupervisor(
 	pattern types.Pattern,
 	writer engine.Writer,
-	detectors []detector.Detector,
+	detectors map[string][]detector.Detector,
 	notifiers []notifier.Notifier,
-	schedule schedule.Schedule,
 ) *SupervisorStruct {
 
 	s := &SupervisorStruct{
@@ -43,7 +41,6 @@ func NewSupervisor(
 		writer:    writer,
 		detectors: detectors,
 		notifiers: notifiers,
-		schedule:  schedule,
 		metrics:   set.New(0),
 	}
 	return s
@@ -57,25 +54,10 @@ func (self *SupervisorStruct) AddMetric(metric types.MetricID) {
 	self.metrics.Add(metric)
 }
 
-func (self *SupervisorStruct) Start(app app.App) {
-	self.schedule.Callback = self.detect
-	self.schedule.Start()
-
-	for _, detector := range self.detectors {
-		err := detector.Initialize(app)
-		if err != nil {
-			log.Warnf("Failed to initial detector %v %s", detector, err.Error())
-		}
-	}
-}
-
-func (self *SupervisorStruct) GetSchedule() schedule.Schedule {
-	return self.schedule
-}
-
-func (self *SupervisorStruct) detect(start time.Time, stop time.Time) {
+func (self *SupervisorStruct) Detect(rotation *schedule.Rotation, start time.Time, stop time.Time) {
+	detectors := self.detectors[rotation.String()]
 	self.metrics.Each(func(metric types.MetricID) {
-		for _, detector := range self.detectors {
+		for _, detector := range detectors {
 			if detector.Detect(metric, start, stop) {
 				log.Infof("Metric %s is anomalous", metric)
 			}
