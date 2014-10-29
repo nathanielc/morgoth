@@ -12,7 +12,7 @@ func TestScheduleShouldStartAndStop(t *testing.T) {
 	defer log.Flush()
 	assert := assert.New(t)
 
-	unit := 10*time.Millisecond
+	unit := 10 * time.Millisecond
 	calledCount := 0
 	testF := func(start time.Time, dur time.Time) {
 		remainder := start.Nanosecond() % int(unit)
@@ -20,8 +20,8 @@ func TestScheduleShouldStartAndStop(t *testing.T) {
 		calledCount++
 	}
 	s := schedule.Schedule{
-		Callback: testF,
-		Rotations:   []schedule.Rotation{schedule.Rotation{Period:unit}},
+		Callback:  testF,
+		Rotations: []schedule.Rotation{schedule.Rotation{Period: unit}},
 	}
 
 	assert.NotNil(s)
@@ -41,8 +41,8 @@ func TestScheduleShouldNotDoubleStart(t *testing.T) {
 	assert := assert.New(t)
 
 	s := schedule.Schedule{
-		Callback: func(start time.Time, dur time.Time) {},
-		Rotations:   []schedule.Rotation{schedule.Rotation{Period:time.Millisecond}},
+		Callback:  func(start time.Time, dur time.Time) {},
+		Rotations: []schedule.Rotation{schedule.Rotation{Period: time.Millisecond}},
 	}
 
 	assert.NotNil(s)
@@ -61,7 +61,7 @@ func TestRotationShouldConvertToString(t *testing.T) {
 	assert := assert.New(t)
 
 	r := schedule.Rotation{
-		Period: time.Minute * 6,
+		Period:     time.Minute * 6,
 		Resolution: time.Second * 7,
 	}
 

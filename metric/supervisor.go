@@ -6,7 +6,6 @@ import (
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/metric/set"
 	"github.com/nvcook42/morgoth/metric/types"
-	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/notifier"
 	"github.com/nvcook42/morgoth/schedule"
 	"time"
@@ -24,7 +23,7 @@ type Supervisor interface {
 type SupervisorStruct struct {
 	pattern   types.Pattern
 	writer    engine.Writer
-	detectors map[string][]detector.Detector
+	detectors map[schedule.Rotation][]detector.Detector
 	notifiers []notifier.Notifier
 	metrics   *set.Set
 }
@@ -32,7 +31,7 @@ type SupervisorStruct struct {
 func NewSupervisor(
 	pattern types.Pattern,
 	writer engine.Writer,
-	detectors map[string][]detector.Detector,
+	detectors map[schedule.Rotation][]detector.Detector,
 	notifiers []notifier.Notifier,
 ) *SupervisorStruct {
 
@@ -55,7 +54,7 @@ func (self *SupervisorStruct) AddMetric(metric types.MetricID) {
 }
 
 func (self *SupervisorStruct) Detect(rotation *schedule.Rotation, start time.Time, stop time.Time) {
-	detectors := self.detectors[rotation.String()]
+	detectors := self.detectors[*rotation]
 	self.metrics.Each(func(metric types.MetricID) {
 		for _, detector := range detectors {
 			if detector.Detect(metric, start, stop) {

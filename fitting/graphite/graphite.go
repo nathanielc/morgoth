@@ -8,9 +8,9 @@ import (
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"net"
-	"time"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type GraphiteFitting struct {

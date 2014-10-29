@@ -11,4 +11,3 @@ func TestEngineShouldHaveRegistery(t *testing.T) {
 
 	assert.NotNil(engine.Registery)
 }
-

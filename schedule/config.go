@@ -96,7 +96,7 @@ func StrToDuration(str string) (time.Duration, error) {
 	if len(str) < 2 {
 		return 0, errors.New("Invalid time string " + str)
 	}
-	scaleStr := str[len(str) - 1]
+	scaleStr := str[len(str)-1]
 	scale := int64(0)
 	switch scaleStr {
 	case 's':

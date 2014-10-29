@@ -4,16 +4,15 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
-	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/fitting"
 	"github.com/nvcook42/morgoth/metric"
 	mtypes "github.com/nvcook42/morgoth/metric/types"
 	_ "github.com/nvcook42/morgoth/plugins"
+	"github.com/nvcook42/morgoth/schedule"
 	"os"
 	"os/signal"
 	"sync"
 )
-
 
 type App struct {
 	manager  mtypes.Manager
@@ -38,6 +37,7 @@ func (self *App) GetReader() engine.Reader {
 func (self *App) GetSchedule() schedule.Schedule {
 	return self.schedule
 }
+
 //
 // Return proxy to writer so we can intercept the requests and
 // inform the metric manager of new metrics

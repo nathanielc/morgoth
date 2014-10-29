@@ -3,9 +3,9 @@ package mgof
 import (
 	log "github.com/cihub/seelog"
 	app "github.com/nvcook42/morgoth/app/types"
-	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
+	"github.com/nvcook42/morgoth/schedule"
 	"math"
 	"time"
 )
@@ -66,9 +66,9 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		if len(self.fingerprints) == int(self.config.MaxFingerprints) {
 			log.Debug("Reached MaxFingerprints")
 			//TODO: Update bestMatch to learn new fingerprint
-			ratio := 1/float64(self.fingerprints[bestMatch].Count)
+			ratio := 1 / float64(self.fingerprints[bestMatch].Count)
 			for i, p := range self.fingerprints[bestMatch].Hist.Bins {
-				self.fingerprints[bestMatch].Hist.Bins[i] = (1 - ratio)*p + ratio*hist.Bins[i]
+				self.fingerprints[bestMatch].Hist.Bins[i] = (1-ratio)*p + ratio*hist.Bins[i]
 			}
 		} else {
 			self.fingerprints = append(self.fingerprints, fingerprint{

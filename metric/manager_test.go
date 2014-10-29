@@ -24,7 +24,6 @@ func TestManagerShouldHandleNewMetric(t *testing.T) {
 	ms2 := new(mock.Supervisor)
 	ms2.On("GetPattern").Return(types.Pattern(".*")).Once()
 
-
 	mockSupervisors := []*mock.Supervisor{
 		ms0,
 		ms1,
@@ -34,7 +33,6 @@ func TestManagerShouldHandleNewMetric(t *testing.T) {
 	for i := range mockSupervisors {
 		supervisors[i] = mockSupervisors[i]
 	}
-
 
 	m := metric.NewManager(app, supervisors)
 	m.NewMetric(metricName)

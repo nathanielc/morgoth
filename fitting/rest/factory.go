@@ -1,10 +1,10 @@
 package rest
 
 import (
-	"github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/fitting"
 	"errors"
 	"fmt"
+	"github.com/nvcook42/morgoth/config/types"
+	"github.com/nvcook42/morgoth/fitting"
 )
 
 type RESTFactory struct {
@@ -19,7 +19,7 @@ func (self *RESTFactory) GetInstance(config types.Configuration) (interface{}, e
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("Configuration is not RESTConf %v", config))
 	}
-	return &RESTFitting{port:restConf.Port}, nil
+	return &RESTFitting{port: restConf.Port}, nil
 }
 
 func init() {

@@ -254,7 +254,7 @@ rest:
 	}
 	request := http.Request{
 		Method: "DELETE",
-		URL: u,
+		URL:    u,
 	}
 
 	client := http.Client{}

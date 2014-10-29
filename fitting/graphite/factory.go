@@ -1,10 +1,10 @@
 package graphite
 
 import (
-	"github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/fitting"
 	"errors"
 	"fmt"
+	"github.com/nvcook42/morgoth/config/types"
+	"github.com/nvcook42/morgoth/fitting"
 )
 
 type GraphiteFactory struct {
@@ -19,7 +19,7 @@ func (self *GraphiteFactory) GetInstance(config types.Configuration) (interface{
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("Configuration is not GraphiteConf %v", config))
 	}
-	return &GraphiteFitting{port:graphiteConf.Port}, nil
+	return &GraphiteFitting{port: graphiteConf.Port}, nil
 }
 
 func init() {

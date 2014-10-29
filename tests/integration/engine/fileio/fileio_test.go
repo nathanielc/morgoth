@@ -1,12 +1,11 @@
 package fileio_test
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/engine/fileio"
 	"github.com/nvcook42/morgoth/tests/integration/engine"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
-
 
 func TestAll(t *testing.T) {
 	assert := assert.New(t)
@@ -18,5 +17,3 @@ func TestAll(t *testing.T) {
 	suite := engine.EngineTestSuite{&fileioEngine}
 	suite.TestAll(t)
 }
-
-

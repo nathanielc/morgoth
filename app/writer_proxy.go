@@ -1,16 +1,15 @@
 package app
 
 import (
-	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/engine"
+	metric "github.com/nvcook42/morgoth/metric/types"
 	"time"
 )
 
 type writerProxy struct {
-	writer engine.Writer
+	writer  engine.Writer
 	manager metric.Manager
 }
-
 
 //
 // Proxy Insert method to engine.Writer after informing the manager

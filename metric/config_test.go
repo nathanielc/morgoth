@@ -7,14 +7,14 @@ import (
 	"testing"
 )
 
-func TestMetricConfShouldParsePattern(t *testing.T) {
+func TestMetricSupervisorConfShouldParsePattern(t *testing.T) {
 	assert := assert.New(t)
 
 	var data string = `---
 pattern: .*
 `
 
-	mc := metric.MetricConf{}
+	mc := metric.MetricSupervisorConf{}
 
 	err := yaml.Unmarshal([]byte(data), &mc)
 

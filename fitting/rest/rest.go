@@ -111,7 +111,7 @@ func (self *RESTFitting) metricData(w rest.ResponseWriter, req *rest.Request) {
 
 	data := make(map[string]interface{}, 1)
 	data["metric"] = metric
-	points := self.reader.GetData(metric, start, stop, 0)
+	points := self.reader.GetData(nil, metric, start, stop)
 	formatedPoints := make([][]interface{}, len(points))
 	for i, point := range points {
 		formatedPoints[i] = []interface{}{point.Time.Format(time.RFC3339Nano), point.Value}

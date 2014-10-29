@@ -3,25 +3,26 @@ package metric
 import (
 	log "github.com/cihub/seelog"
 	app "github.com/nvcook42/morgoth/app/types"
-	"github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/detector"
+	"github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/notifier"
+	"github.com/nvcook42/morgoth/schedule"
 )
 
 // Represents a single metric conf section
-type MetricConf struct {
+type MetricSupervisorConf struct {
 	Pattern   types.Pattern           `yaml:"pattern"`
 	Detectors []detector.DetectorConf `yaml:"detectors"`
 	Notifiers []notifier.NotifierConf `yaml:"notifiers"`
 }
 
-func (self *MetricConf) Default() {
+func (self *MetricSupervisorConf) Default() {
 	for i := range self.Detectors {
 		self.Detectors[i].Default()
 	}
 }
 
-func (self MetricConf) Validate() error {
+func (self MetricSupervisorConf) Validate() error {
 	if valid := self.Pattern.Validate(); valid != nil {
 		return valid
 	}
@@ -33,16 +34,22 @@ func (self MetricConf) Validate() error {
 	return nil
 }
 
-func (self *MetricConf) GetSupervisor(app app.App) Supervisor {
+func (self *MetricSupervisorConf) GetSupervisor(app app.App) Supervisor {
 
-	detectors := make([]detector.Detector, 0, len(self.Detectors))
-	for i := range self.Detectors {
-		detector, err := self.Detectors[i].GetDetector()
-		if err == nil {
-			detectors = append(detectors, detector)
-		} else {
-			log.Errorf("Error getting configured detector: %s", err.Error())
+	schd := app.GetSchedule()
+	detectorsMap := make(map[schedule.Rotation][]detector.Detector, len(schd.Rotations))
+	for _, rotation := range schd.Rotations {
+		detectors := make([]detector.Detector, 0, len(self.Detectors))
+		for i := range self.Detectors {
+			detector, err := self.Detectors[i].GetDetector()
+			if err == nil {
+				detector.Initialize(app, &rotation)
+				detectors = append(detectors, detector)
+			} else {
+				log.Errorf("Error getting configured detector: %s", err.Error())
+			}
 		}
+		detectorsMap[rotation] = detectors
 	}
 
 	notifiers := make([]notifier.Notifier, 0, len(self.Notifiers))
@@ -58,9 +65,7 @@ func (self *MetricConf) GetSupervisor(app app.App) Supervisor {
 	return NewSupervisor(
 		self.Pattern,
 		app.GetWriter(),
-		detectors,
+		detectorsMap,
 		notifiers,
-		app.GetSchedule(),
 	)
 }
-

@@ -51,8 +51,8 @@ func TestKSTestConfValidateShouldPass(t *testing.T) {
 	assert := assert.New(t)
 
 	ks := kstest.KSTestConf{
-		Strictness:1,
-		NormalCount: 3,
+		Strictness:      1,
+		NormalCount:     3,
 		MaxFingerprints: 20,
 	}
 

@@ -1,8 +1,8 @@
 package mgof
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"github.com/nvcook42/morgoth/config/types"
 	"github.com/nvcook42/morgoth/detector"
 )

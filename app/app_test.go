@@ -2,10 +2,10 @@ package app
 
 import (
 	"github.com/nvcook42/morgoth/config"
-	"github.com/stretchr/testify/assert"
 	mtypes "github.com/nvcook42/morgoth/metric/types"
-	metric "github.com/nvcook42/morgoth/mocks/metric"
 	engine "github.com/nvcook42/morgoth/mocks/engine"
+	metric "github.com/nvcook42/morgoth/mocks/metric"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -41,7 +41,7 @@ fittings:
 
 }
 
-func TestAppShouldNotifyManagerOfNewMetrics(t * testing.T) {
+func TestAppShouldNotifyManagerOfNewMetrics(t *testing.T) {
 	assert := assert.New(t)
 
 	metricTime := time.Now()
@@ -54,7 +54,7 @@ func TestAppShouldNotifyManagerOfNewMetrics(t * testing.T) {
 	manager := new(metric.Manager)
 
 	app := &App{
-		engine: engine,
+		engine:  engine,
 		manager: manager,
 	}
 

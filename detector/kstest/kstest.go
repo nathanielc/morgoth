@@ -3,16 +3,16 @@ package kstest
 import (
 	log "github.com/cihub/seelog"
 	app "github.com/nvcook42/morgoth/app/types"
-	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
+	"github.com/nvcook42/morgoth/schedule"
 	"math"
 	"sort"
 	"time"
 )
 
 type fingerprint struct {
-	Data []float64
+	Data  []float64
 	Count uint
 }
 
@@ -72,7 +72,7 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 			//TODO: Update bestMatch to learn new fingerprint
 		} else {
 			self.fingerprints = append(self.fingerprints, fingerprint{
-				Data: data,
+				Data:  data,
 				Count: 1,
 			})
 		}
@@ -96,7 +96,7 @@ func (self *KSTest) getThresholdD(n, m int) float64 {
 	case 5: // 0.001
 		c = 1.95
 	}
-	return c * math.Sqrt(float64(n  + m) / float64( n * m))
+	return c * math.Sqrt(float64(n+m)/float64(n*m))
 }
 
 func calcTestD(f1, f2 []float64) float64 {

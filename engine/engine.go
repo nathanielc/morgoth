@@ -1,10 +1,10 @@
 package engine
 
 import (
+	"github.com/nu7hatch/gouuid"
 	"github.com/nvcook42/morgoth/registery"
 	"github.com/nvcook42/morgoth/schedule"
 	"time"
-	"github.com/nu7hatch/gouuid"
 )
 
 type Engine interface {
@@ -28,12 +28,12 @@ type Point struct {
 }
 
 type Anomaly struct {
-	UUID   *uuid.UUID
-	Start  time.Time
-	Stop   time.Time
+	UUID  *uuid.UUID
+	Start time.Time
+	Stop  time.Time
 }
 
 type Histogram struct {
-	Bins []float64
+	Bins  []float64
 	Count uint
 }

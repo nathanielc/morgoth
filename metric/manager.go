@@ -2,16 +2,17 @@ package metric
 
 import (
 	log "github.com/cihub/seelog"
-	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/metric/set"
 	metric "github.com/nvcook42/morgoth/metric/types"
+	"github.com/nvcook42/morgoth/schedule"
 	"regexp"
+	"time"
 )
 
 type ManagerStruct struct {
 	metrics     *set.Set
 	supervisors []pair
-	app         app.App
+	schedule    *schedule.Schedule
 }
 
 type pair struct {
@@ -19,10 +20,9 @@ type pair struct {
 	Supervisor Supervisor
 }
 
-func NewManager(app app.App, supervisors []Supervisor) metric.Manager {
-	log.Debugf("NewManager: %v", supervisors)
+func NewManager(schedule *schedule.Schedule, supervisors []Supervisor) metric.Manager {
 	m := &ManagerStruct{
-		app:         app,
+		schedule:    schedule,
 		metrics:     set.New(0),
 		supervisors: make([]pair, len(supervisors)),
 	}
@@ -42,6 +42,10 @@ func NewManager(app app.App, supervisors []Supervisor) metric.Manager {
 		}
 	}
 
+	//Start schedule
+	m.schedule.Callback = m.detect
+	m.schedule.Start()
+
 	return m
 }
 
@@ -52,17 +56,22 @@ func (self *ManagerStruct) NewMetric(id metric.MetricID) {
 			log.Warnf("No matching metric pattern for metric '%s'", id)
 		}
 		supervisor.AddMetric(id)
-		supervisor.Start(self.app)
 		self.metrics.Add(id)
 	}
 }
 
 func (self *ManagerStruct) matchSupervisor(id metric.MetricID) Supervisor {
-	for i := range self.supervisors {
-		pair := self.supervisors[i]
+	for _, pair := range self.supervisors {
 		if pair.Regexp.Match([]byte(id)) {
 			return pair.Supervisor
 		}
 	}
 	return nil
+}
+
+func (self *ManagerStruct) detect(rotation *schedule.Rotation, start, stop time.Time) {
+	for _, pair := range self.supervisors {
+		go pair.Supervisor.Detect(rotation, start, stop)
+	}
+
 }

@@ -125,7 +125,6 @@ func TestScheduleConfShouldGetSchedule(t *testing.T) {
 	assert.Equal(time.Hour, s.Delay)
 }
 
-
 func TestStrToDuration(t *testing.T) {
 	defer log.Flush()
 	assert := assert.New(t)

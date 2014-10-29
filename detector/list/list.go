@@ -3,6 +3,6 @@
 package list
 
 import (
-	_ "github.com/nvcook42/morgoth/detector/mgof"
 	_ "github.com/nvcook42/morgoth/detector/kstest"
+	_ "github.com/nvcook42/morgoth/detector/mgof"
 )
