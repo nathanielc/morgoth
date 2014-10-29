@@ -16,7 +16,7 @@ func (m *Engine) Initialize() error {
 
 	return r0
 }
-func (m *Engine) ConfigureSchedule(schedule schedule.Schedule) error {
+func (m *Engine) ConfigureSchedule(schedule *schedule.Schedule) error {
 	ret := m.Called(schedule)
 
 	r0 := ret.Error(0)

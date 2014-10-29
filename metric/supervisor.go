@@ -17,7 +17,7 @@ import (
 type Supervisor interface {
 	GetPattern() types.Pattern
 	AddMetric(types.MetricID)
-	Detect(rotation *schedule.Rotation, start, stop time.Time)
+	Detect(rotation *schedule.Rotation, start time.Time, stop time.Time)
 }
 
 type SupervisorStruct struct {

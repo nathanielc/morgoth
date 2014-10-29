@@ -5,6 +5,7 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/nu7hatch/gouuid"
 	"github.com/nvcook42/morgoth/engine"
+	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/fitting"
 	_ "github.com/nvcook42/morgoth/fitting/list"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -101,7 +102,8 @@ rest:
 	start := zeroTime.Add(time.Second).UTC()
 	stop := zeroTime.Add(time.Hour * 2).UTC()
 
-	reader.On("GetData", metricID, start, stop, 0).
+	var rotation *schedule.Rotation = nil
+	reader.On("GetData", rotation, metricID, start, stop).
 		Return([]engine.Point{
 		{start, 1.0},
 		{start.Add(time.Minute), 2.0},

@@ -3,7 +3,9 @@ package mocks
 import "github.com/stretchr/testify/mock"
 
 import "github.com/nvcook42/morgoth/metric/types"
-import app "github.com/nvcook42/morgoth/app/types"
+
+import "github.com/nvcook42/morgoth/schedule"
+import "time"
 
 type Supervisor struct {
 	mock.Mock
@@ -19,6 +21,6 @@ func (m *Supervisor) GetPattern() types.Pattern {
 func (m *Supervisor) AddMetric(_a0 types.MetricID) {
 	m.Called(_a0)
 }
-func (m *Supervisor) Start(_a0 app.App) {
-	m.Called(_a0)
+func (m *Supervisor) Detect(rotation *schedule.Rotation, start time.Time, stop time.Time) {
+	m.Called(rotation, start, stop)
 }
