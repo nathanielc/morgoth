@@ -1,0 +1,148 @@
+Bernoulli_LnPMF(ρ float64) func(i int64) float64 {
+Bernoulli_PMF(ρ float64) func(i int64) float64 {
+Bernoulli(ρ float64) func() int64 { return func() int64 { return NextBernoulli(ρ) } }
+Beta_CDF_At(α, β, x float64) float64 {
+Beta_CDF(α float64, β float64) func(x float64) float64 {
+betaContinuedFraction(α, β, x float64) float64 {
+BetaInv_CDF_For(α float64, β float64, p float64) float64 {
+BetaInv_CDF_For(α, β, p float64) float64 {
+BetaInv_CDF(α, β float64)  func(p float64) float64 {
+Beta_LnPDF(α float64, β float64) func(x float64) float64 {
+Beta_PDF_At(α, β, x float64) float64 {
+Beta_PDF(α float64, β float64) func(x float64) float64 {
+Beta(α float64, β float64) func() float64 {
+Binomial_CDF_trivial(ρ float64, n int64) func(k int64) float64 {
+Binomial_CDF(ρ float64, n int64) func(k int64) float64 {
+Binomial_LnPMF(ρ float64, n int64) func(i int64) float64 {
+Binomial_PMF(ρ float64, n int64) func(i int64) float64 {
+Binomial(ρ float64, n int64) func() int64 {
+Binom_p_ConfI(n int64, p, alpha float64) (float64, float64) {
+B(x float64, y float64) float64 {
+Choice_LnPMF(θ []float64) func(i int64) float64 {
+Choice_PMF(θ []float64) func(i int64) float64 {
+Choice(θ []float64) func() int64 {
+ChooseMany(i []int64) int64 {
+Choose(n int64, i int64) int64 {
+CRP_LnPMF2(α float64) func(x []int64) float64 {
+CRP_LnPMF(α float64) func(x []int64) float64 {
+CRP_PMF(α float64) func(x []int64) float64 {
+Dirichlet_LnPDF(α []float64) func(x []float64) float64 {
+Dirichlet_PDF(α []float64) func(θ []float64) float64 {
+Dirichlet(α []float64) func() []float64 {
+Exp_LnPDF(λ float64) func(x float64) float64 {
+Exp_PDF(λ float64) func(x float64) float64 {
+Exp(λ float64) func() float64 { return func() float64 { return NextExp(λ) } }
+F_CDF_At(df1, df2, x float64) float64 {
+F_CDF(df1, df2 float64) func(x float64) float64 {
+F(d1 int64, d2 int64) func() float64 {
+F_InvCDF(df1, df2 float64) func(p float64) float64 {
+F_InvCDF_For(df1, df2, p float64) float64 {
+F_LnPDF(d1 float64, d2 float64) func(x float64) float64 {
+F_PDF(d1 float64, d2 float64) func(x float64) float64 {
+Gamma_CDF_At(k , θ, x float64)  float64 {
+Gamma_CDF(k float64, θ float64) func(x float64) float64 {
+Gamma_InvCDF_For(k, θ, p float64)  float64 {
+Gamma_InvCDF(k float64, θ float64) func(x float64) float64 {
+Gamma_LnPDF(α float64, λ float64) func(x float64) float64 {
+Gamma_PDF_2(k float64, θ float64) func(x float64) float64 {
+Gamma_PDF_At(k , θ, x float64)  float64 {
+Gamma_PDF(α float64, λ float64) func(x float64) float64 {
+GammaP(p int, x float64) (r float64) {
+GammaPRatio(p int, x, y float64) (r float64) {
+Gamma(α float64, λ float64) func() float64 {
+Geometric_LnPMF(ρ float64) func(i int64) float64 {
+Geometric_PMF(ρ float64) func(i int64) float64 {
+Geometric(ρ float64) func() int64 { return func() int64 { return NextGeometric(ρ) } }
+InverseWishart_LnPDF(n int, Ψ *m.DenseMatrix) func(W *m.DenseMatrix) float64 {
+InverseWishart(n int, V *m.DenseMatrix) func() *m.DenseMatrix {
+InverseWishart_PDF(n int, Ψ *m.DenseMatrix) func(B *m.DenseMatrix) float64 {
+InvGamma_CDF(a, b float64) func(x float64) float64 {
+InvGamma_CDF_At(a, b, x float64) float64 {
+InvGamma_LnPDF(a, b float64) func(x float64) float64 {
+InvGamma_PDF(a, b float64) func(x float64) float64 {
+InvGamma_PDF_At(a, b float64) func(x float64) float64 {
+LnChoose(n int64, i int64) float64 {
+LnFact(n int64) float64 {
+LnGammaP(p int, x float64) (r float64) {
+LnGammaPRatio(p int, x, y float64) (r float64) {
+LnPartialFact(n int64, m int64) float64 {
+LnPoisson_CDF(λ float64) func(k int64) float64 { 
+LnRange_PMF(n int64) func(i int64) float64 {
+LnΓ(x float64) (res float64) {
+LogChoice(lws []float64) func() int64 {
+MatrixNormal_LnPDF(M, Omega, Sigma *mx.DenseMatrix) func(A *mx.DenseMatrix) float64 {
+MatrixNormal(M, Omega, Sigma *mx.DenseMatrix) func() (X *mx.DenseMatrix) {
+MatrixNormal_PDF(M, Omega, Sigma *mx.DenseMatrix) func(A *mx.DenseMatrix) float64 {
+MatrixT_LnPDF(M, Omega, Sigma *mx.DenseMatrix, n int) func(T *mx.DenseMatrix) (ll float64) {
+MatrixT(M, Omega, Sigma *mx.DenseMatrix, n int) func() (T *mx.DenseMatrix) {
+MatrixT_PDF(M, Omega, Sigma *mx.DenseMatrix, n int) func(T *mx.DenseMatrix) (l float64) {
+maxFloat64(x []float64) float64 {
+maxInt64(x []int64) int64 {
+Multinomial_LnPMF(θ []float64, n int64) func(x []int64) float64 {
+Multinomial_PMF(θ []float64, n int64) func(x []int64) float64 {
+Multinomial(θ []float64, n int64) func() []int64 {
+MVNormal_PDF(μ *DenseMatrix, Σ *DenseMatrix) func(x *DenseMatrix) float64 {
+MVNormal(μ *DenseMatrix, Σ *DenseMatrix) func() *DenseMatrix {
+NegativeBinomial_CDF(ρ float64, r int64) func(k int64) float64 {
+NegativeBinomial_LnPMF(ρ float64, r int64) func(i int64) float64 {
+NegativeBinomial_PMF(ρ float64, r int64) func(i int64) float64 {
+NegativeBinomial(ρ float64, r int64) func() int64 {
+NextBernoulli(ρ float64) int64 {
+NextBeta(α float64, β float64) float64 {
+NextBinomial(ρ float64, n int64) (result int64) {
+NextChoice(θ []float64) int64 {
+NextDirichlet(α []float64) []float64 {
+NextExp(λ float64) float64    { return rand.ExpFloat64() / λ }
+NextF(d1 int64, d2 int64) float64 {
+NextGamma(α float64, λ float64) float64 {
+NextGeometric(ρ float64) int64 {
+NextInverseWishart(n int, V *m.DenseMatrix) *m.DenseMatrix {
+NextLogChoice(lws []float64) int64 {
+NextMatrixNormal(M, Omega, Sigma *mx.DenseMatrix) (X *mx.DenseMatrix) {
+NextMatrixT(M, Omega, Sigma *mx.DenseMatrix, n int) (T *mx.DenseMatrix) {
+NextMultinomial(θ []float64, n int64) []int64 {
+NextMVNormal(μ *DenseMatrix, Σ *DenseMatrix) *DenseMatrix {
+NextNegativeBinomial(ρ float64, r int64) int64 {
+NextNormal(μ float64, σ float64) float64 { return rand.NormFloat64()*σ + μ }
+NextPoisson(λ float64) int64 {
+NextRange(n int64) int64 {
+NextStudentsT(ν float64) float64 {
+NextWishart(n int, V *m.DenseMatrix) *m.DenseMatrix {
+NextXsquare(n int64) (x float64) {
+Normal_CDF(μ, σ float64) func(x float64) float64 {
+NormalInv_CDF_For(p, sigma float64) float64 {
+Normal_LnPDF(μ float64, σ float64) func(x float64) float64 {
+Normal_PDF(μ float64, σ float64) func(x float64) float64 {
+Normal(μ, σ float64) func() float64 {
+PartialFact(n int64, m int64) int64 {
+Poisson_CDF_trivial(λ float64) func(k int64) float64 {  // trivial (not working due to bug in Poisson_PMF(λ) implementation, redo with Incomplete Gamma
+Poisson_CDF(λ float64) func(k int64) float64 { 
+Poisson_LnPMF(λ float64) (foo func(i int64) float64) {
+Poisson_LnPMF(λ float64) func(k int64) float64 {
+Poisson_PMF(λ float64) func(k int64) float64 {
+Poisson(λ float64) func() int64 {
+Range(n int64) func() int64 {
+Range_PMF(n int64) func(i int64) float64 {
+RejectionSample(targetDensity func(float64) float64, sourceDensity func(float64) float64, source func() float64, K float64) float64 {
+ShuffleFloat64(x []float64) {
+ShuffleInt64(x []int64) {
+Shuffle(x []interface{}) {
+StudentsT_LnPDF(ν float64) func(x float64) float64 {
+StudentsT_PDF(ν float64) func(x float64) float64 {
+StudentsT(ν float64) func() float64 {
+Uniform() func() float64 { return NextUniform }
+Uniform_LnPDF() func(x float64) float64 {
+Uniform_PDF() func(x float64) float64 {
+Wishart_LnPDF(n int, V *m.DenseMatrix) func(W *m.DenseMatrix) float64 {
+Wishart(n int, V *m.DenseMatrix) func() *m.DenseMatrix {
+Wishart_PDF(n int, V *m.DenseMatrix) func(W *m.DenseMatrix) float64 {
+Xsquare_CDF(n int64) func(p float64) float64 {
+Xsquare_InvCDF(n int64) func(p float64) float64 {
+Xsquare_LnPDF(n int64) func(x float64) float64 {
+Xsquare(n int64) func() float64 {
+Xsquare_PDF(n int64) func(x float64) float64 {
+Z_CDF_At(x float64) float64 {
+Z_CDF() func(float64) float64 {
+Z_InvCDF_For(p float64) float64 {
+Z_PDF_At(x float64) float64 {
+Z_PDF() func(float64) float64 {
