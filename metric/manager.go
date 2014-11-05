@@ -12,7 +12,6 @@ import (
 type ManagerStruct struct {
 	metrics     *set.Set
 	supervisors []pair
-	schedule    *schedule.Schedule
 }
 
 type pair struct {
@@ -20,9 +19,8 @@ type pair struct {
 	Supervisor Supervisor
 }
 
-func NewManager(schedule *schedule.Schedule, supervisors []Supervisor) metric.Manager {
+func NewManager(supervisors []Supervisor) metric.Manager {
 	m := &ManagerStruct{
-		schedule:    schedule,
 		metrics:     set.New(0),
 		supervisors: make([]pair, len(supervisors)),
 	}
@@ -41,10 +39,6 @@ func NewManager(schedule *schedule.Schedule, supervisors []Supervisor) metric.Ma
 			log.Errorf("Invalid regex for pattern '%s' Error: %s", pattern, err.Error())
 		}
 	}
-
-	//Start schedule
-	m.schedule.Callback = m.detect
-	m.schedule.Start()
 
 	return m
 }
@@ -69,9 +63,8 @@ func (self *ManagerStruct) matchSupervisor(id metric.MetricID) Supervisor {
 	return nil
 }
 
-func (self *ManagerStruct) detect(rotation schedule.Rotation, start, stop time.Time) {
+func (self *ManagerStruct) Detect(rotation schedule.Rotation, start, stop time.Time) {
 	for _, pair := range self.supervisors {
 		go pair.Supervisor.Detect(rotation, start, stop)
 	}
-
 }

@@ -3,6 +3,7 @@ package influxdb
 import (
 	"fmt"
 	log "github.com/cihub/seelog"
+	"github.com/cznic/kv"
 	"github.com/influxdb/influxdb/client"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -19,6 +20,7 @@ const (
 type InfluxDBEngine struct {
 	config *InfluxDBConf
 	client *client.Client
+	docs   *kv.DB
 }
 
 func (self *InfluxDBEngine) Initialize() error {
@@ -27,6 +29,19 @@ func (self *InfluxDBEngine) Initialize() error {
 		return err
 	}
 	self.client = client
+
+	//Init KV database
+	opts := kv.Options{}
+	db, err := kv.Create("docs.db", &opts)
+	if err != nil {
+		db, err = kv.Open("docs.db", &opts)
+		if err != nil {
+			return err
+		}
+	}
+
+	self.docs = db
+
 	return nil
 }
 
@@ -122,22 +137,9 @@ func (self *InfluxDBEngine) DeleteMetric(metric metric.MetricID) {
 }
 
 func (self *InfluxDBEngine) StoreDoc(key string, data []byte) {
-	series := new(client.Series)
-	series.Name = documentSeries
-	series.Columns = []string{
-		"key",
-		"data",
-	}
-	series.Points = [][]interface{}{
-		[]interface{}{key, string(data)},
-	}
-	_, err := self.client.Query(fmt.Sprintf("delete from %s where time < now() - 1d", documentSeries))
+	err := self.docs.Set([]byte(key), data)
 	if err != nil {
-		log.Error(err)
-	}
-	err = self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
-	if err != nil {
-		log.Error(err)
+		log.Error("Error storing document ", err)
 	}
 }
 
@@ -185,19 +187,23 @@ func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric met
 
 	stepSize := (max - min) / float64(nbins)
 
-	result, err := self.client.Query(
-		fmt.Sprintf("select count(value), histogram(value, %f, %f, %f) from %s where time > %ds and time < %ds",
-			stepSize,
-			min,
-			max,
-			metric.GetRotationPath(rotation),
-			start.Unix(),
-			stop.Unix(),
-		),
+	q := fmt.Sprintf("select count(value), histogram(value, %f, %f, %f) from %s where time > %ds and time < %ds",
+		stepSize,
+		min,
+		max,
+		metric.GetRotationPath(rotation),
+		start.Unix(),
+		stop.Unix(),
 	)
+
+	result, err := self.client.Query(q)
 
 	if err != nil {
 		log.Error(err.Error())
+		return hist
+	}
+	if len(result) != 1 {
+		log.Error("Invalid results returned for Histogram")
 		return hist
 	}
 
@@ -215,6 +221,9 @@ func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric met
 		hist.Bins[i] += count / total
 		hist.Count = uint(total)
 	}
+	if hist.Count == 1 {
+		log.Debug("Small hist ", q)
+	}
 
 	return hist
 
@@ -224,24 +233,9 @@ func (self *InfluxDBEngine) GetPercentile(rotation *schedule.Rotation, metric me
 }
 
 func (self *InfluxDBEngine) GetDoc(key string) []byte {
-	result, err := self.client.Query(
-		fmt.Sprintf("select data from %s where key = '%s' order desc limit 1", documentSeries, key),
-	)
-
+	data, err := self.docs.Get(nil, []byte(key))
 	if err != nil {
-		log.Error(err.Error())
 		return []byte{}
 	}
-	if len(result) == 0 {
-		return []byte{}
-	}
-
-	series := result[0]
-	points := series.GetPoints()
-	for _, row := range points {
-		data := []byte(row[2].(string))
-		return data
-	}
-
-	return []byte{}
+	return data
 }

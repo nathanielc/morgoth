@@ -22,7 +22,7 @@ type KSTest struct {
 	reader       engine.Reader
 	writer       engine.Writer
 	config       *KSTestConf
-	fingerprints []fingerprint
+	fingerprints map[metric.MetricID][]fingerprint
 }
 
 func (self *KSTest) Initialize(app app.App, rotation schedule.Rotation) error {
@@ -34,7 +34,8 @@ func (self *KSTest) Initialize(app app.App, rotation schedule.Rotation) error {
 }
 
 func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
-	log.Debugf("KSTest.Detect Rotation: %s FP: %v", self.rotation.GetPrefix(), self.fingerprints)
+	fingerprints := self.fingerprints[metric]
+	log.Debugf("KSTest.Detect Rotation: %s FP: %v", self.rotation.GetPrefix(), fingerprints)
 	points := self.reader.GetData(&self.rotation, metric, start, stop)
 	data := make([]float64, len(points))
 	for i, point := range points {
@@ -46,7 +47,7 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	minError := 0.0
 	bestMatch := -1
 	isMatch := false
-	for i, fingerprint := range self.fingerprints {
+	for i, fingerprint := range fingerprints {
 		thresholdD := self.getThresholdD(len(fingerprint.Data), len(data))
 
 		D := calcTestD(fingerprint.Data, data)
@@ -63,30 +64,31 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 
 	anomalous := false
 	if isMatch {
-		anomalous = self.fingerprints[bestMatch].Count < self.config.NormalCount
-		self.fingerprints[bestMatch].Count++
+		anomalous = fingerprints[bestMatch].Count < self.config.NormalCount
+		fingerprints[bestMatch].Count++
 	} else {
 		anomalous = true
 		//We know its anomalous, now we need to update our fingerprints
 
-		if len(self.fingerprints) == int(self.config.MaxFingerprints) {
+		if len(fingerprints) == int(self.config.MaxFingerprints) {
 			log.Debug("Reached MaxFingerprints")
 			//TODO: Update bestMatch to learn new fingerprint
 		} else {
-			self.fingerprints = append(self.fingerprints, fingerprint{
+			fingerprints = append(fingerprints, fingerprint{
 				Data:  data,
 				Count: 1,
 			})
 		}
 	}
 
-	go self.save()
+	self.fingerprints[metric] = fingerprints
+	//go self.save()
 	return anomalous
 }
 
 func (self *KSTest) getThresholdD(n, m int) float64 {
 	c := 0.0
-	switch self.config.Strictness {
+	switch self.config.Confidence {
 	case 0: // 0.10
 		c = 1.22
 	case 1: // 0.05
@@ -126,13 +128,13 @@ func calcTestD(f1, f2 []float64) float64 {
 	return D
 }
 
-func (self *KSTest) save() {
+func (self *KSTest) save(metric metric.MetricID) {
 
-	data, err := json.Marshal(self.fingerprints)
+	data, err := json.Marshal(self.fingerprints[metric])
 	if err != nil {
 		log.Error("Could not save KSTest", err.Error())
 	}
-	self.writer.StoreDoc(self.rotation.GetPrefix() + "kstest", data)
+	self.writer.StoreDoc(self.rotation.GetPrefix() + "kstest." + string(metric), data)
 }
 
 func (self *KSTest) load() {
@@ -143,5 +145,8 @@ func (self *KSTest) load() {
 		if err != nil {
 			log.Error("Could not load KSTest ", err.Error())
 		}
+	}
+	if self.fingerprints == nil {
+		self.fingerprints = make(map[metric.MetricID][]fingerprint)
 	}
 }

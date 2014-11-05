@@ -1,9 +1,6 @@
 {
 	"ImportPath": "github.com/nvcook42/morgoth",
-	"GoVersion": "go1.2.2",
-	"Packages": [
-		"./..."
-	],
+	"GoVersion": "go1.3.3",
 	"Deps": [
 		{
 			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
@@ -16,30 +13,41 @@
 			"Rev": "14e08919e23178f4311df308dae5386affb51511"
 		},
 		{
-			"ImportPath": "github.com/hrautila/linalg",
-			"Comment": "r09-21-g1d32533",
-			"Rev": "1d32533c447b8a452d2d7f194fb0f3e482321942"
+			"ImportPath": "github.com/cznic/bufs",
+			"Rev": "3dcccbd7064a1689f9c093a988ea11ac00e21f51"
 		},
 		{
-			"ImportPath": "github.com/hrautila/matrix",
-			"Comment": "r09-40-gac1304b",
-			"Rev": "ac1304b29447564612d1ee77e2690d086fc34b7a"
+			"ImportPath": "github.com/cznic/exp/lldb",
+			"Rev": "9b0e4be12fbdb7b843e0a658a04c35d160371789"
+		},
+		{
+			"ImportPath": "github.com/cznic/fileutil",
+			"Rev": "21ae57c9dce724a15e88bd9cd46d5668f3e880a5"
+		},
+		{
+			"ImportPath": "github.com/cznic/kv",
+			"Rev": "a9e92863f9c096cd0de82eb9c71af2a59174e671"
+		},
+		{
+			"ImportPath": "github.com/cznic/mathutil",
+			"Rev": "1dc74626b71a300f674026585083535b6a4d3853"
+		},
+		{
+			"ImportPath": "github.com/cznic/sortutil",
+			"Rev": "e14776c5119b49f2cf829486056e411043b6b6b2"
+		},
+		{
+			"ImportPath": "github.com/cznic/zappy",
+			"Rev": "47331054e4f96186e3ff772877c0443909368a45"
+		},
+		{
+			"ImportPath": "github.com/influxdb/influxdb/client",
+			"Comment": "v0.8.5-15-g87ef0d1",
+			"Rev": "87ef0d13e940f753a5966b6f0cdd94afc9f57b07"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
 			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
-		},
-		{
-			"ImportPath": "github.com/stretchr/objx",
-			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
-		},
-		{
-			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "de7fcff264cd05cc0c90c509ea789a436a0dd206"
-		},
-		{
-			"ImportPath": "github.com/stretchr/testify/mock",
-			"Rev": "de7fcff264cd05cc0c90c509ea789a436a0dd206"
 		},
 		{
 			"ImportPath": "gopkg.in/validator.v2",

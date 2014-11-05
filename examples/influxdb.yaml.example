@@ -1,7 +1,7 @@
 ---
 engine:
   influxdb:
-    host: 192.168.1.1
+    host: localhost
     port: 8086
     user: root
     password: root
@@ -11,6 +11,8 @@ schedule:
   rotations:
     - {period: 2m, resolution: 2s}
     - {period: 4m, resolution: 4s}
+    - {period: 8m, resolution: 8s}
+    - {period: 24m, resolution: 24s}
     - {period: 1d, resolution: 30m}
   delay: 15s
 

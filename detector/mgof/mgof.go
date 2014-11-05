@@ -22,7 +22,7 @@ type MGOF struct {
 	reader       engine.Reader
 	writer       engine.Writer
 	config       *MGOFConf
-	fingerprints []fingerprint
+	fingerprints map[metric.MetricID][]fingerprint
 	threshold    float64
 }
 
@@ -38,7 +38,8 @@ func (self *MGOF) Initialize(app app.App, rotation schedule.Rotation) error {
 }
 
 func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
-	log.Debugf("MGOF.Detect Rotation: %s FP %v", self.rotation.GetPrefix(), self.fingerprints)
+	fingerprints := self.fingerprints[metric]
+	log.Debugf("MGOF.Detect Rotation: %s FP %v", self.rotation.GetPrefix(), fingerprints)
 	nbins := self.config.NBins
 	hist := self.reader.GetHistogram(
 		&self.rotation,
@@ -55,9 +56,9 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	minRE := 0.0
 	bestMatch := -1
 	isMatch := false
-	for i, fingerprint := range self.fingerprints {
+	for i, fingerprint := range fingerprints {
 		if fingerprint.Hist.Count < nbins {
-			log.Warn("Not enough data points to trust histogram")
+			log.Warnf("Not enough data points to trust histogram: %d < %d bins for metric %s", fingerprint.Hist.Count, nbins, string(metric))
 			continue
 		}
 
@@ -73,28 +74,29 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 
 	anomalous := false
 	if isMatch {
-		anomalous = self.fingerprints[bestMatch].Count < self.config.NormalCount
-		self.fingerprints[bestMatch].Count++
+		anomalous = fingerprints[bestMatch].Count < self.config.NormalCount
+		fingerprints[bestMatch].Count++
 	} else {
 		anomalous = true
 		//We know whether its anomalous, now we need to update our fingerprints
 
-		if len(self.fingerprints) == int(self.config.MaxFingerprints) {
+		if len(fingerprints) == int(self.config.MaxFingerprints) {
 			log.Debug("Reached MaxFingerprints")
 			//TODO: Update bestMatch to learn new fingerprint
-			ratio := 1 / float64(self.fingerprints[bestMatch].Count)
-			for i, p := range self.fingerprints[bestMatch].Hist.Bins {
-				self.fingerprints[bestMatch].Hist.Bins[i] = (1-ratio)*p + ratio*hist.Bins[i]
+			ratio := 1 / float64(fingerprints[bestMatch].Count)
+			for i, p := range fingerprints[bestMatch].Hist.Bins {
+				fingerprints[bestMatch].Hist.Bins[i] = (1-ratio)*p + ratio*hist.Bins[i]
 			}
 		} else {
-			self.fingerprints = append(self.fingerprints, fingerprint{
+			fingerprints = append(fingerprints, fingerprint{
 				Hist:  hist,
 				Count: 1,
 			})
 		}
 	}
 
-	go self.save()
+	self.fingerprints[metric] = fingerprints
+	//go self.save()
 	return anomalous
 }
 
@@ -115,13 +117,13 @@ func fillEmptyValues(hist *engine.Histogram) {
 	}
 }
 
-func (self *MGOF) save() {
+func (self *MGOF) save(metric metric.MetricID) {
 
-	data, err := json.Marshal(self.fingerprints)
+	data, err := json.Marshal(self.fingerprints[metric])
 	if err != nil {
 		log.Error("Could not save MGOF", err.Error())
 	}
-	self.writer.StoreDoc(self.rotation.GetPrefix()+"mgof", data)
+	self.writer.StoreDoc(self.rotation.GetPrefix()+"mgof."+string(metric), data)
 }
 
 func (self *MGOF) load() {
@@ -133,8 +135,13 @@ func (self *MGOF) load() {
 			log.Error("Could not load MGOF ", err.Error())
 		}
 	}
-	if len(self.fingerprints) > 0 &&
-		len(self.fingerprints[0].Hist.Bins) != int(self.config.NBins) {
-		self.fingerprints = make([]fingerprint, 0)
+	if self.fingerprints == nil {
+		self.fingerprints = make(map[metric.MetricID][]fingerprint)
+	}
+	for metric, fingerprints := range self.fingerprints {
+		if len(fingerprints) > 0 &&
+			len(fingerprints[0].Hist.Bins) != int(self.config.NBins) {
+			self.fingerprints[metric] = make([]fingerprint, 0)
+		}
 	}
 }

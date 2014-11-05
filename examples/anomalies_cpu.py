@@ -60,7 +60,7 @@ def main():
         r = base(time.time())
         if time.time() > expire:
             expire = time.time() + random.random() * 120 + 10
-            if random.random() < 0.0:
+            if random.random() < 0.2:
                 effect = random.choice(effects)()
                 print time.time(), " New effect till", expire
             else:

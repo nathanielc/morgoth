@@ -55,6 +55,8 @@ func (self *App) Run() error {
 	log.Info("Setup signal handler")
 	go self.signalHandler()
 
+	self.initLogging()
+
 	log.Info("Setup engine")
 	eng, err := self.config.EngineConf.GetEngine()
 	if err != nil {
@@ -69,7 +71,7 @@ func (self *App) Run() error {
 	log.Info("Setup metrics manager")
 	supervisors := self.config.GetSupervisors(self)
 	log.Debugf("Supervisors: %v", supervisors)
-	self.manager = metric.NewManager(&self.schedule, supervisors)
+	self.manager = metric.NewManager(supervisors)
 
 	log.Info("Setup metric schedules")
 	err = self.engine.ConfigureSchedule(&self.schedule)
@@ -90,12 +92,25 @@ func (self *App) Run() error {
 
 	}
 
+	log.Info("Starting metric manager")
+	self.schedule.Callback = self.manager.Detect
+	self.schedule.Start()
+
 	log.Info("Waiting for fittings to terminate")
 	wg.Wait()
 
 	log.Info("All fittings have finished. Exiting")
 
 	return nil
+}
+
+func (self *App) initLogging() {
+	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
+	if err == nil {
+		log.ReplaceLogger(logger)
+	} else {
+		log.Info("No seelog.xml config found", err)
+	}
 }
 
 func (self *App) stopFittings() {
