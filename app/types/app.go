@@ -4,6 +4,7 @@ package types
 import (
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nvcook42/morgoth/detector/metadata"
 )
 
 // An App is the center on morgoth connecting all the various components
@@ -12,4 +13,5 @@ type App interface {
 	GetWriter() engine.Writer
 	GetReader() engine.Reader
 	GetSchedule() schedule.Schedule
+	GetMetadataStore(detectorID string) (*metadata.MetadataStore, error)
 }

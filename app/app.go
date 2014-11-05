@@ -4,6 +4,7 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
+	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/fitting"
 	"github.com/nvcook42/morgoth/metric"
 	mtypes "github.com/nvcook42/morgoth/metric/types"
@@ -20,6 +21,7 @@ type App struct {
 	config   *config.Config
 	fittings []fitting.Fitting
 	schedule schedule.Schedule
+	metastores map[string]*metadata.MetadataStore
 }
 
 func New(config *config.Config) *App {
@@ -27,6 +29,7 @@ func New(config *config.Config) *App {
 		config: config,
 	}
 	app.schedule = config.GetSchedule()
+	app.metastores = make(map[string]*metadata.MetadataStore)
 	return &app
 }
 
@@ -49,6 +52,19 @@ func (self *App) GetWriter() engine.Writer {
 		self.manager,
 	}
 	return proxy
+}
+
+func (self *App) GetMetadataStore(detectorID string) (*metadata.MetadataStore, error) {
+	ms, ok := self.metastores[detectorID]
+	if !ok {
+		newMS, err := metadata.New("./meta/", detectorID)
+		if err != nil {
+			return nil, err
+		}
+		self.metastores[detectorID] = newMS
+		ms = newMS
+	}
+	return ms, nil
 }
 
 func (self *App) Run() error {
@@ -113,10 +129,16 @@ func (self *App) initLogging() {
 	}
 }
 
-func (self *App) stopFittings() {
+func (self *App) shutdown() {
+	log.Debug("Closing all metastores...")
+	for _, db := range self.metastores {
+		db.Close()
+	}
+	log.Debug("Stopping all fittings...")
 	for _, fitting := range self.fittings {
 		fitting.Stop()
 	}
+	log.Info("App shutdown complete")
 }
 
 func (self *App) signalHandler() {
@@ -125,6 +147,6 @@ func (self *App) signalHandler() {
 
 	for _ = range signals {
 		log.Info("Received interrupt, shuting down...")
-		self.stopFittings()
+		self.shutdown()
 	}
 }

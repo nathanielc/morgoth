@@ -27,6 +27,3 @@ func (self *writerProxy) DeleteMetric(metric metric.MetricID) {
 	self.writer.DeleteMetric(metric)
 }
 
-func (self *writerProxy) StoreDoc(key string, data []byte) {
-	self.writer.StoreDoc(key, data)
-}

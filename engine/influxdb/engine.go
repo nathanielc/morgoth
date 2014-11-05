@@ -3,7 +3,6 @@ package influxdb
 import (
 	"fmt"
 	log "github.com/cihub/seelog"
-	"github.com/cznic/kv"
 	"github.com/influxdb/influxdb/client"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -13,14 +12,10 @@ import (
 	"time"
 )
 
-const (
-	documentSeries = "docs"
-)
 
 type InfluxDBEngine struct {
 	config *InfluxDBConf
 	client *client.Client
-	docs   *kv.DB
 }
 
 func (self *InfluxDBEngine) Initialize() error {
@@ -29,18 +24,6 @@ func (self *InfluxDBEngine) Initialize() error {
 		return err
 	}
 	self.client = client
-
-	//Init KV database
-	opts := kv.Options{}
-	db, err := kv.Create("docs.db", &opts)
-	if err != nil {
-		db, err = kv.Open("docs.db", &opts)
-		if err != nil {
-			return err
-		}
-	}
-
-	self.docs = db
 
 	return nil
 }
@@ -136,12 +119,6 @@ func (self *InfluxDBEngine) RecordAnomalous(metric metric.MetricID, start, stop 
 func (self *InfluxDBEngine) DeleteMetric(metric metric.MetricID) {
 }
 
-func (self *InfluxDBEngine) StoreDoc(key string, data []byte) {
-	err := self.docs.Set([]byte(key), data)
-	if err != nil {
-		log.Error("Error storing document ", err)
-	}
-}
 
 //////////////////////
 // Reader Methods
@@ -232,10 +209,3 @@ func (self *InfluxDBEngine) GetPercentile(rotation *schedule.Rotation, metric me
 	return 0.0
 }
 
-func (self *InfluxDBEngine) GetDoc(key string) []byte {
-	data, err := self.docs.Get(nil, []byte(key))
-	if err != nil {
-		return []byte{}
-	}
-	return data
-}

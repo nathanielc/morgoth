@@ -2,11 +2,13 @@ package mgof
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/cihub/seelog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/stat"
 	"math"
 	"time"
@@ -24,21 +26,43 @@ type MGOF struct {
 	config       *MGOFConf
 	fingerprints map[metric.MetricID][]fingerprint
 	threshold    float64
+	meta         *metadata.MetadataStore
+}
+
+func (self *MGOF) GetIdentifier() string {
+	return fmt.Sprintf(
+		"%smgof_%0.4f_%0.4f_%0.2f_%d_%d_%d",
+		self.rotation.GetPrefix(),
+		self.config.Min,
+		self.config.Max,
+		self.config.CHI2,
+		self.config.NBins,
+		self.config.NormalCount,
+		self.config.MaxFingerprints,
+	)
 }
 
 func (self *MGOF) Initialize(app app.App, rotation schedule.Rotation) error {
 	self.rotation = rotation
 	self.reader = app.GetReader()
 	self.writer = app.GetWriter()
-
+	self.fingerprints = make(map[metric.MetricID][]fingerprint)
 	self.threshold = stat.Xsquare_InvCDF(int64(self.config.NBins - 1))(self.config.CHI2)
 
-	self.load()
+	meta, err := app.GetMetadataStore(self.GetIdentifier())
+	if err != nil {
+		return err
+	}
+	self.meta = meta
+
 	return nil
 }
 
 func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
-	fingerprints := self.fingerprints[metric]
+	fingerprints, ok := self.fingerprints[metric]
+	if !ok {
+		fingerprints = self.load(metric)
+	}
 	log.Debugf("MGOF.Detect Rotation: %s FP %v", self.rotation.GetPrefix(), fingerprints)
 	nbins := self.config.NBins
 	hist := self.reader.GetHistogram(
@@ -96,7 +120,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	}
 
 	self.fingerprints[metric] = fingerprints
-	//go self.save()
+	go self.save(metric)
 	return anomalous
 }
 
@@ -121,27 +145,21 @@ func (self *MGOF) save(metric metric.MetricID) {
 
 	data, err := json.Marshal(self.fingerprints[metric])
 	if err != nil {
-		log.Error("Could not save MGOF", err.Error())
+		log.Error("Could not save MGOF metadata", err.Error())
 	}
-	self.writer.StoreDoc(self.rotation.GetPrefix()+"mgof."+string(metric), data)
+	self.meta.StoreDoc(metric, data)
 }
 
-func (self *MGOF) load() {
+func (self *MGOF) load(metric metric.MetricID) []fingerprint {
 
-	data := self.reader.GetDoc(self.rotation.GetPrefix() + "mgof")
+	fingerprints := make([]fingerprint, 0)
+	data := self.meta.GetDoc(metric)
 	if len(data) != 0 {
-		err := json.Unmarshal(data, &self.fingerprints)
+		err := json.Unmarshal(data, &fingerprints)
 		if err != nil {
-			log.Error("Could not load MGOF ", err.Error())
+			log.Error("Could not load MGOF metadata ", err.Error())
 		}
 	}
-	if self.fingerprints == nil {
-		self.fingerprints = make(map[metric.MetricID][]fingerprint)
-	}
-	for metric, fingerprints := range self.fingerprints {
-		if len(fingerprints) > 0 &&
-			len(fingerprints[0].Hist.Bins) != int(self.config.NBins) {
-			self.fingerprints[metric] = make([]fingerprint, 0)
-		}
-	}
+
+	return fingerprints
 }
