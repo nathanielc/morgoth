@@ -8,11 +8,6 @@
 			"Rev": "89aa984f73ec6f56dee0a00d048a6862c0ce1b31"
 		},
 		{
-			"ImportPath": "github.com/cihub/seelog",
-			"Comment": "go1.1-48-g14e0891",
-			"Rev": "14e08919e23178f4311df308dae5386affb51511"
-		},
-		{
 			"ImportPath": "github.com/cznic/bufs",
 			"Rev": "3dcccbd7064a1689f9c093a988ea11ac00e21f51"
 		},
@@ -39,6 +34,10 @@
 		{
 			"ImportPath": "github.com/cznic/zappy",
 			"Rev": "47331054e4f96186e3ff772877c0443909368a45"
+		},
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "44145f04b68cf362d9c4df2182967c2275eaefed"
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/client",
