@@ -63,7 +63,6 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	if !ok {
 		fingerprints = self.load(metric)
 	}
-	glog.V(2).Infof("MGOF.Detect Rotation: %s FP %v", self.rotation.GetPrefix(), fingerprints)
 	nbins := self.config.NBins
 	hist := self.reader.GetHistogram(
 		&self.rotation,
@@ -121,6 +120,19 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 
 	self.fingerprints[metric] = fingerprints
 	go self.save(metric)
+
+	if glog.V(3) {
+		jf, _ := json.Marshal(fingerprints)
+		jh, _ := json.Marshal(hist)
+		glog.Infof(
+			"%s|%s# { \"anomalous\" : %v, \"fingerprints\" : %s, \"current\" : %s }",
+			self.GetIdentifier(),
+			string(metric),
+			anomalous,
+			jf,
+			jh,
+		)
+	}
 	return anomalous
 }
 
@@ -133,11 +145,12 @@ func relativeEntropy(q, p *engine.Histogram) float64 {
 }
 
 func fillEmptyValues(hist *engine.Histogram) {
-	multiplier := 10.0
-	fakeTotal := float64(hist.Count)*multiplier + float64(len(hist.Bins))
+	multiplier := 100.0
+	count := float64(hist.Count)
+	fakeTotal := count*multiplier + float64(len(hist.Bins))
 	empty := 1.0 / fakeTotal
 	for i := range hist.Bins {
-		hist.Bins[i] = empty + hist.Bins[i]*multiplier/fakeTotal
+		hist.Bins[i] = empty + hist.Bins[i]*count*multiplier/fakeTotal
 	}
 }
 

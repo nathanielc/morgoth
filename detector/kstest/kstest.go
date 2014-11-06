@@ -58,14 +58,13 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	if !ok {
 		fingerprints = self.load(metric)
 	}
-	glog.V(2).Infof("KSTest.Detect Rotation: %s FP: %v", self.rotation.GetPrefix(), fingerprints)
+
 	points := self.reader.GetData(&self.rotation, metric, start, stop)
 	data := make([]float64, len(points))
 	for i, point := range points {
 		data[i] = point.Value
 	}
 	sort.Float64s(data)
-	glog.V(2).Infof("Testing %v", data)
 
 	minError := 0.0
 	bestMatch := -1
@@ -74,7 +73,6 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		thresholdD := self.getThresholdD(len(fingerprint.Data), len(data))
 
 		D := calcTestD(fingerprint.Data, data)
-		glog.V(2).Info("D: ", D)
 		if D < thresholdD {
 			isMatch = true
 		}
@@ -106,6 +104,19 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 
 	self.fingerprints[metric] = fingerprints
 	go self.save(metric)
+
+	if glog.V(3) {
+		jf, _ := json.Marshal(fingerprints)
+		jd, _ := json.Marshal(data)
+		glog.Infof(
+			"%s|%s# { \"anomalous\" : %v, \"fingerprints\" : %s, \"current\" : %s }",
+			self.GetIdentifier(),
+			string(metric),
+			anomalous,
+			jf,
+			jd,
+		)
+	}
 	return anomalous
 }
 

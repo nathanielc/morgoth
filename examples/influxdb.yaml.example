@@ -17,6 +17,11 @@ schedule:
   delay: 15s
 
 metrics:
+  - pattern: cpu.total*
+    detectors:
+      - mgof:
+          min: 0
+          max: 800
   - pattern: cpu.*
     detectors:
       - mgof:

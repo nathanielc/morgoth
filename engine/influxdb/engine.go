@@ -161,6 +161,8 @@ func (self *InfluxDBEngine) GetAnomalies(metric metric.MetricID, start, stop tim
 }
 func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric metric.MetricID, nbins uint, start, stop time.Time, min, max float64) *engine.Histogram {
 	hist := new(engine.Histogram)
+	hist.Min = min
+	hist.Max = max
 
 	stepSize := (max - min) / float64(nbins)
 
