@@ -1,7 +1,7 @@
 package config
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/fitting"
@@ -29,7 +29,7 @@ func (self *Config) Default() {
 }
 
 func (self Config) Validate() error {
-	log.Debugf("Validating Config %v", self)
+	glog.V(2).Infof("Validating Config %v", self)
 	valid := self.EngineConf.Validate()
 	if valid != nil {
 		return valid

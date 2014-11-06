@@ -2,7 +2,7 @@ package graphite_test
 
 import (
 	"fmt"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/fitting"
 	_ "github.com/nvcook42/morgoth/fitting/list"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -23,7 +23,7 @@ func TestRestShouldBeRegistered(t *testing.T) {
 }
 
 func TestGraphiteShouldWriteData(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	var yaml = `---

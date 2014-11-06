@@ -3,7 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -41,16 +41,16 @@ func (self *RESTFitting) Start(app app.App) {
 	)
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", self.port))
 	if err != nil {
-		log.Error("Error starting REST fitting %s", err.Error())
+		glog.Error("Error starting REST fitting %s", err.Error())
 		return
 	}
 	self.listener = listener
 	err = http.Serve(self.listener, &self.handler)
 	if err != nil {
-		log.Debug(err)
+		glog.V(2).Info(err)
 		return
 	}
-	log.Info("REST fitting is done")
+	glog.Info("REST fitting is done")
 }
 
 func (self *RESTFitting) Stop() {
@@ -100,14 +100,14 @@ func (self *RESTFitting) metricData(w rest.ResponseWriter, req *rest.Request) {
 		rest.Error(w, "Could not parse 'start'"+err.Error(), 400)
 		return
 	}
-	log.Debugf("Start: %v", start)
+	glog.V(2).Infof("Start: %v", start)
 
 	stop, err := getTime(req, "stop")
 	if err != nil {
 		rest.Error(w, "Could not parse 'stop'"+err.Error(), 400)
 		return
 	}
-	log.Debugf("Stop: %v", stop)
+	glog.V(2).Infof("Stop: %v", stop)
 
 	data := make(map[string]interface{}, 1)
 	data["metric"] = metric
@@ -130,14 +130,14 @@ func (self *RESTFitting) anomalies(w rest.ResponseWriter, req *rest.Request) {
 		rest.Error(w, "Could not parse 'start'"+err.Error(), 400)
 		return
 	}
-	log.Debugf("Start: %v", start)
+	glog.V(2).Infof("Start: %v", start)
 
 	stop, err := getTime(req, "stop")
 	if err != nil {
 		rest.Error(w, "Could not parse 'stop'"+err.Error(), 400)
 		return
 	}
-	log.Debugf("Stop: %v", stop)
+	glog.V(2).Infof("Stop: %v", stop)
 
 	data := make(map[string]interface{}, 1)
 	data["metric"] = metric

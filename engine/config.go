@@ -1,7 +1,7 @@
 package engine
 
 import (
-	//log "github.com/cihub/seelog"
+	//"github.com/golang/glog"
 	"errors"
 	"fmt"
 	"github.com/nvcook42/morgoth/config/dynamic_type"

@@ -5,7 +5,7 @@ package defaults
 import (
 	"errors"
 	"fmt"
-	"log"
+	"github.com/golang/glog"
 	"reflect"
 	"strconv"
 )
@@ -132,7 +132,7 @@ func SetAllDefaults(obj interface{}) error {
 	num := elemType.NumField()
 	for i := 0; i < num; i++ {
 		field := elemType.Field(i)
-		log.Printf("Defaulting %s", field.Name)
+		glog.Infof("Defaulting %s", field.Name)
 		if def, err := HasDefault(obj, field.Name); def && err == nil {
 			err := SetDefault(obj, field.Name)
 			if err != nil {

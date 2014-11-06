@@ -1,7 +1,7 @@
 package metric
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/metric/set"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
@@ -36,7 +36,7 @@ func NewManager(supervisors []Supervisor) metric.Manager {
 			}
 			m.supervisors[i] = p
 		} else {
-			log.Errorf("Invalid regex for pattern '%s' Error: %s", pattern, err.Error())
+			glog.Errorf("Invalid regex for pattern '%s' Error: %s", pattern, err.Error())
 		}
 	}
 
@@ -47,7 +47,7 @@ func (self *ManagerStruct) NewMetric(id metric.MetricID) {
 	if !self.metrics.Has(id) {
 		supervisor := self.matchSupervisor(id)
 		if supervisor == nil {
-			log.Warnf("No matching metric pattern for metric '%s'", id)
+			glog.Warningf("No matching metric pattern for metric '%s'", id)
 		}
 		supervisor.AddMetric(id)
 		self.metrics.Add(id)

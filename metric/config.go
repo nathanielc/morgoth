@@ -1,7 +1,7 @@
 package metric
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/metric/types"
@@ -47,10 +47,10 @@ func (self *MetricSupervisorConf) GetSupervisor(app app.App) Supervisor {
 				if err == nil {
 					detectors = append(detectors, detector)
 				} else {
-					log.Error("Error initializing detector ", err)
+					glog.Error("Error initializing detector ", err)
 				}
 			} else {
-				log.Errorf("Error getting configured detector: %s", err.Error())
+				glog.Errorf("Error getting configured detector: %s", err.Error())
 			}
 		}
 		detectorsMap[rotation] = detectors
@@ -62,7 +62,7 @@ func (self *MetricSupervisorConf) GetSupervisor(app app.App) Supervisor {
 		if err == nil {
 			notifiers = append(notifiers, notifier)
 		} else {
-			log.Errorf("Error getting configured notifier: %s", err.Error())
+			glog.Errorf("Error getting configured notifier: %s", err.Error())
 		}
 	}
 

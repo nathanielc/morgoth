@@ -1,7 +1,7 @@
 package app
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/detector/metadata"
@@ -68,12 +68,10 @@ func (self *App) GetMetadataStore(detectorID string) (*metadata.MetadataStore, e
 }
 
 func (self *App) Run() error {
-	log.Info("Setup signal handler")
+	glog.Info("Setup signal handler")
 	go self.signalHandler()
 
-	self.initLogging()
-
-	log.Info("Setup engine")
+	glog.Info("Setup engine")
 	eng, err := self.config.EngineConf.GetEngine()
 	if err != nil {
 		return err
@@ -84,61 +82,53 @@ func (self *App) Run() error {
 		return err
 	}
 
-	log.Info("Setup metrics manager")
+	glog.Info("Setup metrics manager")
 	supervisors := self.config.GetSupervisors(self)
-	log.Debugf("Supervisors: %v", supervisors)
+	glog.V(2).Infof("Supervisors: %v", supervisors)
 	self.manager = metric.NewManager(supervisors)
 
-	log.Info("Setup metric schedules")
+	glog.Info("Setup metric schedules")
 	err = self.engine.ConfigureSchedule(&self.schedule)
 	if err != nil {
-		log.Errorf("Error configuring schedules %s", err.Error())
+		glog.Errorf("Error configuring schedules %s", err.Error())
 	}
 
 	self.fittings = self.config.GetFittings()
-	log.Infof("Starting all fittings: %v", self.fittings)
+	glog.Infof("Starting all fittings: %v", self.fittings)
 	var wg sync.WaitGroup
 	for _, f := range self.fittings {
 		wg.Add(1)
 		go func(fitting fitting.Fitting, wg *sync.WaitGroup) {
 			defer wg.Done()
-			log.Infof("Starting fitting %v", fitting.Name())
+			glog.Infof("Starting fitting %v", fitting.Name())
 			fitting.Start(self)
 		}(f, &wg)
 
 	}
 
-	log.Info("Starting metric manager")
+	glog.Info("Starting metric manager")
 	self.schedule.Callback = self.manager.Detect
 	self.schedule.Start()
 
-	log.Info("Waiting for fittings to terminate")
+	glog.Info("Waiting for fittings to terminate")
 	wg.Wait()
 
-	log.Info("All fittings have finished. Exiting")
+	glog.Info("All fittings have finished. Exiting")
 
 	return nil
 }
 
-func (self *App) initLogging() {
-	logger, err := log.LoggerFromConfigAsFile("seelog.xml")
-	if err == nil {
-		log.ReplaceLogger(logger)
-	} else {
-		log.Info("No seelog.xml config found", err)
-	}
-}
 
 func (self *App) shutdown() {
-	log.Debug("Closing all metastores...")
+	glog.V(2).Info("Closing all metastores...")
 	for _, db := range self.metastores {
 		db.Close()
 	}
-	log.Debug("Stopping all fittings...")
+	glog.V(2).Info("Stopping all fittings...")
 	for _, fitting := range self.fittings {
 		fitting.Stop()
 	}
-	log.Info("App shutdown complete")
+	glog.Info("App shutdown complete")
 }
 
 func (self *App) signalHandler() {
@@ -146,7 +136,7 @@ func (self *App) signalHandler() {
 	signal.Notify(signals, os.Interrupt)
 
 	for _ = range signals {
-		log.Info("Received interrupt, shuting down...")
+		glog.Info("Received interrupt, shuting down...")
 		self.shutdown()
 	}
 }

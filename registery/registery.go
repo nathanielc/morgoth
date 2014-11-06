@@ -7,7 +7,7 @@ package registery
 import (
 	"errors"
 	"fmt"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 )
 
 // A Registery for mapping names to factories
@@ -24,7 +24,7 @@ func New() *Registery {
 
 // Register a Factory by name
 func (self *Registery) RegisterFactory(name string, factory Factory) error {
-	log.Debugf("Registering Factory %s", name)
+	glog.V(2).Infof("Registering Factory %s", name)
 	if _, ok := self.factories[name]; ok {
 		return errors.New(fmt.Sprintf("Factory of name %s already registered"))
 	}

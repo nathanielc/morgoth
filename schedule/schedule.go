@@ -1,7 +1,7 @@
 package schedule
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"errors"
 	"fmt"
 	"time"
@@ -46,7 +46,7 @@ func (self *Schedule) Start() error {
 		stop = stop.Add(period)
 		go func(rotation Rotation, stop time.Time, period time.Duration) {
 			now := time.Now()
-			log.Debug("Starting schedule", rotation, stop.Add(self.Delay), stop.Add(self.Delay).Sub(now))
+			glog.V(2).Info("Starting schedule", rotation, stop.Add(self.Delay), stop.Add(self.Delay).Sub(now))
 			time.Sleep(stop.Add(self.Delay).Sub(now))
 			ticker := time.NewTicker(period)
 			for self.running {

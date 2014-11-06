@@ -1,7 +1,7 @@
 package schedule_test
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/schedule"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestScheduleShouldStartAndStop(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	unit := 10 * time.Millisecond
@@ -37,7 +37,7 @@ func TestScheduleShouldStartAndStop(t *testing.T) {
 }
 
 func TestScheduleShouldNotDoubleStart(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	s := schedule.Schedule{
@@ -57,7 +57,7 @@ func TestScheduleShouldNotDoubleStart(t *testing.T) {
 }
 
 func TestRotationShouldConvertToString(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	r := schedule.Rotation{

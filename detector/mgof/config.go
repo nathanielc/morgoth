@@ -2,7 +2,7 @@ package mgof
 
 import (
 	"errors"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/defaults"
 	"gopkg.in/validator.v2"
 )
@@ -25,7 +25,7 @@ func (self *MGOFConf) Default() {
 			return
 		}
 		for fieldName := range errs {
-			log.Infof("Using default for MGOFConf.%s", fieldName)
+			glog.Infof("Using default for MGOFConf.%s", fieldName)
 			defaults.SetDefault(self, fieldName)
 		}
 	}

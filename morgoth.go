@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/app"
 	"github.com/nvcook42/morgoth/config"
 	"os"
+	"flag"
 )
 
+var configPath = flag.String("config", "morogth.yaml", "Path to morgoth config")
+
 func main() {
-	defer log.Flush()
-	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "usage:\n")
-		os.Exit(1)
-	}
-	config, err := config.LoadFromFile(os.Args[1])
+	defer glog.Flush()
+	flag.Parse()
+	config, err := config.LoadFromFile(*configPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
 		os.Exit(2)

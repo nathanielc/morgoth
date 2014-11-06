@@ -1,7 +1,7 @@
 package engine
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/engine"
 	_ "github.com/nvcook42/morgoth/engine/list"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -15,7 +15,7 @@ type EngineTestSuite struct {
 }
 
 func (self EngineTestSuite) TestAll(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 
 	self.TestGetReader(t)
 	self.TestWriteReadOnePoint(t)

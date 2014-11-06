@@ -2,7 +2,7 @@
 package metadata
 
 import (
-	log "github.com/cihub/seelog"
+	//"github.com/golang/glog"
 	"errors"
 	"github.com/cznic/kv"
 	metric "github.com/nvcook42/morgoth/metric/types"

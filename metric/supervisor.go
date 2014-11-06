@@ -1,7 +1,7 @@
 package metric
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/metric/set"
@@ -54,15 +54,15 @@ func (self *SupervisorStruct) AddMetric(metric types.MetricID) {
 }
 
 func (self *SupervisorStruct) Detect(rotation schedule.Rotation, start time.Time, stop time.Time) {
-	log.Info("Starting round of detections for rotation ", rotation.GetPrefix())
+	glog.Info("Starting round of detections for rotation ", rotation.GetPrefix())
 	detectors := self.detectors[rotation]
 	self.metrics.Each(func(metric types.MetricID) {
 		for _, detector := range detectors {
 			if detector.Detect(metric, start, stop) {
-				log.Infof("Metric %s is anomalous", metric)
+				glog.Infof("Metric %s is anomalous", metric)
 				self.writer.RecordAnomalous(metric, start, stop)
 			}
 		}
 	})
-	log.Info("Finished detection round for rotation ", rotation.GetPrefix())
+	glog.Info("Finished detection round for rotation ", rotation.GetPrefix())
 }

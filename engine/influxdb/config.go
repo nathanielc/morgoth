@@ -1,7 +1,7 @@
 package influxdb
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/defaults"
 	"gopkg.in/validator.v2"
 )
@@ -25,7 +25,7 @@ func (self *InfluxDBConf) Default() {
 		errs := err.(validator.ErrorMap)
 		for fieldName := range errs {
 			if ok, _ := defaults.HasDefault(self, fieldName); ok {
-				log.Infof("Using default for InfluxDBConf.%s", fieldName)
+				glog.Infof("Using default for InfluxDBConf.%s", fieldName)
 				defaults.SetDefault(self, fieldName)
 			}
 		}

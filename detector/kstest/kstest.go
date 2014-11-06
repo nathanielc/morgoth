@@ -2,7 +2,7 @@ package kstest
 
 import (
 	"fmt"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -58,14 +58,14 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	if !ok {
 		fingerprints = self.load(metric)
 	}
-	log.Debugf("KSTest.Detect Rotation: %s FP: %v", self.rotation.GetPrefix(), fingerprints)
+	glog.V(2).Infof("KSTest.Detect Rotation: %s FP: %v", self.rotation.GetPrefix(), fingerprints)
 	points := self.reader.GetData(&self.rotation, metric, start, stop)
 	data := make([]float64, len(points))
 	for i, point := range points {
 		data[i] = point.Value
 	}
 	sort.Float64s(data)
-	log.Debugf("Testing %v", data)
+	glog.V(2).Infof("Testing %v", data)
 
 	minError := 0.0
 	bestMatch := -1
@@ -74,7 +74,7 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		thresholdD := self.getThresholdD(len(fingerprint.Data), len(data))
 
 		D := calcTestD(fingerprint.Data, data)
-		log.Debug("D: ", D)
+		glog.V(2).Info("D: ", D)
 		if D < thresholdD {
 			isMatch = true
 		}
@@ -94,7 +94,7 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		//We know its anomalous, now we need to update our fingerprints
 
 		if len(fingerprints) == int(self.config.MaxFingerprints) {
-			log.Debug("Reached MaxFingerprints")
+			glog.V(2).Info("Reached MaxFingerprints")
 			//TODO: Update bestMatch to learn new fingerprint
 		} else {
 			fingerprints = append(fingerprints, fingerprint{
@@ -155,7 +155,7 @@ func (self *KSTest) save(metric metric.MetricID) {
 
 	data, err := json.Marshal(self.fingerprints[metric])
 	if err != nil {
-		log.Error("Could not save KSTest", err.Error())
+		glog.Error("Could not save KSTest", err.Error())
 	}
 	self.meta.StoreDoc(metric, data)
 }
@@ -167,7 +167,7 @@ func (self *KSTest) load(metric metric.MetricID) []fingerprint {
 	if len(data) != 0 {
 		err := json.Unmarshal(data, &fingerprints)
 		if err != nil {
-			log.Error("Could not load KSTest metadata", err.Error())
+			glog.Error("Could not load KSTest metadata", err.Error())
 		}
 	}
 	return fingerprints

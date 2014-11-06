@@ -1,7 +1,7 @@
 package schedule_test
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/schedule"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestScheduleConfShouldDefault(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{}
@@ -29,7 +29,7 @@ func TestScheduleConfShouldDefault(t *testing.T) {
 }
 
 func TestScheduleConfShouldValidate(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
@@ -43,7 +43,7 @@ func TestScheduleConfShouldValidate(t *testing.T) {
 }
 
 func TestScheduleConfShouldFailValidateRotations(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
@@ -65,7 +65,7 @@ func TestScheduleConfShouldFailValidateRotations(t *testing.T) {
 }
 
 func TestScheduleConfShouldFailValidateDelay(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
@@ -79,7 +79,7 @@ func TestScheduleConfShouldFailValidateDelay(t *testing.T) {
 }
 
 func TestScheduleConfShouldParse(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	var data string = `---
@@ -104,7 +104,7 @@ delay: 60s
 }
 
 func TestScheduleConfShouldGetSchedule(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
@@ -126,7 +126,7 @@ func TestScheduleConfShouldGetSchedule(t *testing.T) {
 }
 
 func TestStrToDuration(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	tm, err := schedule.StrToDuration("1s")

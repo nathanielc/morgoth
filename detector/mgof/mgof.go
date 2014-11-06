@@ -3,7 +3,7 @@ package mgof
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -63,7 +63,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	if !ok {
 		fingerprints = self.load(metric)
 	}
-	log.Debugf("MGOF.Detect Rotation: %s FP %v", self.rotation.GetPrefix(), fingerprints)
+	glog.V(2).Infof("MGOF.Detect Rotation: %s FP %v", self.rotation.GetPrefix(), fingerprints)
 	nbins := self.config.NBins
 	hist := self.reader.GetHistogram(
 		&self.rotation,
@@ -82,7 +82,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	isMatch := false
 	for i, fingerprint := range fingerprints {
 		if fingerprint.Hist.Count < nbins {
-			log.Warnf("Not enough data points to trust histogram: %d < %d bins for metric %s", fingerprint.Hist.Count, nbins, string(metric))
+			glog.Warningf("Not enough data points to trust histogram: %d < %d bins for metric %s", fingerprint.Hist.Count, nbins, string(metric))
 			continue
 		}
 
@@ -105,7 +105,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 		//We know whether its anomalous, now we need to update our fingerprints
 
 		if len(fingerprints) == int(self.config.MaxFingerprints) {
-			log.Debug("Reached MaxFingerprints")
+			glog.V(2).Info("Reached MaxFingerprints")
 			//TODO: Update bestMatch to learn new fingerprint
 			ratio := 1 / float64(fingerprints[bestMatch].Count)
 			for i, p := range fingerprints[bestMatch].Hist.Bins {
@@ -145,7 +145,7 @@ func (self *MGOF) save(metric metric.MetricID) {
 
 	data, err := json.Marshal(self.fingerprints[metric])
 	if err != nil {
-		log.Error("Could not save MGOF metadata", err.Error())
+		glog.Error("Could not save MGOF metadata", err.Error())
 	}
 	self.meta.StoreDoc(metric, data)
 }
@@ -157,7 +157,7 @@ func (self *MGOF) load(metric metric.MetricID) []fingerprint {
 	if len(data) != 0 {
 		err := json.Unmarshal(data, &fingerprints)
 		if err != nil {
-			log.Error("Could not load MGOF metadata ", err.Error())
+			glog.Error("Could not load MGOF metadata ", err.Error())
 		}
 	}
 

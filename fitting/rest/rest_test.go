@@ -2,7 +2,7 @@ package rest_test
 
 import (
 	"fmt"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nu7hatch/gouuid"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/schedule"
@@ -28,7 +28,7 @@ func TestRestShouldBeRegistered(t *testing.T) {
 }
 
 func TestRestShouldReturnMetrics(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	var yaml = `---
@@ -81,7 +81,7 @@ rest:
 }
 
 func TestRestShouldReturnMetricData(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	var yaml = `---
@@ -149,7 +149,7 @@ rest:
 }
 
 func TestRestShouldReturnMetricAnomalies(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	var yaml = `---
@@ -219,7 +219,7 @@ rest:
 }
 
 func TestRestShouldDeleteMetric(t *testing.T) {
-	defer log.Flush()
+	defer glog.Flush()
 	assert := assert.New(t)
 
 	var yaml = `---

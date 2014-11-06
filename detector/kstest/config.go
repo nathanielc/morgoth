@@ -1,7 +1,7 @@
 package kstest
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/defaults"
 	"gopkg.in/validator.v2"
 )
@@ -17,7 +17,7 @@ func (self *KSTestConf) Default() {
 	if err != nil {
 		errs := err.(validator.ErrorMap)
 		for fieldName := range errs {
-			log.Infof("Using default for KSTestConf.%s", fieldName)
+			glog.Infof("Using default for KSTestConf.%s", fieldName)
 			defaults.SetDefault(self, fieldName)
 		}
 	}

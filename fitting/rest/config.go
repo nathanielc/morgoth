@@ -1,7 +1,7 @@
 package rest
 
 import (
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/defaults"
 	"gopkg.in/validator.v2"
 )
@@ -21,7 +21,7 @@ func (self *RESTConf) Default() {
 		errs := err.(validator.ErrorMap)
 		for fieldName := range errs {
 			if ok, _ := defaults.HasDefault(self, fieldName); ok {
-				log.Infof("Using default for RESTConf.%s", fieldName)
+				glog.Infof("Using default for RESTConf.%s", fieldName)
 				defaults.SetDefault(self, fieldName)
 			}
 		}

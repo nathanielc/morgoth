@@ -2,7 +2,7 @@ package influxdb
 
 import (
 	"fmt"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/influxdb/influxdb/client"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -69,7 +69,7 @@ func (self *InfluxDBEngine) ConfigureSchedule(schedule *schedule.Schedule) error
 		if found {
 			continue
 		}
-		log.Infof("Creating continuous query '%s'", q)
+		glog.Infof("Creating continuous query '%s'", q)
 		_, err = self.client.Query(q)
 		if err != nil {
 			return err
@@ -96,7 +96,7 @@ func (self *InfluxDBEngine) Insert(datetime time.Time, metric metric.MetricID, v
 	}
 	err := self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
 	if err != nil {
-		log.Error(err)
+		glog.Error(err)
 	}
 }
 
@@ -112,7 +112,7 @@ func (self *InfluxDBEngine) RecordAnomalous(metric metric.MetricID, start, stop 
 	}
 	err := self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
 	if err != nil {
-		log.Error(err)
+		glog.Error(err)
 	}
 }
 
@@ -138,7 +138,7 @@ func (self *InfluxDBEngine) GetData(rotation *schedule.Rotation, metric metric.M
 	)
 
 	if err != nil {
-		log.Error(err.Error())
+		glog.Error(err.Error())
 		return []engine.Point{}
 	}
 	if len(result) == 0 {
@@ -176,11 +176,11 @@ func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric met
 	result, err := self.client.Query(q)
 
 	if err != nil {
-		log.Error(err.Error())
+		glog.Error(err.Error())
 		return hist
 	}
 	if len(result) != 1 {
-		log.Error("Invalid results returned for Histogram")
+		glog.Error("Invalid results returned for Histogram")
 		return hist
 	}
 
@@ -199,7 +199,7 @@ func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric met
 		hist.Count = uint(total)
 	}
 	if hist.Count == 1 {
-		log.Debug("Small hist ", q)
+		glog.V(2).Info("Small hist ", q)
 	}
 
 	return hist

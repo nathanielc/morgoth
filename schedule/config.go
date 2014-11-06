@@ -2,7 +2,7 @@ package schedule
 
 import (
 	"errors"
-	log "github.com/cihub/seelog"
+	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/defaults"
 	"gopkg.in/validator.v2"
 	"strconv"
@@ -26,7 +26,7 @@ func (self *ScheduleConf) Default() {
 		errs := err.(validator.ErrorMap)
 		for fieldName := range errs {
 			if ok, _ := defaults.HasDefault(self, fieldName); ok {
-				log.Infof("Using default for Schedule.%s", fieldName)
+				glog.Infof("Using default for Schedule.%s", fieldName)
 				defaults.SetDefault(self, fieldName)
 			}
 		}
