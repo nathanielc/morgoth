@@ -25,7 +25,7 @@ type KSTest struct {
 	writer       engine.Writer
 	config       *KSTestConf
 	fingerprints map[metric.MetricID][]fingerprint
-	meta         *metadata.MetadataStore
+	meta         metadata.MetadataStore
 }
 
 func (self *KSTest) GetIdentifier() string {

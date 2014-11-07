@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+var TraceLevel glog.Level = 3
+
 type fingerprint struct {
 	Hist  *engine.Histogram
 	Count uint
@@ -26,7 +28,7 @@ type MGOF struct {
 	config       *MGOFConf
 	fingerprints map[metric.MetricID][]fingerprint
 	threshold    float64
-	meta         *metadata.MetadataStore
+	meta         metadata.MetadataStore
 }
 
 func (self *MGOF) GetIdentifier() string {
@@ -121,7 +123,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	self.fingerprints[metric] = fingerprints
 	go self.save(metric)
 
-	if glog.V(3) {
+	if glog.V(TraceLevel) {
 		jf, _ := json.Marshal(fingerprints)
 		jh, _ := json.Marshal(hist)
 		glog.Infof(

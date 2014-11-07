@@ -4,6 +4,7 @@ import "github.com/stretchr/testify/mock"
 
 import "github.com/nvcook42/morgoth/engine"
 import "github.com/nvcook42/morgoth/schedule"
+import "github.com/nvcook42/morgoth/detector/metadata"
 
 type App struct {
 	mock.Mock
@@ -36,4 +37,12 @@ func (m *App) GetSchedule() schedule.Schedule {
 	r0 := ret.Get(0).(schedule.Schedule)
 
 	return r0
+}
+func (m *App) GetMetadataStore(detectorID string) (metadata.MetadataStore, error) {
+	ret := m.Called(detectorID)
+
+	r0 := ret.Get(0).(metadata.MetadataStore)
+	r1 := ret.Error(1)
+
+	return r0, r1
 }

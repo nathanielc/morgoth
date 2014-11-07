@@ -13,5 +13,5 @@ type App interface {
 	GetWriter() engine.Writer
 	GetReader() engine.Reader
 	GetSchedule() schedule.Schedule
-	GetMetadataStore(detectorID string) (*metadata.MetadataStore, error)
+	GetMetadataStore(detectorID string) (metadata.MetadataStore, error)
 }

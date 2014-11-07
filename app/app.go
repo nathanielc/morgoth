@@ -21,7 +21,7 @@ type App struct {
 	config   *config.Config
 	fittings []fitting.Fitting
 	schedule schedule.Schedule
-	metastores map[string]*metadata.MetadataStore
+	metastores map[string]metadata.MetadataStore
 }
 
 func New(config *config.Config) *App {
@@ -29,7 +29,7 @@ func New(config *config.Config) *App {
 		config: config,
 	}
 	app.schedule = config.GetSchedule()
-	app.metastores = make(map[string]*metadata.MetadataStore)
+	app.metastores = make(map[string]metadata.MetadataStore)
 	return &app
 }
 
@@ -54,7 +54,7 @@ func (self *App) GetWriter() engine.Writer {
 	return proxy
 }
 
-func (self *App) GetMetadataStore(detectorID string) (*metadata.MetadataStore, error) {
+func (self *App) GetMetadataStore(detectorID string) (metadata.MetadataStore, error) {
 	ms, ok := self.metastores[detectorID]
 	if !ok {
 		newMS, err := metadata.New("./meta/", detectorID)

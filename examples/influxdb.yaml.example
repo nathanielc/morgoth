@@ -22,6 +22,7 @@ metrics:
       - mgof:
           min: 0
           max: 800
+          chi2: 0.80
   - pattern: cpu.*
     detectors:
       - mgof:
