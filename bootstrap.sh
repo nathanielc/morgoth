@@ -12,6 +12,7 @@ mkdir -p /gopath/{bin,pkg,src}
 
 yum install golang git mercurial -y
 yum install lapack-static -y
+yum install python-matplotlib numpy -y
 
 go get github.com/vektra/mockery
 go install github.com/vektra/mockery

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
+	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
-	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/stat"
 	"math"
 	"time"
@@ -33,11 +33,11 @@ type MGOF struct {
 
 func (self *MGOF) GetIdentifier() string {
 	return fmt.Sprintf(
-		"%smgof_%0.4f_%0.4f_%0.2f_%d_%d_%d",
+		"%smgof_%0.4f_%0.4f_%d_%d_%d_%d",
 		self.rotation.GetPrefix(),
 		self.config.Min,
 		self.config.Max,
-		self.config.CHI2,
+		self.config.NullConfidence,
 		self.config.NBins,
 		self.config.NormalCount,
 		self.config.MaxFingerprints,
@@ -49,7 +49,12 @@ func (self *MGOF) Initialize(app app.App, rotation schedule.Rotation) error {
 	self.reader = app.GetReader()
 	self.writer = app.GetWriter()
 	self.fingerprints = make(map[metric.MetricID][]fingerprint)
-	self.threshold = stat.Xsquare_InvCDF(int64(self.config.NBins - 1))(self.config.CHI2)
+
+	// n the null confidence is the number of 9s in chi2
+	n := int(self.config.NullConfidence)
+	chi2 := (math.Pow10(n) - 1.0) / math.Pow10(n)
+	glog.Info(chi2)
+	self.threshold = stat.Xsquare_InvCDF(int64(self.config.NBins - 1))(chi2)
 
 	meta, err := app.GetMetadataStore(self.GetIdentifier())
 	if err != nil {

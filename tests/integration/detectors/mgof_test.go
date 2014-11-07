@@ -4,63 +4,82 @@ import (
 	"testing"
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	app "github.com/nvcook42/morgoth/mocks/app"
-	metadata "github.com/nvcook42/morgoth/mocks/detector/metadata"
-	"github.com/nvcook42/morgoth/schedule"
 	"github.com/nvcook42/morgoth/engine/generator"
+	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/detector/mgof"
+	"github.com/nvcook42/morgoth/schedule"
 	"time"
+	"math"
+	"math/rand"
 )
 
+
+func init() {
+	rand.Seed(42)
+}
+//////////////////////
+// f(t)
+//////////////////////
+
+
+func m1(t int64) float64 {
+	if t > 5 * periodSeconds && t < 5 * periodSeconds + 60 {
+		return rand.Float64() * 0.2 - 0.1
+	}
+	return 2 * rand.Float64() * math.Sin(float64(t))
+}
+
 var rotation = schedule.Rotation{
-	Period: time.Minute,
+	Period: 5*time.Minute,
 	Resolution: time.Second,
 }
 
-func TestMGOF(t *testing.T) {
+var periodSeconds int64 = int64(rotation.Period/time.Second)
+
+func TestMGOF1(t *testing.T) {
 	defer glog.Flush()
 	assert := assert.New(t)
 
-	factory := mgof.MGOFFactory{}
+	factory := &mgof.MGOFFactory{}
 
 	mgofConf := &mgof.MGOFConf{
-		Min: 0,
-		Max: 100,
+		Min: -2,
+		Max: 2,
+		NullConfidence: 4,
 	}
-	mgofConf.Default()
-	
-	detector, err := factory.GetInstance(mgofConf)
+	functions := make(map[metric.MetricID]generator.Ft)
+
+	functions["m1"] = m1
+
+	detector, err := setup("m1", rotation, mgofConf, factory, functions)
 	if !assert.Nil(err) {
-		assert.Fail("Failed to create mgof detector")
+		assert.Fail("Failed to create detector ", err.Error())
 	}
-	mgofDetector, ok := detector.(*mgof.MGOF)
-	if !assert.True(ok) {
-		assert.Fail("Detector not a MGOF detector", mgofDetector)
-	}
-
-	engine := new(generator.GeneratorEngine)
-	engine.Initialize()
 	
-	app := new(app.App)
-	meta := new(metadata.MetadataStore)
+	//Turn on mgof trace level logging so the results can be graphed
+	//mgof.TraceLevel = 0
 
-
-	meta.On("GetDoc", "m1").Return([]byte{})
-	meta.On("StoreDoc", "m1", mock.Anything).Return()
-
-	app.On("GetWriter").Return(engine).Once()
-	app.On("GetReader").Return(engine).Once()
-	app.On("GetMetadataStore", mock.Anything).Return(meta, nil).Once()
-
-	err = mgofDetector.Initialize(app, rotation)
-	assert.Nil(err)
-
-	mgof.TraceLevel = -1
-
-	start := time.Time{}.Add(time.Second) //Start one second past zero
+	start := generator.TZero
 	stop := start.Add(rotation.Period)
-	anomalous := mgofDetector.Detect("m1", start, stop)
-	assert.True(anomalous)
+	count := 50
+	falsePositives := 0
+	for i := 0; i < count; i++ {
+		anomalous := detector.Detect("m1", start, stop)
+		if i < 3 || i == 5 {
+			assert.True(anomalous, "Run %d", i)
+		} else {
+			if anomalous {
+				falsePositives++
+			}
+		}
+		start = stop
+		stop = stop.Add(rotation.Period)
+	}
+
+	assert.True(
+		float64(falsePositives) / float64(count) < 0.10,
+		"Too many false positives %d",
+		falsePositives,
+	)
 
 }

@@ -5,20 +5,30 @@ import (
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
-	"math"
 	"time"
+	"math"
 )
 
-type ft func(t time.Time) float64
+var (
+	TZero = time.Unix(0,0)
+	tZeroSeconds = TZero.Unix()
+)
+
+type Ft func(t int64) float64
 
 type GeneratorEngine struct {
-	config *GeneratorConf
-	functions map[metric.MetricID]ft
+	functions map[metric.MetricID]Ft
+}
+
+func New(functions map[metric.MetricID]Ft) *GeneratorEngine {
+	ge := GeneratorEngine{
+		functions,
+	}
+
+	return &ge
 }
 
 func (self *GeneratorEngine) Initialize() error {
-	self.functions = make(map[metric.MetricID]ft)
-	self.functions["m1"] = self.f
 	return nil
 }
 
@@ -67,7 +77,7 @@ func (self *GeneratorEngine) GetData(rotation *schedule.Rotation, metric metric.
 
 	t := start
 	for t.Before(stop) || t.Equal(stop) {
-		value := f(t)
+		value := f(t.Unix() - tZeroSeconds)
 		data = append(data, engine.Point{t, value})
 		t = t.Add(rotation.Resolution)
 	}
@@ -103,14 +113,3 @@ func (self *GeneratorEngine) GetPercentile(rotation *schedule.Rotation, metric m
 	return 0.0
 }
 
-
-
-//////////////////////
-// f(t)
-//////////////////////
-
-func (self *GeneratorEngine) f(t time.Time) float64 {
-
-	return float64(t.Unix())
-
-}
