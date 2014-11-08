@@ -17,9 +17,6 @@ import (
 func init() {
 	rand.Seed(42)
 }
-//////////////////////
-// f(t)
-//////////////////////
 
 
 func m1(t int64) float64 {
