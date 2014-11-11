@@ -13,11 +13,10 @@ schedule:
     - {period: 4m, resolution: 4s}
     - {period: 8m, resolution: 8s}
     - {period: 24m, resolution: 24s}
-    - {period: 1d, resolution: 30m}
   delay: 15s
 
 metrics:
-  - pattern: cpu.total*
+  - pattern: cpu.total
     detectors:
       - mgof:
           min: 0
@@ -28,6 +27,11 @@ metrics:
           min: 0
           max: 100
     notifiers:
+  - pattern: memory
+    detectors:
+      - mgof:
+          min: 0
+          max: 13000000000
   - pattern: .*
     detectors:
       - kstest: {}

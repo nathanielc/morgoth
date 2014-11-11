@@ -3,6 +3,7 @@ package ymtn
 import (
 	"fmt"
 	"github.com/hrautila/linalg"
+	"github.com/hrautila/linalg/blas"
 	"github.com/hrautila/linalg/lapack"
 	"github.com/hrautila/matrix"
 	//"math"
@@ -12,6 +13,9 @@ func RSST(x []float64, w, n int) []float64 {
 
 	T := len(x)
 	stop := w * n
+
+	i := 0
+	changeScores := make([]float64, T, T)
 	for t := stop; t < T-stop; t++ {
 		m := n
 		g := 0
@@ -23,10 +27,11 @@ func RSST(x []float64, w, n int) []float64 {
 		fmt.Println("B: ", beta)
 		fmt.Println("L: ", lambda)
 
+		changeScores[i] = calcChangeScore(u, beta, lambda)
 
-		
-
+		i++
 	}
+	fmt.Println("CS: ", changeScores)
 	return nil
 }
 
@@ -121,4 +126,26 @@ func calcB(x []float64, t, g, w, m int) (*matrix.FloatMatrix, *matrix.FloatMatri
 	}
 
 	return sub, sigma
+}
+
+func calcChangeScore(u, beta, lambda *matrix.FloatMatrix) float64 {
+
+	w := u.Rows()
+	lf := lambda.Rows()
+	b := matrix.FloatZeros(w, 1)
+	v := matrix.FloatZeros(w, 1)
+	lambdaSum := 0.0
+	csSum := 0.0
+	for i := 0; i < lf; i++ {
+		beta.SubMatrix(b, 0, i, w, 1)
+		blas.Gemv(u, b, v, 1.0, 0.0, linalg.PTrans)
+		norm := blas.Nrm2(v)
+		v.Scale(1.0/norm.Float())
+		cs := 1 - blas.Dotu(v, b).Float()
+		lambdaI := lambda.GetAt(i, 0)
+		csSum += cs * lambdaI
+		lambdaSum += lambdaI
+	}
+
+	return csSum / lambdaSum
 }
