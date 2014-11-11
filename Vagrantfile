@@ -12,6 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Every Vagrant virtual environment requires a box to build off of.
 #  config.vm.box = "puppetlabs/centos-6.5-64-nocm"
   config.vm.box = "chef/fedora-20"
+  #config.vm.box = "box-cutter/fedora21"
 
   config.vm.provision :shell, path: "bootstrap.sh"
 
@@ -27,7 +28,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  config.vm.network "private_network", ip: "192.168.1.100"
+  #config.vm.network "private_network", ip: "192.168.1.100"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on

@@ -10,9 +10,9 @@ mkdir -p /gopath/{bin,pkg,src}
 #rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
 
 
-yum install golang git mercurial -y
-yum install lapack-static -y
-yum install python-matplotlib numpy -y
+yum install -y golang git mercurial
+yum install -y lapack-static
+yum install -y python-matplotlib numpy
 
 go get github.com/vektra/mockery
 go install github.com/vektra/mockery

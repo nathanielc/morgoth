@@ -2,10 +2,10 @@ package ymtn
 
 import (
 	"fmt"
-	"github.com/hrautila/linalg"
-	"github.com/hrautila/linalg/blas"
-	"github.com/hrautila/linalg/lapack"
-	"github.com/hrautila/matrix"
+	"github.com/nvcook42/linalg"
+	"github.com/nvcook42/linalg/blas"
+	"github.com/nvcook42/linalg/lapack"
+	"github.com/nvcook42/matrix"
 	//"math"
 )
 
@@ -138,7 +138,14 @@ func calcChangeScore(u, beta, lambda *matrix.FloatMatrix) float64 {
 	csSum := 0.0
 	for i := 0; i < lf; i++ {
 		beta.SubMatrix(b, 0, i, w, 1)
-		blas.Gemv(u, b, v, 1.0, 0.0, linalg.PTrans)
+		blas.Gemv(
+			u,
+			b,
+			v,
+			matrix.FScalar(1.0),
+			matrix.FScalar(0.0),
+			linalg.OptTrans,
+		)
 		norm := blas.Nrm2(v)
 		v.Scale(1.0/norm.Float())
 		cs := 1 - blas.Dotu(v, b).Float()
