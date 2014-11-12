@@ -1,6 +1,8 @@
 #!/bin/bash
 
 
+yum install -y screen
+
 wget http://grafanarel.s3.amazonaws.com/grafana-1.8.1.tar.gz
 
 tar xf grafana-1.8.1.tar.gz
@@ -84,4 +86,4 @@ function (Settings) {
 });
 EOF
 
-python -m SimpleHTTPServer &
+screen -d -m python -m SimpleHTTPServer

@@ -16,5 +16,5 @@ type Manager interface {
 
 	// Instruct manager to perform a detection of all metrics
 	// for a given rotation and window
-	Detect(rotation schedule.Rotation, start, stop time.Time)
+	Detect(rotation schedule.Rotation, start time.Time, stop time.Time)
 }

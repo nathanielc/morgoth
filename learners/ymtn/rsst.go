@@ -15,8 +15,9 @@ func RSST(x []float64, w, n int) []float64 {
 	stop := w * n
 
 	i := 0
-	changeScores := make([]float64, T, T)
-	for t := stop; t < T-stop; t++ {
+	size := T - stop * 2
+	changeScores := make([]float64, size, size)
+	for t := stop; t < T - stop; t++ {
 		m := n
 		g := 0
 
@@ -48,8 +49,9 @@ func calcSHerkel(x []float64, t, w, n int) *matrix.FloatMatrix {
 }
 
 func calcl(sigma *matrix.FloatMatrix) int {
-	l := sigma.Rows()
-	return l
+	//l := sigma.Rows()
+	//return l
+	return 2
 }
 
 func calcGHerkel(x []float64, t, g, w, m int) *matrix.FloatMatrix {
@@ -131,13 +133,14 @@ func calcB(x []float64, t, g, w, m int) (*matrix.FloatMatrix, *matrix.FloatMatri
 func calcChangeScore(u, beta, lambda *matrix.FloatMatrix) float64 {
 
 	w := u.Rows()
-	lf := lambda.Rows()
+	lf := beta.Cols()
 	b := matrix.FloatZeros(w, 1)
-	v := matrix.FloatZeros(w, 1)
+	v := matrix.FloatZeros(lf, 1)
 	lambdaSum := 0.0
 	csSum := 0.0
 	for i := 0; i < lf; i++ {
 		beta.SubMatrix(b, 0, i, w, 1)
+		fmt.Println("b: ", b)
 		blas.Gemv(
 			u,
 			b,
@@ -147,8 +150,8 @@ func calcChangeScore(u, beta, lambda *matrix.FloatMatrix) float64 {
 			linalg.OptTrans,
 		)
 		norm := blas.Nrm2(v)
-		v.Scale(1.0/norm.Float())
-		cs := 1 - blas.Dotu(v, b).Float()
+		a := v.Scale(1.0/norm.Float())
+		cs := 1 - blas.Dotu(a, b).Float()
 		lambdaI := lambda.GetAt(i, 0)
 		csSum += cs * lambdaI
 		lambdaSum += lambdaI

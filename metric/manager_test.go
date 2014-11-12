@@ -3,15 +3,12 @@ package metric_test
 import (
 	"github.com/nvcook42/morgoth/metric"
 	"github.com/nvcook42/morgoth/metric/types"
-	"github.com/nvcook42/morgoth/schedule"
 	mock "github.com/nvcook42/morgoth/mocks/metric"
 	"testing"
 )
 
 func TestManagerShouldHandleNewMetric(t *testing.T) {
 
-
-	schd := schedule.Schedule{}
 
 	var metricName types.MetricID = "metricName"
 	ms0 := new(mock.Supervisor)
@@ -34,7 +31,7 @@ func TestManagerShouldHandleNewMetric(t *testing.T) {
 		supervisors[i] = mockSupervisors[i]
 	}
 
-	m := metric.NewManager(&schd, supervisors)
+	m := metric.NewManager(supervisors)
 	m.NewMetric(metricName)
 	m.NewMetric(metricName)
 

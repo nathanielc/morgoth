@@ -14,8 +14,8 @@ func TestMGOFConfShouldDefault(t *testing.T) {
 
 	mc.Default()
 
-	assert.Equal(0.95, mc.CHI2)
-	assert.Equal(10, mc.NBins)
+	assert.Equal(3, mc.NullConfidence)
+	assert.Equal(15, mc.NBins)
 	assert.Equal(3, mc.NormalCount)
 	assert.Equal(20, mc.MaxFingerprints)
 	assert.Equal(0.0, mc.Min)
@@ -31,10 +31,10 @@ func TestMGOFConfValidateShouldFailBadMinMax(t *testing.T) {
 	assert.NotNil(err)
 }
 
-func TestMGOFConfValidateShouldFailBadCHI2(t *testing.T) {
+func TestMGOFConfValidateShouldFailBadNullConfidence(t *testing.T) {
 	assert := assert.New(t)
 
-	mc := mgof.MGOFConf{CHI2: 0}
+	mc := mgof.MGOFConf{NullConfidence: 0}
 
 	err := mc.Validate()
 	assert.NotNil(err)
@@ -73,7 +73,7 @@ func TestMGOFConfValidateShouldPass(t *testing.T) {
 	mc := mgof.MGOFConf{
 		Min:             -1.0,
 		Max:             1.0,
-		CHI2:            0.90,
+		NullConfidence:  2,
 		NBins:           5,
 		NormalCount:     4,
 		MaxFingerprints: 15,
@@ -89,7 +89,7 @@ func TestMGOFConfShouldParse(t *testing.T) {
 	var data string = `---
 min: -10
 max: 10
-chi2: 0.42
+null_confidence: 5
 nbins: 5
 normal_count: 2
 max_fingerprints: 25
@@ -103,7 +103,7 @@ max_fingerprints: 25
 
 	assert.Equal(-10.0, mc.Min)
 	assert.Equal(10.0, mc.Max)
-	assert.Equal(0.42, mc.CHI2)
+	assert.Equal(5, mc.NullConfidence)
 	assert.Equal(5, mc.NBins)
 	assert.Equal(2, mc.NormalCount)
 	assert.Equal(25, mc.MaxFingerprints)

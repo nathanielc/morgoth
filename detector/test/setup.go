@@ -1,4 +1,4 @@
-package detectors_test
+package test
 
 import (
 	"github.com/stretchr/testify/mock"
@@ -12,7 +12,7 @@ import (
 	"github.com/nvcook42/morgoth/schedule"
 )
 
-func setup(
+func SetupGeneratedDetectorTest(
 	metric metric.MetricID,
 	rotation schedule.Rotation,
 	conf config.Configuration,

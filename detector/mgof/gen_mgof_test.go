@@ -1,4 +1,4 @@
-package detectors_test
+package mgof_test
 
 import (
 	"testing"
@@ -7,6 +7,7 @@ import (
 	"github.com/nvcook42/morgoth/engine/generator"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/detector/mgof"
+	detector_test "github.com/nvcook42/morgoth/detector/test"
 	"github.com/nvcook42/morgoth/schedule"
 	"time"
 	"math"
@@ -48,7 +49,7 @@ func TestMGOF1(t *testing.T) {
 
 	functions["m1"] = m1
 
-	detector, err := setup("m1", rotation, mgofConf, factory, functions)
+	detector, err := detector_test.SetupGeneratedDetectorTest("m1", rotation, mgofConf, factory, functions)
 	if !assert.Nil(err) {
 		assert.Fail("Failed to create detector ", err.Error())
 	}

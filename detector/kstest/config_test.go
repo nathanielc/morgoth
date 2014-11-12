@@ -14,16 +14,16 @@ func TestKSTestConfShouldDefault(t *testing.T) {
 
 	ks.Default()
 
-	assert.Equal(1, ks.Strictness)
+	assert.Equal(1, ks.Confidence)
 	assert.Equal(3, ks.NormalCount)
 	assert.Equal(20, ks.MaxFingerprints)
 
 }
 
-func TestKSTestConfValidateShouldFailBadStrictness(t *testing.T) {
+func TestKSTestConfValidateShouldFailBadConfidence(t *testing.T) {
 	assert := assert.New(t)
 
-	ks := kstest.KSTestConf{Strictness: 6}
+	ks := kstest.KSTestConf{Confidence: 6}
 
 	err := ks.Validate()
 	assert.NotNil(err)
@@ -51,7 +51,7 @@ func TestKSTestConfValidateShouldPass(t *testing.T) {
 	assert := assert.New(t)
 
 	ks := kstest.KSTestConf{
-		Strictness:      1,
+		Confidence:      1,
 		NormalCount:     3,
 		MaxFingerprints: 20,
 	}
@@ -64,7 +64,7 @@ func TestKSTestConfShouldParse(t *testing.T) {
 	assert := assert.New(t)
 
 	var data string = `---
-strictness: 4
+confidence: 4
 normal_count: 4
 max_fingerprints: 10
 `
@@ -75,7 +75,7 @@ max_fingerprints: 10
 
 	assert.Nil(err)
 
-	assert.Equal(4, ks.Strictness)
+	assert.Equal(4, ks.Confidence)
 	assert.Equal(4, ks.NormalCount)
 	assert.Equal(10, ks.MaxFingerprints)
 }
