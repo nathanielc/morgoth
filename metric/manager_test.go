@@ -9,7 +9,6 @@ import (
 
 func TestManagerShouldHandleNewMetric(t *testing.T) {
 
-
 	var metricName types.MetricID = "metricName"
 	ms0 := new(mock.Supervisor)
 	ms0.On("GetPattern").Return(types.Pattern(".*")).Once()

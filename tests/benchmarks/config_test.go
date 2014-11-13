@@ -1,9 +1,8 @@
 package benchmarks
 
-
 import (
-	"testing"
 	"github.com/nvcook42/morgoth/config"
+	"testing"
 )
 
 func BenchmarkParseConfig(b *testing.B) {

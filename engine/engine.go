@@ -36,6 +36,6 @@ type Anomaly struct {
 type Histogram struct {
 	Bins  []float64
 	Count uint
-	Min float64
-	Max float64
+	Min   float64
+	Max   float64
 }

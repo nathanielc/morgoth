@@ -2,8 +2,8 @@
 package stat
 
 import (
-	. "github.com/nvcook42/morgoth/stat/fn"
 	"fmt"
+	. "github.com/nvcook42/morgoth/stat/fn"
 )
 
 func F_PDF(d1 float64, d2 float64) func(x float64) float64 {

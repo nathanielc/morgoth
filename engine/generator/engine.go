@@ -5,12 +5,12 @@ import (
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
-	"time"
 	"math"
+	"time"
 )
 
 var (
-	TZero = time.Unix(0,0)
+	TZero        = time.Unix(0, 0)
 	tZeroSeconds = TZero.Unix()
 )
 
@@ -56,7 +56,6 @@ func (self *GeneratorEngine) RecordAnomalous(metric metric.MetricID, start, stop
 
 func (self *GeneratorEngine) DeleteMetric(metric metric.MetricID) {
 }
-
 
 //////////////////////
 // Reader Methods
@@ -112,4 +111,3 @@ func (self *GeneratorEngine) GetHistogram(rotation *schedule.Rotation, metric me
 func (self *GeneratorEngine) GetPercentile(rotation *schedule.Rotation, metric metric.MetricID, percentile float64, start, stop time.Time) float64 {
 	return 0.0
 }
-

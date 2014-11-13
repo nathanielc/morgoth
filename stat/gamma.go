@@ -5,8 +5,8 @@
 package stat
 
 import (
-	. "github.com/nvcook42/morgoth/stat/fn"
 	"fmt"
+	. "github.com/nvcook42/morgoth/stat/fn"
 	"math"
 )
 

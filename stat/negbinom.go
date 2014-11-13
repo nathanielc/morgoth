@@ -7,7 +7,7 @@ import (
 	"math"
 )
 
-/* 
+/*
 // Does not pass the test, so commented out
 func NegativeBinomial_PMF(ρ float64, r int64) func(i int64) float64 {
 	return func(k int64) float64 {

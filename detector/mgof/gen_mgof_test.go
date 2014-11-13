@@ -1,38 +1,36 @@
 package mgof_test
 
 import (
-	"testing"
 	"github.com/golang/glog"
-	"github.com/stretchr/testify/assert"
-	"github.com/nvcook42/morgoth/engine/generator"
-	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/detector/mgof"
 	detector_test "github.com/nvcook42/morgoth/detector/test"
+	"github.com/nvcook42/morgoth/engine/generator"
+	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
-	"time"
+	"github.com/stretchr/testify/assert"
 	"math"
 	"math/rand"
+	"testing"
+	"time"
 )
-
 
 func init() {
 	rand.Seed(42)
 }
 
-
 func m1(t int64) float64 {
-	if t > 5 * periodSeconds && t < 5 * periodSeconds + 60 {
-		return rand.Float64() * 0.2 - 0.1
+	if t > 5*periodSeconds && t < 5*periodSeconds+60 {
+		return rand.Float64()*0.2 - 0.1
 	}
 	return 2 * rand.Float64() * math.Sin(float64(t))
 }
 
 var rotation = schedule.Rotation{
-	Period: 5*time.Minute,
+	Period:     5 * time.Minute,
 	Resolution: time.Second,
 }
 
-var periodSeconds int64 = int64(rotation.Period/time.Second)
+var periodSeconds int64 = int64(rotation.Period / time.Second)
 
 func TestMGOF1(t *testing.T) {
 	defer glog.Flush()
@@ -41,8 +39,8 @@ func TestMGOF1(t *testing.T) {
 	factory := &mgof.MGOFFactory{}
 
 	mgofConf := &mgof.MGOFConf{
-		Min: -2,
-		Max: 2,
+		Min:            -2,
+		Max:            2,
 		NullConfidence: 4,
 	}
 	functions := make(map[metric.MetricID]generator.Ft)
@@ -53,7 +51,7 @@ func TestMGOF1(t *testing.T) {
 	if !assert.Nil(err) {
 		assert.Fail("Failed to create detector ", err.Error())
 	}
-	
+
 	//Turn on mgof trace level logging so the results can be graphed
 	//mgof.TraceLevel = 0
 
@@ -75,7 +73,7 @@ func TestMGOF1(t *testing.T) {
 	}
 
 	assert.True(
-		float64(falsePositives) / float64(count) < 0.10,
+		float64(falsePositives)/float64(count) < 0.10,
 		"Too many false positives %d",
 		falsePositives,
 	)

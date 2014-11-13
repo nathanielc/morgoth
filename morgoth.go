@@ -1,12 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/app"
 	"github.com/nvcook42/morgoth/config"
 	"os"
-	"flag"
 )
 
 var configPath = flag.String("config", "morogth.yaml", "Path to morgoth config")

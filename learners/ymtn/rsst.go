@@ -15,9 +15,9 @@ func RSST(x []float64, w, n int) []float64 {
 	stop := w * n
 
 	i := 0
-	size := T - stop * 2
+	size := T - stop*2
 	changeScores := make([]float64, size, size)
-	for t := stop; t < T - stop; t++ {
+	for t := stop; t < T-stop; t++ {
 		m := n
 		g := 0
 
@@ -65,7 +65,6 @@ func calcGHerkel(x []float64, t, g, w, m int) *matrix.FloatMatrix {
 	return herkel
 }
 
-
 func calcU(x []float64, t, w, n int) *matrix.FloatMatrix {
 	herkel := calcSHerkel(x, t, w, n)
 	size := w
@@ -75,7 +74,6 @@ func calcU(x []float64, t, w, n int) *matrix.FloatMatrix {
 	sigma := matrix.FloatZeros(size, 1)
 	u := matrix.FloatZeros(w, w)
 	vt := matrix.FloatZeros(n, n)
-
 
 	lapack.GesvdFloat(
 		herkel,
@@ -150,7 +148,7 @@ func calcChangeScore(u, beta, lambda *matrix.FloatMatrix) float64 {
 			linalg.OptTrans,
 		)
 		norm := blas.Nrm2(v)
-		a := v.Scale(1.0/norm.Float())
+		a := v.Scale(1.0 / norm.Float())
 		cs := 1 - blas.Dotu(a, b).Float()
 		lambdaI := lambda.GetAt(i, 0)
 		csSum += cs * lambdaI

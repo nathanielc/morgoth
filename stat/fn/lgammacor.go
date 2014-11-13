@@ -3,18 +3,18 @@
 package fn
 
 // Computes the log gamma correction factor for x >= 10 so that
-// 
+//
 // log(x) -x + lgammacor(x)
-// 
+//
 // [ lgammacor(x) is called	Del(x)	in other contexts (e.g. dcdflib)]
-// 
+//
 // NOTES
-// 
+//
 // This routine is a translation into C of a Fortran subroutine
 // written by W. Fullerton of Los Alamos Scientific Laboratory.
-// 
+//
 // SEE ALSO
-// 
+//
 // similar in spirit,
 // is faster and cleaner, but is only defined "fast" for half integers.
 

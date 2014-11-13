@@ -5,6 +5,7 @@ import (
 	"github.com/nvcook42/morgoth/schedule"
 	"time"
 )
+
 // A metric manager is responsible for creating
 // new metric supervisors when a new metric arrives
 type Manager interface {

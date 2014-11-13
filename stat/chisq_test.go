@@ -1,9 +1,9 @@
 package stat_test
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/stat"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestSpecificChiSqInc(t *testing.T) {

@@ -21,7 +21,7 @@ type MetadataStoreT struct {
 
 func New(dir, detectorID string) (MetadataStore, error) {
 
-	dbPath := path.Join(dir, detectorID + ".db")
+	dbPath := path.Join(dir, detectorID+".db")
 	//Init KV database
 	opts := kv.Options{}
 	db, err := kv.Create(dbPath, &opts)
@@ -52,7 +52,6 @@ func (self *MetadataStoreT) GetDoc(metric metric.MetricID) []byte {
 	}
 	return doc
 }
-
 
 func (self *MetadataStoreT) Close() {
 	self.db.Close()
