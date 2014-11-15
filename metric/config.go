@@ -20,6 +20,9 @@ func (self *MetricSupervisorConf) Default() {
 	for i := range self.Detectors {
 		self.Detectors[i].Default()
 	}
+	for i := range self.Notifiers {
+		self.Notifiers[i].Default()
+	}
 }
 
 func (self MetricSupervisorConf) Validate() error {
@@ -28,6 +31,11 @@ func (self MetricSupervisorConf) Validate() error {
 	}
 	for i := range self.Detectors {
 		if valid := self.Detectors[i].Validate(); valid != nil {
+			return valid
+		}
+	}
+	for i := range self.Notifiers{
+		if valid := self.Notifiers[i].Validate(); valid != nil {
 			return valid
 		}
 	}

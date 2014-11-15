@@ -61,6 +61,9 @@ func (self *SupervisorStruct) Detect(rotation schedule.Rotation, start time.Time
 			if detector.Detect(metric, start, stop) {
 				glog.Infof("Metric %s is anomalous", metric)
 				self.writer.RecordAnomalous(metric, start, stop)
+				for _, notifier := range self.notifiers {
+					notifier.Notify(detector.GetIdentifier(), metric, start, stop)
+				}
 			}
 		}
 	})
