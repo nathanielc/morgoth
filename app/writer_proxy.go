@@ -26,4 +26,3 @@ func (self *writerProxy) RecordAnomalous(metric metric.MetricID, start, stop tim
 func (self *writerProxy) DeleteMetric(metric metric.MetricID) {
 	self.writer.DeleteMetric(metric)
 }
-

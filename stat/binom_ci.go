@@ -6,8 +6,8 @@ package stat
 func Binom_p_ConfI(n int64, p, alpha float64) (float64, float64) {
 
 	/*
-		Alpha	100(1-alpha) is the confidence 
-		n	Sample size	
+		Alpha	100(1-alpha) is the confidence
+		n	Sample size
 		p	Observed proportion
 		lCL	Lower confidence limit
 		uCL	Upper confidence limit

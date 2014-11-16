@@ -1,8 +1,8 @@
-package mgof_test
+package tukey_test
 
 import (
 	"github.com/golang/glog"
-	"github.com/nvcook42/morgoth/detector/mgof"
+	"github.com/nvcook42/morgoth/detector/tukey"
 	detector_test "github.com/nvcook42/morgoth/detector/test"
 	"github.com/nvcook42/morgoth/engine/generator"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -20,7 +20,7 @@ func init() {
 
 func m1(t int64) float64 {
 	if t > 5*periodSeconds && t < 5*periodSeconds+60 {
-		return rand.Float64()*0.2 - 0.1
+		return rand.Float64()*5.0 + 1
 	}
 	return 2 * rand.Float64() * math.Sin(float64(t))
 }
@@ -32,36 +32,32 @@ var rotation = schedule.Rotation{
 
 var periodSeconds int64 = int64(rotation.Period / time.Second)
 
-func TestMGOF1(t *testing.T) {
+func TestTukey1(t *testing.T) {
 	defer glog.Flush()
 	assert := assert.New(t)
 
-	factory := &mgof.MGOFFactory{}
+	factory := &tukey.TukeyFactory{}
 
-	mgofConf := &mgof.MGOFConf{
-		Min:            -2,
-		Max:            2,
-		NullConfidence: 4,
+	tukeyConf := &tukey.TukeyConf{
 	}
+	tukeyConf.Default()
 	functions := make(map[metric.MetricID]generator.Ft)
 
 	functions["m1"] = m1
 
-	detector, err := detector_test.SetupGeneratedDetectorTest("m1", rotation, mgofConf, factory, functions)
+	detector, err := detector_test.SetupGeneratedDetectorTest("m1", rotation, tukeyConf, factory, functions)
 	if !assert.Nil(err) {
 		assert.Fail("Failed to create detector ", err.Error())
 	}
 
-	//Turn on mgof trace level logging so the results can be graphed
-	//mgof.TraceLevel = 0
 
 	start := generator.TZero
 	stop := start.Add(rotation.Period)
-	count := 50
+	count := 6
 	falsePositives := 0
 	for i := 0; i < count; i++ {
 		anomalous := detector.Detect("m1", start, stop)
-		if i < 3 || i == 5 {
+		if i == 5 {
 			assert.True(anomalous, "Run %d", i)
 		} else {
 			if anomalous {

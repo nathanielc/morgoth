@@ -22,7 +22,7 @@ func LnΓ(x float64) (res float64) {
 
 /*
 //Upper incomplete Gamma function	DOES NOT WORK FOR FLOAT, ONLY INT S, needs to be reimplemented
-func IΓ(s, x float64) float64 { 
+func IΓ(s, x float64) float64 {
 	if s < 0 {
 		return 1
 	}
@@ -45,7 +45,7 @@ func IΓint(s int64, x float64) float64 {
 
 /*
 //Lower incomplete Gamma function   BUGGY!!!
-func Iγ(s, x float64) float64 { 
+func Iγ(s, x float64) float64 {
 	if s < 0 {
 		return 1
 	}
@@ -139,7 +139,7 @@ func lgammafn(x float64) float64 {
 		return log(abs(math.Gamma(x)))
 	}
 
-	//   ELSE  y = |x| > 10 
+	//   ELSE  y = |x| > 10
 
 	if y > xmax {
 		return posInf
@@ -158,7 +158,7 @@ func lgammafn(x float64) float64 {
 	sinpiy := abs(sin(π * y))
 
 	if sinpiy == 0 { // Negative integer argument
-		//	  Now UNNECESSARY: caught above, should NEVER happen! 
+		//	  Now UNNECESSARY: caught above, should NEVER happen!
 		return nan
 	}
 

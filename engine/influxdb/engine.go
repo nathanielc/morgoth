@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-
 type InfluxDBEngine struct {
 	config *InfluxDBConf
 	client *client.Client
@@ -119,7 +118,6 @@ func (self *InfluxDBEngine) RecordAnomalous(metric metric.MetricID, start, stop 
 func (self *InfluxDBEngine) DeleteMetric(metric metric.MetricID) {
 }
 
-
 //////////////////////
 // Reader Methods
 //////////////////////
@@ -210,4 +208,3 @@ func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric met
 func (self *InfluxDBEngine) GetPercentile(rotation *schedule.Rotation, metric metric.MetricID, percentile float64, start, stop time.Time) float64 {
 	return 0.0
 }
-

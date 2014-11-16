@@ -4,8 +4,8 @@ package fn
 
 //The Binomial coefficient.
 
-// Binomial coefficient (in combinatorics, it gives the number of ways, disregarding order, 
-// that k objects can be chosen from among n objects; more formally, the number of 
+// Binomial coefficient (in combinatorics, it gives the number of ways, disregarding order,
+// that k objects can be chosen from among n objects; more formally, the number of
 // k-element subsets (or k-combinations) of an n-element set)
 
 // Same as Choose(n, k), LnChoose(n, k)
@@ -39,8 +39,8 @@ func LnBinomCoeff(n, k float64) float64 {
 		panic("n == 0")
 	}
 	if n < 10 && k < 10 {
-nn:= int64(n)
-kk:= int64(k)
+		nn := int64(n)
+		kk := int64(k)
 
 		return math.Log(BinomCoeff(nn, kk))
 	}

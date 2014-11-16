@@ -2,4 +2,3 @@
 
 // Special math functions not included in "math" package.
 package fn
-

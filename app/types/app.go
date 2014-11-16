@@ -2,9 +2,9 @@
 package types
 
 import (
+	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/schedule"
-	"github.com/nvcook42/morgoth/detector/metadata"
 )
 
 // An App is the center on morgoth connecting all the various components

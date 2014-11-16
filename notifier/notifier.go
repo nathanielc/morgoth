@@ -2,10 +2,12 @@ package notifier
 
 import (
 	"github.com/nvcook42/morgoth/registery"
+	metric "github.com/nvcook42/morgoth/metric/types"
+	"time"
 )
 
 type Notifier interface {
-	Notify()
+	Notify(detectorName string, metric metric.MetricID, start time.Time, stop time.Time)
 }
 
 var (

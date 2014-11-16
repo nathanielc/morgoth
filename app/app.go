@@ -3,8 +3,8 @@ package app
 import (
 	"github.com/golang/glog"
 	"github.com/nvcook42/morgoth/config"
-	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/detector/metadata"
+	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/fitting"
 	"github.com/nvcook42/morgoth/metric"
 	mtypes "github.com/nvcook42/morgoth/metric/types"
@@ -16,11 +16,11 @@ import (
 )
 
 type App struct {
-	manager  mtypes.Manager
-	engine   engine.Engine
-	config   *config.Config
-	fittings []fitting.Fitting
-	schedule schedule.Schedule
+	manager    mtypes.Manager
+	engine     engine.Engine
+	config     *config.Config
+	fittings   []fitting.Fitting
+	schedule   schedule.Schedule
 	metastores map[string]metadata.MetadataStore
 }
 
@@ -117,7 +117,6 @@ func (self *App) Run() error {
 
 	return nil
 }
-
 
 func (self *App) shutdown() {
 	glog.V(2).Info("Closing all metastores...")

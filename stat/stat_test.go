@@ -1,8 +1,8 @@
 package stat
 
 import (
-	. "github.com/nvcook42/morgoth/stat/fn"
 	"fmt"
+	. "github.com/nvcook42/morgoth/stat/fn"
 	"math"
 	"math/rand"
 	"testing"
@@ -110,7 +110,7 @@ func TestBinomP_CI(t *testing.T) {
 	alpha=0.1
 	low2=0.04
 	high2=0.21
-	low, high =  Binom_p_ConfI(n, p, alpha) 
+	low, high =  Binom_p_ConfI(n, p, alpha)
 	fmt.Println(low, " = ", low2, "\t", high, " = ",  high2)
 }
 */

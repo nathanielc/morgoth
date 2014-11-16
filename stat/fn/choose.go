@@ -4,10 +4,10 @@ package fn
 
 // Binomial coefficients.
 // FChoose(n, k)   and  LnFChoose(n,k) := log(abs(FChoose(n,k))
-// 
+//
 // These work for the *generalized* binomial theorem,
 // i.e., are also defined for non-integer n  (integer k).
-// 
+//
 // We use the simple explicit product formula for  k <= k_small_max
 // and also have added statements to make sure that the symmetry
 // (n \\ k ) == (n \\ n-k)  is preserved for non-negative integer n.
@@ -22,7 +22,7 @@ func lfastchoose(n, k float64) float64 {
 
 func lfastchoose2(n, k float64) (float64, int) {
 	// mathematically the same as lfastchoose()
-	// less stable typically, but useful if n-k+1 < 0 
+	// less stable typically, but useful if n-k+1 < 0
 	//	r := lgammafn_sign(n-k+1, s_choose)
 	r, s_choose := math.Lgamma(n - k + 1)
 	p, _ := math.Lgamma(n + 1)
@@ -154,8 +154,8 @@ func Choose(n int64, i int64) int64 {
 
 // LnChoose returns the natural logarithm of the binomial coefficient for integer n  and k.
 func LnChoose(n int64, i int64) float64 {
-nn:= float64(n)
-ii:= float64(i)
+	nn := float64(n)
+	ii := float64(i)
 	smaller := ii
 	if nn-ii < smaller {
 		smaller = nn - ii

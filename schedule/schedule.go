@@ -1,9 +1,9 @@
 package schedule
 
 import (
-	"github.com/golang/glog"
 	"errors"
 	"fmt"
+	"github.com/golang/glog"
 	"time"
 )
 

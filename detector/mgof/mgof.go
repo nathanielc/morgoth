@@ -53,7 +53,6 @@ func (self *MGOF) Initialize(app app.App, rotation schedule.Rotation) error {
 	// n the null confidence is the number of 9s in chi2
 	n := int(self.config.NullConfidence)
 	chi2 := (math.Pow10(n) - 1.0) / math.Pow10(n)
-	glog.Info(chi2)
 	self.threshold = stat.Xsquare_InvCDF(int64(self.config.NBins - 1))(chi2)
 
 	meta, err := app.GetMetadataStore(self.GetIdentifier())
