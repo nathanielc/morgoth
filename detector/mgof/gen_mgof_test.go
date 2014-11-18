@@ -1,7 +1,10 @@
 package mgof_test
 
 import (
+	"flag"
+	"fmt"
 	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/detector/mgof"
 	detector_test "github.com/nvcook42/morgoth/detector/test"
 	"github.com/nvcook42/morgoth/engine/generator"
@@ -16,6 +19,11 @@ import (
 
 func init() {
 	rand.Seed(42)
+	flag.Parse()
+	if testing.Verbose() {
+		flag.Set("logtostderr", "1")
+		flag.Set("v", fmt.Sprintf("%d", detector.TraceLevel))
+	}
 }
 
 func m1(t int64) float64 {
@@ -52,9 +60,6 @@ func TestMGOF1(t *testing.T) {
 		assert.Fail("Failed to create detector ", err.Error())
 	}
 
-	//Turn on mgof trace level logging so the results can be graphed
-	//mgof.TraceLevel = 0
-
 	start := generator.TZero
 	stop := start.Add(rotation.Period)
 	count := 50
@@ -77,5 +82,4 @@ func TestMGOF1(t *testing.T) {
 		"Too many false positives %d",
 		falsePositives,
 	)
-
 }

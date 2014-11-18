@@ -34,7 +34,7 @@ func (self MetricSupervisorConf) Validate() error {
 			return valid
 		}
 	}
-	for i := range self.Notifiers{
+	for i := range self.Notifiers {
 		if valid := self.Notifiers[i].Validate(); valid != nil {
 			return valid
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
+	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -13,8 +14,6 @@ import (
 	"math"
 	"time"
 )
-
-var TraceLevel glog.Level = 3
 
 type fingerprint struct {
 	Hist  *engine.Histogram
@@ -127,7 +126,7 @@ func (self *MGOF) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	self.fingerprints[metric] = fingerprints
 	go self.save(metric)
 
-	if glog.V(TraceLevel) {
+	if glog.V(detector.TraceLevel) {
 		jf, _ := json.Marshal(fingerprints)
 		jh, _ := json.Marshal(hist)
 		glog.Infof(

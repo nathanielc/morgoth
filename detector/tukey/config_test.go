@@ -26,7 +26,6 @@ func TestTukeyConfValidateShouldFailBadThreshold(t *testing.T) {
 	assert.NotNil(err)
 }
 
-
 func TestTukeyConfValidateShouldPass(t *testing.T) {
 	assert := assert.New(t)
 

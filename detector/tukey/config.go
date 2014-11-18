@@ -7,7 +7,7 @@ import (
 )
 
 type TukeyConf struct {
-	Threshold       float64 `yaml:"threshold" validate:"min=0,nonzero" default:"3"`
+	Threshold float64 `yaml:"threshold" validate:"min=0,nonzero" default:"3"`
 }
 
 func (self *TukeyConf) Default() {

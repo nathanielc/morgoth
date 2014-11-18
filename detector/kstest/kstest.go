@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
+	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
@@ -105,7 +106,7 @@ func (self *KSTest) Detect(metric metric.MetricID, start, stop time.Time) bool {
 	self.fingerprints[metric] = fingerprints
 	go self.save(metric)
 
-	if glog.V(3) {
+	if glog.V(detector.TraceLevel) {
 		jf, _ := json.Marshal(fingerprints)
 		jd, _ := json.Marshal(data)
 		glog.Infof(

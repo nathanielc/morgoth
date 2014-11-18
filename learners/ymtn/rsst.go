@@ -1,7 +1,7 @@
 package ymtn
 
 import (
-	"fmt"
+	"github.com/golang/glog"
 	"github.com/nvcook42/linalg"
 	"github.com/nvcook42/linalg/blas"
 	"github.com/nvcook42/linalg/lapack"
@@ -19,57 +19,64 @@ func RSST(x []float64, w, n int) []float64 {
 	m := n
 	g := 0
 
+	//Calc change scores of x
 	changeScores := make([]float64, T)
 	for t := w + n; t < T-w-m-g; t++ {
 
 		past := calcPast(x, t, w, n)
 		future, eigenValues := calcFuture(x, t, g, w, m)
 
-		fmt.Println("Past: ", past)
-		fmt.Println("Future: ", future)
-		fmt.Println("Eigen Values: ", eigenValues)
+		glog.V(2).Infoln("Past: ", past)
+		glog.V(2).Infoln("Future: ", future)
+		glog.V(2).Infoln("Eigen Values: ", eigenValues)
 
 		//Only calc changescores if our eigenvalues are not small
 		if eigenValues.GetAt(0, 0) > small {
 			changeScores[t] = calcChangeScore(past, future, eigenValues)
-		}
+		} // else changescores[t] = 0
 	}
+	glog.V(2).Infoln("Change Scores: ", changeScores)
 
 	//Weight each score by it's past and future
-	fmt.Println("CS: ", changeScores)
 	width := w / 2
 	start := w + n
 	if start < width {
 		start = width
 	}
-	for t := start; t < T-width-1; t++ {
+	weighted := make([]float64, T)
+	max := 0.0
+	for t := start; t < T-width; t++ {
 		pastMean, pastVar := calcMeanVar(changeScores[t-width : t])
 		futureMean, futureVar := calcMeanVar(changeScores[t : t+width])
-		//fmt.Println(pastMean, pastVar, futureMean, futureVar)
-		changeScores[t] *= math.Abs(pastMean-futureMean) *
-			math.Abs(math.Sqrt(pastVar)-math.Sqrt(futureVar))
-	}
-
-	fmt.Println("CS adjusted: ", changeScores)
-	//Keep only local maxima
-	maxima := make([]float64, T)
-	max := -1.0
-	for i, v := range changeScores {
-		if (i == 0 || v > changeScores[i-1]) &&
-			(i == T-1 || v > changeScores[i+1]) {
-			maxima[i] = v
-			if v > max {
-				max = v
-			}
+		glog.V(3).Infoln(t, pastMean, pastVar, futureMean, futureVar)
+		score :=
+			changeScores[t] *
+				math.Abs(pastMean-futureMean) *
+				math.Abs(math.Sqrt(pastVar)-math.Sqrt(futureVar))
+		weighted[t] = score
+		if score > max {
+			max = score
 		}
 	}
+	glog.V(2).Infoln("Weighted: ", weighted)
 
-	for i := range maxima {
-		maxima[i] /= max
+	if max == 0 {
+		//Trivial zero case, we can return early
+		return weighted
 	}
 
-	fmt.Println("Normal Maxima: ", maxima)
-	return nil
+	//Keep only local trimmed
+	trimmed := make([]float64, T)
+	for i, v := range weighted {
+		if (i == 0 || v > weighted[i-1]) &&
+			(i == T-1 || v > weighted[i+1]) {
+			//Keep and normalize
+			trimmed[i] = v / max
+		}
+	}
+	glog.V(1).Infoln("Trimmed: ", trimmed)
+
+	return trimmed
 }
 
 func calcMeanVar(x []float64) (float64, float64) {
@@ -87,7 +94,7 @@ func calcMeanVar(x []float64) (float64, float64) {
 
 	variance := varSum / l
 
-	fmt.Println(l, sum, mean, variance, x)
+	glog.V(3).Infoln(l, sum, mean, variance, x)
 	return mean, variance
 }
 
@@ -155,7 +162,7 @@ func calcPast(x []float64, t, w, n int) *matrix.FloatMatrix {
 	)
 
 	l := calcNumEigenValues(sigma)
-	fmt.Println("lp: ", l)
+	glog.V(3).Infoln("lp: ", l)
 
 	sub := matrix.FloatZeros(w, l)
 	u.SubMatrix(sub, 0, 0, w, l)
@@ -183,7 +190,7 @@ func calcFuture(x []float64, t, g, w, m int) (*matrix.FloatMatrix, *matrix.Float
 	)
 
 	l := calcNumEigenValues(sigma)
-	fmt.Println("lf: ", l)
+	glog.V(3).Infoln("lf: ", l)
 
 	sub := matrix.FloatZeros(w, l)
 	u.SubMatrix(sub, 0, 0, w, l)
@@ -204,7 +211,7 @@ func calcChangeScore(past, future, eigenValues *matrix.FloatMatrix) float64 {
 	w := past.Rows()
 	lf := future.Cols()
 	b := matrix.FloatZeros(w, 1)
-	v := matrix.FloatZeros(lf, 1)
+	v := matrix.FloatZeros(past.Cols(), 1)
 	eigenValuesSum := 0.0
 	csSum := 0.0
 	for i := 0; i < lf; i++ {
@@ -217,24 +224,17 @@ func calcChangeScore(past, future, eigenValues *matrix.FloatMatrix) float64 {
 			matrix.FScalar(0.0),
 			linalg.OptTrans,
 		)
-		fmt.Println("P: ", past)
-		fmt.Println("B: ", b)
-		fmt.Println("V: ", v)
+		glog.V(3).Infoln("P: ", past)
+		glog.V(3).Infoln("B: ", b)
+		glog.V(3).Infoln("V: ", v)
 		norm := blas.Nrm2(v).Float()
-		var a *matrix.FloatMatrix
-		if norm != 0 {
-			a = v.Scale(1.0 / norm)
-		} else {
-			//This shouldn't happen, looking into why
-			a = v
-		}
-		fmt.Println("A: ", a)
+		a := v.Scale(1.0 / norm)
+		glog.V(3).Infoln("A: ", a)
 		cs := 1 - blas.Dotu(a, b).Float()
 		eigenValue := eigenValues.GetAt(i, 0)
 		csSum += cs * eigenValue
 		eigenValuesSum += eigenValue
 	}
 
-	fmt.Println(csSum, eigenValuesSum)
 	return csSum / eigenValuesSum
 }

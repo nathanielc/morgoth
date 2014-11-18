@@ -3,8 +3,8 @@ package riemann
 import (
 	"fmt"
 	"github.com/bigdatadev/goryman"
-	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/golang/glog"
+	metric "github.com/nvcook42/morgoth/metric/types"
 	"time"
 )
 
@@ -25,16 +25,15 @@ func New(host string, port uint) *RiemannNotifier {
 	return rn
 }
 
-
 func (self *RiemannNotifier) Notify(detectorId string, metric metric.MetricID, start, stop time.Time) {
 
 	err := self.client.SendEvent(&goryman.Event{
-		Service: string(metric),
-		State: "anomalous",
-		Description: fmt.Sprintf("start: %v, stop: %v", start ,stop),
-		Tags: []string{detectorId},
-		Time: start.Unix(),
-		Metric: int(stop.Sub(start)),
+		Service:     string(metric),
+		State:       "anomalous",
+		Description: fmt.Sprintf("start: %v, stop: %v", start, stop),
+		Tags:        []string{detectorId},
+		Time:        start.Unix(),
+		Metric:      int(stop.Sub(start)),
 	})
 	if err != nil {
 		glog.Warning("Failed to send event ", err)

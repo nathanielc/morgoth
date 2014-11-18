@@ -2,8 +2,8 @@ package tukey_test
 
 import (
 	"github.com/golang/glog"
-	"github.com/nvcook42/morgoth/detector/tukey"
 	detector_test "github.com/nvcook42/morgoth/detector/test"
+	"github.com/nvcook42/morgoth/detector/tukey"
 	"github.com/nvcook42/morgoth/engine/generator"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
@@ -38,8 +38,7 @@ func TestTukey1(t *testing.T) {
 
 	factory := &tukey.TukeyFactory{}
 
-	tukeyConf := &tukey.TukeyConf{
-	}
+	tukeyConf := &tukey.TukeyConf{}
 	tukeyConf.Default()
 	functions := make(map[metric.MetricID]generator.Ft)
 
@@ -49,7 +48,6 @@ func TestTukey1(t *testing.T) {
 	if !assert.Nil(err) {
 		assert.Fail("Failed to create detector ", err.Error())
 	}
-
 
 	start := generator.TZero
 	stop := start.Add(rotation.Period)

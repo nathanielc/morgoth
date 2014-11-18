@@ -1,26 +1,31 @@
 package ymtn_test
 
 import (
+	"flag"
 	"github.com/nvcook42/morgoth/learners/ymtn"
 	"github.com/stretchr/testify/assert"
-	"math/rand"
-	"math"
 	"testing"
 )
 
-func TestRSST(t *testing.T) {
+func init() {
+	flag.Set("logtostderr", "true")
+	flag.Set("v", "1")
+}
+
+func TestRSSTTrivialCase(t *testing.T) {
 	assert := assert.New(t)
 
-	size := 1000
-	rand.Seed(42)
+	size := 100
 	x := make([]float64, size, size)
 	for i := range x {
-		x[i] = math.Sin(float64(i))
-		if i % 2 == 0 {
-			x[i] = float64(i)
-		}
+		x[i] = 1
 	}
-	xs := ymtn.RSST(x, 5, 5)
-	assert.NotNil(xs)
+	scores := ymtn.RSST(x, 5, 4)
+	assert.NotNil(scores)
 
+	sum := 0.0
+	for _, v := range scores {
+		sum += v
+	}
+	assert.Equal(2.0, sum)
 }

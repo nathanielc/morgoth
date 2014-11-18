@@ -8,7 +8,7 @@ import (
 
 type RiemannConf struct {
 	Host string `validate:"min=1" default:"localhost"`
-	Port uint `validate:"min=1,max=65535" default:"5555"`
+	Port uint   `validate:"min=1,max=65535" default:"5555"`
 }
 
 func (self *RiemannConf) Validate() error {

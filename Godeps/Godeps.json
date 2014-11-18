@@ -3,9 +3,18 @@
 	"GoVersion": "go1.3.3",
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/goprotobuf/proto",
+			"Comment": "go.r60-161",
+			"Rev": "7b1a95a08cc267525579d936e6fcbace64ad506f"
+		},
+		{
 			"ImportPath": "github.com/ant0ine/go-json-rest/rest",
 			"Comment": "v2.0.5-14-g89aa984",
 			"Rev": "89aa984f73ec6f56dee0a00d048a6862c0ce1b31"
+		},
+		{
+			"ImportPath": "github.com/bigdatadev/goryman",
+			"Rev": "a111ad53711f490443868bccb1b4348f7fce3136"
 		},
 		{
 			"ImportPath": "github.com/cznic/bufs",
