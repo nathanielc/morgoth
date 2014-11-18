@@ -7,6 +7,8 @@
 Morgoth's documentation!
 ========================
 
+NOTE: I was running into severe performance and stability problems with the current implementation. I decided to pilot a go (golang) implementation. So far the results are very promising. I have been able to push the throughput to several orders of magnitude higher than the previous implementation. I expect to update this documentation in the next few weeks to reflect using the new version. If you are brave try out the 'go' branch.
+
 .. toctree::
    :maxdepth: 1
 
