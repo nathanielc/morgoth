@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+cd sphinx
+make html
+
+git add _build

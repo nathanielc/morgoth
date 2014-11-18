@@ -9,7 +9,7 @@ Mailing List
 
 IRC
 ---
-Get help on via IRC on freenode in ##morgoth
+Get help on via IRC on freenode in #morgoth
 
 Github
 ------

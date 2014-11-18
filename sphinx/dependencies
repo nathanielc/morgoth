@@ -1,8 +1,8 @@
 
-python2.6
+python 2.6 or 2.7
 
 dateutil
-gevent
+gevent 1.0.1
 flask
 scipy
 numpy
