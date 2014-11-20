@@ -20,7 +20,7 @@ func (self *RiemannFactory) GetInstance(config types.Configuration) (interface{}
 		return nil, errors.New(fmt.Sprintf("Configuration is not RiemannConf %v", config))
 	}
 
-	return New(riemannConf.Host, riemannConf.Port), nil
+	return New(riemannConf.Host, riemannConf.Port)
 }
 
 func init() {
