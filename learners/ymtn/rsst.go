@@ -34,8 +34,7 @@ func RSST(x []float64, w, n int) []float64 {
 
 		//Only calc changescores if our eigenvalues are not small
 		if eigenValues.GetAt(0, 0) > small {
-			changeScores[t] = calcChangeScore(past, future, eigenValues)
-			glog.V(2).Infoln("CS: ", changeScores[t])
+			changeScores[t] = calcChangeScore(past, future)
 		} // else changescores[t] = 0
 	}
 	glog.V(1).Infoln("Change Scores: ", changeScores)
@@ -224,21 +223,19 @@ func calcFuture(x []float64, t, g, w, m int) (*matrix.FloatMatrix, *matrix.Float
 	return sub, eigenValues
 }
 
-func calcChangeScore(past, future, eigenValues *matrix.FloatMatrix) float64 {
+func calcChangeScore(past, future *matrix.FloatMatrix) float64 {
 
 	w := past.Rows()
 	lf := future.Cols()
 	b := matrix.FloatZeros(w, 1)
 	v := matrix.FloatZeros(past.Cols(), 1)
-	//eigenValuesSum := 0.0
 	csSum := 0.0
 	for i := 0; i < lf; i++ {
 		future.SubMatrix(b, 0, i, w, 1)
-		b = b.Copy()
 		glog.V(3).Infoln("Past: ", past)
 		glog.V(3).Infoln("b: ", b)
 		//The following performs this calculation
-		//cs = 1 - cos(2/pi*asin(norm(b - past*(past'*b))))
+		//csSum += 1 - cos(2/pi*asin(norm(b - past*(past'*b))))
 		blas.Gemv(
 			past,
 			b,
@@ -258,10 +255,6 @@ func calcChangeScore(past, future, eigenValues *matrix.FloatMatrix) float64 {
 		norm := blas.Nrm2(b).Float()
 		csSum += (1 - math.Cos(math.Asin(norm)*2/math.Pi))
 		glog.V(3).Infoln("cs: ", csSum)
-		//eigenValue := eigenValues.GetAt(i, 0)
-		//csSum += cs * eigenValue
-		//eigenValuesSum += eigenValue
 	}
-	//return csSum / eigenValuesSum
 	return csSum / float64(lf)
 }

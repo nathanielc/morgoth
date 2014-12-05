@@ -58,6 +58,7 @@ func TestRSSTSaw(t *testing.T) {
 	size := 100
 	x := make([]float64, size, size)
 	for i := range x {
+		//Saw tooth pattern that has clear change points
 		x[i] = float64((i+1) % 10)
 	}
 	scores := ymtn.RSST(x, 5, 4)
@@ -68,4 +69,18 @@ func TestRSSTSaw(t *testing.T) {
 		sum += v
 	}
 	assert.Equal(13.862825859387659, sum)
+}
+
+func BenchmarkRSSTSaw(b *testing.B) {
+
+	size := 100
+	x := make([]float64, size, size)
+	for i := range x {
+		//Saw tooth pattern that has clear change points
+		x[i] = float64((i+1) % 10)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		ymtn.RSST(x, 5, 4)
+	}
 }
