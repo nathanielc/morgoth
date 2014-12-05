@@ -15,13 +15,15 @@ const (
 
 func RSST(x []float64, w, n int) []float64 {
 
+	glog.V(2).Infoln("x: ", x)
+
 	T := len(x)
 	m := n
 	g := 0
 
 	//Calc change scores of x
 	changeScores := make([]float64, T)
-	for t := w + n; t < T-w-m-g; t++ {
+	for t := w + n; t < T-w-m-g-1; t++ {
 
 		past := calcPast(x, t, w, n)
 		future, eigenValues := calcFuture(x, t, g, w, m)
@@ -33,22 +35,28 @@ func RSST(x []float64, w, n int) []float64 {
 		//Only calc changescores if our eigenvalues are not small
 		if eigenValues.GetAt(0, 0) > small {
 			changeScores[t] = calcChangeScore(past, future, eigenValues)
+			glog.V(2).Infoln("CS: ", changeScores[t])
 		} // else changescores[t] = 0
 	}
-	glog.V(2).Infoln("Change Scores: ", changeScores)
+	glog.V(1).Infoln("Change Scores: ", changeScores)
 
 	//Weight each score by it's past and future
-	width := w / 2
+	width := int(float64(w)/2.0 + 0.5)
 	start := w + n
 	if start < width {
 		start = width
 	}
+	stop := T - width - 1
+	glog.V(3).Infoln("width: ", width)
+	glog.V(3).Infoln("start: ", start)
+	glog.V(3).Infoln("stop: ", stop)
+
 	weighted := make([]float64, T)
 	max := 0.0
-	for t := start; t < T-width; t++ {
+	for t := start; t < stop; t++ {
 		pastMean, pastVar := calcMeanVar(changeScores[t-width : t])
 		futureMean, futureVar := calcMeanVar(changeScores[t : t+width])
-		glog.V(3).Infoln(t, pastMean, pastVar, futureMean, futureVar)
+		glog.V(4).Infoln("t, pm, pv, fm, fv", t, pastMean, pastVar, futureMean, futureVar)
 		score :=
 			changeScores[t] *
 				math.Abs(pastMean-futureMean) *
@@ -58,7 +66,7 @@ func RSST(x []float64, w, n int) []float64 {
 			max = score
 		}
 	}
-	glog.V(2).Infoln("Weighted: ", weighted)
+	glog.V(1).Infoln("Weighted: ", weighted)
 
 	if max == 0 {
 		//Trivial zero case, we can return early
@@ -94,7 +102,7 @@ func calcMeanVar(x []float64) (float64, float64) {
 
 	variance := varSum / l
 
-	glog.V(3).Infoln(l, sum, mean, variance, x)
+	glog.V(4).Infoln(l, sum, mean, variance, x)
 	return mean, variance
 }
 
@@ -113,6 +121,7 @@ func calcPastHerkel(x []float64, t, w, n int) *matrix.FloatMatrix {
 //Find the number of eigenvectors to use based on
 // the corner of the accumlative sum of sigma
 func calcNumEigenValues(sigma *matrix.FloatMatrix) int {
+	glog.V(3).Infof("sigma: %v", sigma)
 	l := sigma.Rows()
 	if sigma.GetAt(0, 0) < small || l == 1 {
 		return 1
@@ -125,9 +134,16 @@ func calcNumEigenValues(sigma *matrix.FloatMatrix) int {
 		cumsum[i] = sum
 	}
 
-	i := 1
-	for ; cumsum[i]/sum < 0.96; i++ {
+	glog.V(3).Infof("sum: %f", sum)
+	glog.V(3).Infof("cumsum: %v", cumsum)
+
+	i := 0
+	for ; cumsum[i]/sum < 0.95; i++ {
 	}
+	//Plus 1 since indexes are zero-based and we want count
+	i++
+
+	glog.V(2).Infof("NumEV: %d", i)
 	return i
 }
 
@@ -189,19 +205,21 @@ func calcFuture(x []float64, t, g, w, m int) (*matrix.FloatMatrix, *matrix.Float
 		&linalg.IOpt{"jobvt", linalg.PJobNo},
 	)
 
-	l := calcNumEigenValues(sigma)
+	//Eigen values are the squares of sigmas
+	eigenValues := matrix.FloatZeros(sigma.Rows(), 1)
+	for i := 0; i < sigma.Rows(); i++ {
+		v := sigma.GetAt(i, 0)
+		eigenValues.SetAt(i, 0, v*v)
+	}
+
+	//For future, use eigenvalues instead of sigma
+	l := calcNumEigenValues(eigenValues)
 	glog.V(3).Infoln("lf: ", l)
 
 	sub := matrix.FloatZeros(w, l)
 	u.SubMatrix(sub, 0, 0, w, l)
 
-	eigenValues := matrix.FloatZeros(l, 1)
-
-	//Eigen values are the squares of sigmas
-	for i := 0; i < l; i++ {
-		v := sigma.GetAt(i, 0)
-		eigenValues.SetAt(i, 0, v*v)
-	}
+	eigenValues.SubMatrix(eigenValues, 0, 0, l, 1)
 
 	return sub, eigenValues
 }
@@ -212,10 +230,15 @@ func calcChangeScore(past, future, eigenValues *matrix.FloatMatrix) float64 {
 	lf := future.Cols()
 	b := matrix.FloatZeros(w, 1)
 	v := matrix.FloatZeros(past.Cols(), 1)
-	eigenValuesSum := 0.0
+	//eigenValuesSum := 0.0
 	csSum := 0.0
 	for i := 0; i < lf; i++ {
 		future.SubMatrix(b, 0, i, w, 1)
+		b = b.Copy()
+		glog.V(3).Infoln("Past: ", past)
+		glog.V(3).Infoln("b: ", b)
+		//The following performs this calculation
+		//cs = 1 - cos(2/pi*asin(norm(b - past*(past'*b))))
 		blas.Gemv(
 			past,
 			b,
@@ -224,17 +247,21 @@ func calcChangeScore(past, future, eigenValues *matrix.FloatMatrix) float64 {
 			matrix.FScalar(0.0),
 			linalg.OptTrans,
 		)
-		glog.V(3).Infoln("P: ", past)
-		glog.V(3).Infoln("B: ", b)
-		glog.V(3).Infoln("V: ", v)
-		norm := blas.Nrm2(v).Float()
-		a := v.Scale(1.0 / norm)
-		glog.V(3).Infoln("A: ", a)
-		cs := 1 - blas.Dotu(a, b).Float()
-		eigenValue := eigenValues.GetAt(i, 0)
-		csSum += cs * eigenValue
-		eigenValuesSum += eigenValue
+		blas.Gemv(
+			past,
+			v,
+			b,
+			matrix.FScalar(-1.0),
+			matrix.FScalar(1.0),
+			linalg.OptNoTrans,
+		)
+		norm := blas.Nrm2(b).Float()
+		csSum += (1 - math.Cos(math.Asin(norm)*2/math.Pi))
+		glog.V(3).Infoln("cs: ", csSum)
+		//eigenValue := eigenValues.GetAt(i, 0)
+		//csSum += cs * eigenValue
+		//eigenValuesSum += eigenValue
 	}
-
-	return csSum / eigenValuesSum
+	//return csSum / eigenValuesSum
+	return csSum / float64(lf)
 }
