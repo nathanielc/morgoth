@@ -10,10 +10,10 @@ import (
 
 func init() {
 	flag.Parse()
-	if testing.Verbose() {
-		flag.Set("logtostderr", "true")
-		flag.Set("v", "3")
-	}
+	//if testing.Verbose() {
+	//	flag.Set("logtostderr", "true")
+	//	flag.Set("v", "3")
+	//}
 }
 
 func TestRSSTTrivialCase(t *testing.T) {
