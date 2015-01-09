@@ -15,5 +15,5 @@ fi
 
 ./configure
 make build
-screen -d -m ./influxdb || cat influxdb.log
+screen -d -m ./influxdb -stdout=true || cat influxdb.log
 
