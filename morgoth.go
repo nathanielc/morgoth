@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var configPath = flag.String("config", "morogth.yaml", "Path to morgoth config")
+var configPath = flag.String("config", "morgoth.yaml", "Path to morgoth config")
 
 func main() {
 	defer glog.Flush()
