@@ -15,11 +15,13 @@ type Config struct {
 	Metrics    []metric.MetricSupervisorConf `yaml:"metrics"`
 	Fittings   []fitting.FittingConf         `yaml:"fittings"`
 	Schedule   schedule.ScheduleConf         `yaml:"schedule"`
+	Morgoth    MorgothConf                   `yaml:"morgoth"`
 }
 
 func (self *Config) Default() {
 	self.EngineConf.Default()
 	self.Schedule.Default()
+	self.Morgoth.Default()
 	for i := range self.Metrics {
 		self.Metrics[i].Default()
 	}
@@ -36,6 +38,11 @@ func (self Config) Validate() error {
 	}
 
 	valid = self.Schedule.Validate()
+	if valid != nil {
+		return valid
+	}
+
+	valid = self.Morgoth.Validate()
 	if valid != nil {
 		return valid
 	}

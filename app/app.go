@@ -57,7 +57,13 @@ func (self *App) GetWriter() engine.Writer {
 func (self *App) GetMetadataStore(detectorID string) (metadata.MetadataStore, error) {
 	ms, ok := self.metastores[detectorID]
 	if !ok {
-		newMS, err := metadata.New("./meta/", detectorID)
+
+		dir := self.config.Morgoth.MetaDir
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			glog.Infof("MetaDir does not exist: creating dir '%s'", dir)
+			os.Mkdir(dir, 0755)
+		}
+		newMS, err := metadata.New(dir, detectorID)
 		if err != nil {
 			return nil, err
 		}
