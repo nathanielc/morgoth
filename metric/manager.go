@@ -48,6 +48,7 @@ func (self *ManagerStruct) NewMetric(id metric.MetricID) {
 		supervisor := self.matchSupervisor(id)
 		if supervisor == nil {
 			glog.Warningf("No matching metric pattern for metric '%s'", id)
+			return
 		}
 		supervisor.AddMetric(id)
 		self.metrics.Add(id)
