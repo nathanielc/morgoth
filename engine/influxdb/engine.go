@@ -2,8 +2,8 @@ package influxdb
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/influxdb/influxdb/client"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"

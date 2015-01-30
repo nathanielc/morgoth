@@ -2,8 +2,9 @@ package rest_test
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/nu7hatch/gouuid"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/fitting"
 	_ "github.com/nvcook42/morgoth/fitting/list"
@@ -11,7 +12,6 @@ import (
 	app "github.com/nvcook42/morgoth/mocks/app"
 	mengine "github.com/nvcook42/morgoth/mocks/engine"
 	"github.com/nvcook42/morgoth/schedule"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/url"

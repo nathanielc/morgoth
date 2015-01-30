@@ -1,9 +1,9 @@
 package riemann_test
 
 import (
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/nvcook42/morgoth/notifier/riemann"
-	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 	"testing"
 )
 

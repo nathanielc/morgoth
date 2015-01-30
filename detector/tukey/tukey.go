@@ -2,7 +2,7 @@ package tukey
 
 import (
 	"fmt"
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	app "github.com/nvcook42/morgoth/app/types"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"

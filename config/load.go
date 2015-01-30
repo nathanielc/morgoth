@@ -1,7 +1,7 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 )

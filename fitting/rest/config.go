@@ -1,9 +1,9 @@
 package rest
 
 import (
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
 	"github.com/nvcook42/morgoth/defaults"
-	"gopkg.in/validator.v2"
 )
 
 type RESTConf struct {

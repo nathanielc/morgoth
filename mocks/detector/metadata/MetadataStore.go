@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/stretchr/testify/mock"
+import "github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
 
 import metric "github.com/nvcook42/morgoth/metric/types"
 

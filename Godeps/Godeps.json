@@ -1,6 +1,9 @@
 {
 	"ImportPath": "github.com/nvcook42/morgoth",
 	"GoVersion": "go1.3.3",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/amir/raidman",
@@ -55,6 +58,18 @@
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
 			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
+			"ImportPath": "github.com/stretchr/objx",
+			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/mock",
+			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
 		},
 		{
 			"ImportPath": "gopkg.in/validator.v2",

@@ -2,8 +2,8 @@ package riemann
 
 import (
 	"fmt"
-	"github.com/amir/raidman"
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/amir/raidman"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"time"
 )
@@ -13,9 +13,9 @@ const (
 )
 
 type RiemannNotifier struct {
-	client *raidman.Client
-	host string
-	port uint
+	client  *raidman.Client
+	host    string
+	port    uint
 	retries int
 }
 

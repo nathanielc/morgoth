@@ -1,9 +1,9 @@
 package tukey_test
 
 import (
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/nvcook42/morgoth/detector/tukey"
-	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 	"testing"
 )
 

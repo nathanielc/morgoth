@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/config"
 	"github.com/nvcook42/morgoth/detector/metadata"
 	"github.com/nvcook42/morgoth/engine"

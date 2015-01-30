@@ -1,11 +1,11 @@
 package app
 
 import (
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/config"
 	mtypes "github.com/nvcook42/morgoth/metric/types"
 	engine "github.com/nvcook42/morgoth/mocks/engine"
 	metric "github.com/nvcook42/morgoth/mocks/metric"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )

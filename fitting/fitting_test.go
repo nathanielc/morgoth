@@ -1,8 +1,8 @@
 package fitting_test
 
 import (
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/fitting"
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 

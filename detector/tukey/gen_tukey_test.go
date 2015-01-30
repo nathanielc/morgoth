@@ -1,13 +1,13 @@
 package tukey_test
 
 import (
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	detector_test "github.com/nvcook42/morgoth/detector/test"
 	"github.com/nvcook42/morgoth/detector/tukey"
 	"github.com/nvcook42/morgoth/engine/generator"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
-	"github.com/stretchr/testify/assert"
 	"math"
 	"math/rand"
 	"testing"

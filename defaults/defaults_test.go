@@ -1,7 +1,7 @@
 package defaults
 
 import (
-	"github.com/stretchr/testify/assert"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"testing"
 )
 

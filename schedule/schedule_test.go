@@ -1,9 +1,9 @@
 package schedule_test
 
 import (
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/schedule"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )

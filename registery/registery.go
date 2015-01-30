@@ -7,11 +7,11 @@ package registery
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 )
 
-// A Registery for mapping names to factories
-type Registery struct {
+type // A Registery for mapping names to factories
+Registery struct {
 	factories map[string]Factory
 }
 

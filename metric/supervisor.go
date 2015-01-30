@@ -1,7 +1,7 @@
 package metric
 
 import (
-	"github.com/golang/glog"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/engine"
 	"github.com/nvcook42/morgoth/metric/set"

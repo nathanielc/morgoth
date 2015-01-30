@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
 	config "github.com/nvcook42/morgoth/config/types"
 	"github.com/nvcook42/morgoth/detector"
 	"github.com/nvcook42/morgoth/engine/generator"
@@ -9,7 +10,6 @@ import (
 	metadata "github.com/nvcook42/morgoth/mocks/detector/metadata"
 	"github.com/nvcook42/morgoth/registery"
 	"github.com/nvcook42/morgoth/schedule"
-	"github.com/stretchr/testify/mock"
 )
 
 func SetupGeneratedDetectorTest(

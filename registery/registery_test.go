@@ -1,9 +1,9 @@
 package registery_test
 
 import (
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	mocks "github.com/nvcook42/morgoth/mocks/registery"
 	"github.com/nvcook42/morgoth/registery"
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 

@@ -4,7 +4,7 @@ package metadata
 import (
 	//"github.com/golang/glog"
 	"errors"
-	"github.com/cznic/kv"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/kv"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"path"
 )
