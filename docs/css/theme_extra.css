@@ -1,0 +1,87 @@
+/*
+ * Sphinx doesn't have support for section dividers like we do in
+ * MkDocs, this styles the section titles in the nav
+ *
+ * https://github.com/tomchristie/mkdocs/issues/175
+ */
+.wy-menu-vertical span {
+    font-size: 16px;
+    padding: 10px;
+    display: block;
+    position: relative;
+    color: #FFF;
+}
+
+.wy-menu-vertical .toctree-l2 a {
+    padding: 0.4045em 2.427em;
+}
+
+
+
+/*
+ * Long navigations run off the bottom of the screen as the nav
+ * area doesn't scroll.
+ *
+ * https://github.com/tomchristie/mkdocs/pull/202
+ */
+.wy-nav-side {
+    height: 100%;
+    overflow-y: auto;
+}
+
+/*
+ * Fix wrapping in the code highlighting
+ *
+ * https://github.com/tomchristie/mkdocs/issues/233
+ */
+code {
+    white-space: pre;
+}
+
+/*
+ * Fix the toctree levels
+ */
+.wy-menu-vertical .toctree-l3 {
+    margin-left: 15px;
+}
+
+
+/*
+ * Set Morgoth colors and logo
+ */
+.wy-side-nav-search {
+    background-color: #610000;
+}
+
+.icon-home {
+    background-image: url('/img/logo_200.png');
+    background-repeat: no-repeat;
+    background-position: 5px;
+    width: 210px;
+    height: 92px;
+    padding: 5px;
+}
+
+a:hover.icon-home {
+    background-image: url('/img/logo_200.png');
+    background-repeat: no-repeat;
+    background-position: 5px;
+}
+
+.fa-home:before, .icon-home:before {
+    content: "";
+}
+
+
+/*
+ * Make visted links match color scheme
+ */
+a:visited {
+    color: #740410;
+}
+
+.wy-menu-vertical a:visited {
+    color: #B3B3B3;
+}
+
+

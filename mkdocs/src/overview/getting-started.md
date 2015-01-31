@@ -35,10 +35,10 @@ $ cd morgoth
 $ cp $GOPATH/src/github.com/nvcook42/morgoth/examples/morgoth.yaml.example ./morgoth.yaml
 ```
 
-Take a look at the configuration file. All Morgoth configuration is contained in this [yaml](en.wikipedia.org/wiki/YAML) file.
+Take a look at the configuration file. All Morgoth configuration is contained in this [yaml](http://en.wikipedia.org/wiki/YAML) file.
 There are a few basic sections:
 
-* **engine** -- Defines the backend engine Morgoth should use. Currently only an [InfluxDB](influxdb.com) engine is supported.
+* **engine** -- Defines the backend engine Morgoth should use. Currently only an [InfluxDB](http://influxdb.com) engine is supported.
 * **schedule** -- Defines the schedule that Morgoth down samples the incoming data stream and searches for anomalies.
 * **metrics** -- Defines which detection algorithms to apply to which metrics.
 * **fittings** -- Defines which methods are enabled for input and output to Morgoth. For example the REST API is configured in this section.
@@ -51,7 +51,7 @@ More details of each of these sections can found in the [Configuration](/configu
 
 ### InfluxDB
 
-Morgoth uses [InfluxDB](influxdb.com) to store and process metric data. The default configuration we
+Morgoth uses [InfluxDB](http://influxdb.com) to store and process metric data. The default configuration we
 just copied is looking for an InfluxDB instance to be running on `localhost` on port `8086`. It expects
 to be able to login as the default root user and connect to a database called `morgoth`.
 

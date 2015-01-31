@@ -1,7 +1,7 @@
 site_name: Morgoth - Documentation
 site_favicon: favicon.ico
 site_author: Nathaniel Cook
-site_url: http://docs.morgoth.io/
+site_url: http://docs.morgoth.io/docs/
 docs_dir: src
 repo_url: https://github.com/nvcook42/morgoth/
 pages:
