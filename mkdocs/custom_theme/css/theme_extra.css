@@ -54,7 +54,7 @@ code {
 }
 
 .icon-home {
-    background-image: url('/img/logo_200.png');
+    background-image: url('../img/logo_200.png');
     background-repeat: no-repeat;
     background-position: 5px;
     width: 210px;
@@ -63,7 +63,7 @@ code {
 }
 
 a:hover.icon-home {
-    background-image: url('/img/logo_200.png');
+    background-image: url('../img/logo_200.png');
     background-repeat: no-repeat;
     background-position: 5px;
 }
