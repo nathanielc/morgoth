@@ -5,17 +5,18 @@
  * https://github.com/tomchristie/mkdocs/issues/175
  */
 .wy-menu-vertical span {
-    line-height: 18px;
-    padding: 0.4045em 1.618em;
+    font-size: 16px;
+    padding: 10px;
     display: block;
     position: relative;
-    font-size: 90%;
-    color: #838383;
+    color: #FFF;
 }
 
 .wy-menu-vertical .toctree-l2 a {
     padding: 0.4045em 2.427em;
 }
+
+
 
 /*
  * Long navigations run off the bottom of the screen as the nav
@@ -37,6 +38,17 @@ code {
     white-space: pre;
 }
 
+/*
+ * Fix the toctree levels
+ */
+.wy-menu-vertical .toctree-l3 {
+    margin-left: 15px;
+}
+
+
+/*
+ * Set Morgoth colors and logo
+ */
 .wy-side-nav-search {
     background-color: #610000;
 }
@@ -59,3 +71,17 @@ a:hover.icon-home {
 .fa-home:before, .icon-home:before {
     content: "";
 }
+
+
+/*
+ * Make visted links match color scheme
+ */
+a:visited {
+    color: #740410;
+}
+
+.wy-menu-vertical a:visited {
+    color: #B3B3B3;
+}
+
+

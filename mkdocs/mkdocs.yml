@@ -5,7 +5,14 @@ site_url: http://docs.morgoth.io/
 docs_dir: src
 repo_url: https://github.com/nvcook42/morgoth/
 pages:
-  - [overview.md, Overview]
-  - [started.md, Getting Started]
+  - index.md
+  - overview/overview.md
+  - overview/getting-started.md
+  - configuration/configuration.md
+  - configuration/engine.md
+  - configuration/schedule.md
+  - configuration/metrics.md
+  - configuration/fittings.md
+  - configuration/morgoth.md
 theme: readthedocs
 theme_dir: custom_theme
