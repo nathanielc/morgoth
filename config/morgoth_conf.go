@@ -7,7 +7,7 @@ import (
 )
 
 type MorgothConf struct {
-	MetaDir string `yaml:"meta_dir" validate:"nonzero" default:"meta"`
+	MetaDir string      `yaml:"meta_dir" validate:"nonzero" default:"meta"`
 }
 
 func (self MorgothConf) Validate() error {

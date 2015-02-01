@@ -1,0 +1,53 @@
+---
+engine:
+  influxdb:
+    host: localhost
+    port: 8086
+    user: root
+    password: root
+    database: morgoth
+
+schedule:
+  rotations:
+    - {period: 2m, resolution: 2s}
+    - {period: 4m, resolution: 4s}
+    - {period: 8m, resolution: 8s}
+    - {period: 24m, resolution: 24s}
+  delay: 15s
+
+metrics:
+  - pattern: cpu.total
+    detectors:
+      - mgof:
+          min: 0
+          max: 800
+    notifiers:
+      - riemann: {}
+  - pattern: cpu.*
+    detectors:
+      - mgof:
+          min: 0
+          max: 100
+    notifiers:
+      - riemann: {}
+  - pattern: memory
+    detectors:
+      - mgof:
+          min: 0
+          max: 13000000000
+    notifiers:
+      - riemann: {}
+  - pattern: .*
+    detectors:
+      - kstest: {}
+    notifiers:
+      - riemann: {}
+
+
+fittings:
+  - rest:
+      port: 7000
+  - graphite: {}
+
+logging:
+    level: INFO
