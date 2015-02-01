@@ -126,14 +126,22 @@ func (self *InfluxDBEngine) GetMetrics() []metric.MetricID {
 	return nil
 }
 func (self *InfluxDBEngine) GetData(rotation *schedule.Rotation, metric metric.MetricID, start, stop time.Time) []engine.Point {
-	result, err := self.client.Query(
-		fmt.Sprintf("select value from %s where time > %ds and time < %ds",
-			metric.GetRotationPath(rotation),
-			start.Unix(),
-			stop.Unix(),
-		),
-		client.Second,
+	query := fmt.Sprintf(
+		"select value from %s",
+		metric.GetRotationPath(rotation),
 	)
+	if ! start.IsZero() {
+		query += fmt.Sprintf(" where time > %ds", start.Unix())
+	}
+	if ! stop.IsZero() {
+		if start.IsZero() {
+			query += " where "
+		} else {
+			query += " and "
+		}
+		query += fmt.Sprintf("time < %ds", stop.Unix())
+	}
+	result, err := self.client.Query(query, client.Second)
 
 	if err != nil {
 		glog.Error(err.Error())
