@@ -22,7 +22,7 @@ $ morgoth
 ```
 
 You should see an error about morgoth not finding its configuration file. Now let's install
-and configure the basic depedencies of Morgoth.
+and configure the basic dependencies of Morgoth.
 
 
 # Basic Configuration
@@ -38,7 +38,7 @@ $ cp $GOPATH/src/github.com/nvcook42/morgoth/examples/morgoth.yaml.example ./mor
 Take a look at the configuration file. All Morgoth configuration is contained in this [yaml](http://en.wikipedia.org/wiki/YAML) file.
 There are a few basic sections:
 
-* **engine** -- Defines the backend engine Morgoth should use. Currently only an [InfluxDB](http://influxdb.com) engine is supported.
+* **engine** -- Defines the back end engine Morgoth should use. Currently only an [InfluxDB](http://influxdb.com) engine is supported.
 * **schedule** -- Defines the schedule that Morgoth down samples the incoming data stream and searches for anomalies.
 * **metrics** -- Defines which detection algorithms to apply to which metrics.
 * **fittings** -- Defines which methods are enabled for input and output to Morgoth. For example the REST API is configured in this section.
@@ -82,7 +82,7 @@ see [this](configuration/morgoth/)
 Now that Morgoth is running lets give it some data. The example configuration has configured Morgoth to
 listen on port `2003` for graphite structured metrics.
 
-Let's with start a simple example using the load on the host runing Morgoth. The [MGOF](#) algorithm, while simple,
+Let's with start a simple example using the load on the host running Morgoth. The [MGOF](#) algorithm, while simple,
 requires that the data be bounded. Since load data isn't really bounded we will just use a good approximation.
 Edit the configuration and set the `max` value in the `metrics` section to 1.5 times the number of CPUs on the 
 host. Like this:
@@ -143,7 +143,7 @@ The Morgoth REST API also has an endpoint for querying anomalies. Run this curl 
 $ curl -X GET http://localhost:7000/anomalies/load
 ```
 
-If it has been a few minutes than there should be a few anomalies recored so far.
+If it has been a few minutes than there should be a few anomalies recorded so far.
 
 Now we need to wait until Morgoth no longer marks any rotations as anomalous.
 
@@ -155,10 +155,10 @@ Run this command to create some pointless be real load.
 $ for i in {1..2}; do { while true; do true ; done & }; done
 ```
 
-This command created two inifite while loops just spinning on the cpu. This should increase the load to at least 2 on the system.
+This command created two infinite while loops just spinning on the cpu. This should increase the load to at least 2 on the system.
 Let this run for a few minutes.
 
-Once you are statisfied that Morgoth was able to detect this anomaly you can kill both the while loops and the loops sending data to Morgoth
+Once you are satisfied that Morgoth was able to detect this anomaly you can kill both the while loops and the loops sending data to Morgoth
 via this command:
 
 ```bash
