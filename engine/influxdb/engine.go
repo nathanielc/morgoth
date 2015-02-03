@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
 	"math"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -105,11 +107,17 @@ func (self *InfluxDBEngine) RecordAnomalous(metric metric.MetricID, start, stop 
 	series.Columns = []string{
 		"time",
 		"value",
+		"uuid",
+	}
+	id, err := uuid.NewV4()
+	if err != nil {
+		glog.Errorf("Error creating ID for anomaly: %s", err)
+		return
 	}
 	series.Points = [][]interface{}{
-		[]interface{}{start.Unix(), float64(stop.Sub(start))},
+		[]interface{}{start.Unix(), stop.Unix(), id.String()},
 	}
-	err := self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
+	err = self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
 	if err != nil {
 		glog.Error(err)
 	}
@@ -123,7 +131,32 @@ func (self *InfluxDBEngine) DeleteMetric(metric metric.MetricID) {
 //////////////////////
 
 func (self *InfluxDBEngine) GetMetrics() []metric.MetricID {
-	return nil
+
+	query := fmt.Sprintf(
+		"list series /^%s/",
+		metric.MetricPrefix,
+	)
+
+	result, err := self.client.Query(query)
+
+	if err != nil {
+		glog.Error(err.Error())
+		return []metric.MetricID{}
+	}
+	if len(result) == 0 {
+		return []metric.MetricID{}
+	}
+
+	glog.Infof("List series: %v", result[0].GetPoints())
+	points := result[0].GetPoints()
+
+	metrics := make([]metric.MetricID, len(points))
+	for i, row := range points {
+		metrics[i] = metric.MetricID(
+			strings.Replace(row[1].(string), metric.MetricPrefix, "", 1),
+		)
+	}
+	return metrics
 }
 func (self *InfluxDBEngine) GetData(rotation *schedule.Rotation, metric metric.MetricID, start, stop time.Time) []engine.Point {
 	query := fmt.Sprintf(
@@ -163,7 +196,48 @@ func (self *InfluxDBEngine) GetData(rotation *schedule.Rotation, metric metric.M
 }
 
 func (self *InfluxDBEngine) GetAnomalies(metric metric.MetricID, start, stop time.Time) []engine.Anomaly {
-	return nil
+	query := fmt.Sprintf(
+		"select time, value, uuid from %s",
+		metric.GetAnomalyPath(),
+	)
+	if ! start.IsZero() {
+		query += fmt.Sprintf(" where time > %ds", start.Unix())
+	}
+	if ! stop.IsZero() {
+		if start.IsZero() {
+			query += " where "
+		} else {
+			query += " and "
+		}
+		query += fmt.Sprintf("time < %ds", stop.Unix())
+	}
+	result, err := self.client.Query(query, client.Second)
+
+	if err != nil {
+		glog.Error(err.Error())
+		return []engine.Anomaly{}
+	}
+	if len(result) == 0 {
+		return []engine.Anomaly{}
+	}
+
+	series := result[0]
+	points := series.GetPoints()
+	data := make([]engine.Anomaly, len(points))
+	for i, row := range points {
+		start := int64(row[0].(float64))
+		stop := int64(row[3].(float64))
+		idStr := row[2].(string)
+		id, err := uuid.ParseHex(idStr)
+		if err != nil {
+			glog.Warningf("Failed to parse UUID %s: %s", idStr, err)
+			continue
+		}
+		data[i].UUID = id
+		data[i].Start = time.Unix(start, 0)
+		data[i].Stop = time.Unix(stop, 0)
+	}
+	return data
 }
 func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric metric.MetricID, nbins uint, start, stop time.Time, min, max float64) *engine.Histogram {
 	hist := new(engine.Histogram)
