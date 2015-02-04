@@ -76,8 +76,10 @@ func (self *Config) GetFittings() []fitting.Fitting {
 	fittings := make([]fitting.Fitting, len(self.Fittings))
 	for i := range self.Fittings {
 		fitting, err := self.Fittings[i].GetFitting()
-		if err == nil {
+		if err == nil && fitting != nil {
 			fittings[i] = fitting
+		} else {
+			glog.Error(err)
 		}
 	}
 

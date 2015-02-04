@@ -1,6 +1,6 @@
 ---
 engine:
-  influxdb:
+  influxdb: &INFLUXDB
     host: localhost
     port: 8086
     user: root
@@ -27,4 +27,12 @@ fittings:
       port: 7000
   - graphite:
       port: 2003
+  - grafana:
+      port: 7001
+      engine:
+        influxdb:
+          host: localhost
+          user: asdf
+          password: asdf
+          database: asdf
 

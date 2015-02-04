@@ -4,5 +4,6 @@ package list
 
 import (
 	_ "github.com/nvcook42/morgoth/fitting/graphite"
+	_ "github.com/nvcook42/morgoth/fitting/grafana"
 	_ "github.com/nvcook42/morgoth/fitting/rest"
 )

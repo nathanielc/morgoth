@@ -105,7 +105,11 @@ func (self *App) Run() error {
 	self.fittings = self.config.GetFittings()
 	glog.Infof("Starting all fittings: %v", self.fittings)
 	var wg sync.WaitGroup
-	for _, f := range self.fittings {
+	for i, f := range self.fittings {
+		if f == nil {
+			glog.Errorf("Fitting #%d is nil", i+1)
+			continue
+		}
 		wg.Add(1)
 		go func(fitting fitting.Fitting, wg *sync.WaitGroup) {
 			defer wg.Done()
