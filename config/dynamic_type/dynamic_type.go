@@ -30,7 +30,7 @@ func (self *DynamicConfiguration) Default() {
 
 func (self DynamicConfiguration) Validate() error {
 	if self.Conf == nil {
-		return errors.New("No conf found")
+		return errors.New("Conf is nil, cannot validate")
 	}
 	return self.Conf.Validate()
 }

@@ -29,10 +29,5 @@ fittings:
       port: 2003
   - grafana:
       port: 7001
-      engine:
-        influxdb:
-          host: localhost
-          user: asdf
-          password: asdf
-          database: asdf
+      influxdb: *INFLUXDB
 
