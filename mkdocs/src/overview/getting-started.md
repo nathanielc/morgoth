@@ -135,6 +135,12 @@ we need to wait 6 minutes before Morgoth will consider the load metric as not an
 
 This gives us a chance to query for detected anomalies since the first several rotations will be considered anomalous.
 
+
+## Visualizing anomalies
+
+The default example configuration enables a grafana dashboard embedded into the morgoth application.
+Try it out: [http://localhost:7001/#/dashboard/file/default.json](http://localhost:7001/#/dashboard/file/default.json)
+
 ## Querying for anomalies
 
 The Morgoth REST API also has an endpoint for querying anomalies. Run this curl command:

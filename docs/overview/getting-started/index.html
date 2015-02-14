@@ -71,6 +71,8 @@
                             
                                 <li><a class="toctree-l3" href="#getting-data-out-of-morgoth">Getting data out of Morgoth</a></li>
                             
+                                <li><a class="toctree-l3" href="#visualizing-anomalies">Visualizing anomalies</a></li>
+                            
                                 <li><a class="toctree-l3" href="#querying-for-anomalies">Querying for anomalies</a></li>
                             
                         
@@ -242,6 +244,9 @@ host. Like this:</p>
 <p>The smallest rotation is 2 minutes and the default <code>normal_count</code> for the MGOF algorithm is <code>3</code>. This means that
 we need to wait 6 minutes before Morgoth will consider the load metric as not anomalous(aka normal).</p>
 <p>This gives us a chance to query for detected anomalies since the first several rotations will be considered anomalous.</p>
+<h2 id="visualizing-anomalies">Visualizing anomalies</h2>
+<p>The default example configuration enables a grafana dashboard embedded into the morgoth application.
+Try it out: <a href="http://localhost:7001/#/dashboard/file/default.json">http://localhost:7001/#/dashboard/file/default.json</a></p>
 <h2 id="querying-for-anomalies">Querying for anomalies</h2>
 <p>The Morgoth REST API also has an endpoint for querying anomalies. Run this curl command:</p>
 <pre><code class="bash">$ curl -X GET http://localhost:7000/anomalies/load
