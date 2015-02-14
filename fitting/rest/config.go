@@ -1,9 +1,8 @@
 package rest
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	"github.com/nvcook42/morgoth/defaults"
+	config "github.com/nvcook42/morgoth/config/types"
 )
 
 type RESTConf struct {
@@ -16,14 +15,5 @@ func (self *RESTConf) Validate() error {
 
 //Sets any invalid fields to their default value
 func (self *RESTConf) Default() {
-	err := self.Validate()
-	if err != nil {
-		errs := err.(validator.ErrorMap)
-		for fieldName := range errs {
-			if ok, _ := defaults.HasDefault(self, fieldName); ok {
-				glog.Infof("Using default for RESTConf.%s", fieldName)
-				defaults.SetDefault(self, fieldName)
-			}
-		}
-	}
+	config.PerformDefault(self)
 }

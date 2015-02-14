@@ -1,9 +1,8 @@
 package kstest
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	"github.com/nvcook42/morgoth/defaults"
+	config "github.com/nvcook42/morgoth/config/types"
 )
 
 type KSTestConf struct {
@@ -13,15 +12,7 @@ type KSTestConf struct {
 }
 
 func (self *KSTestConf) Default() {
-	err := self.Validate()
-	if err != nil {
-		errs := err.(validator.ErrorMap)
-		for fieldName := range errs {
-			glog.Infof("Using default for KSTestConf.%s", fieldName)
-			defaults.SetDefault(self, fieldName)
-		}
-	}
-
+	config.PerformDefault(self)
 }
 
 func (self *KSTestConf) Validate() error {

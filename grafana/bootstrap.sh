@@ -3,10 +3,10 @@
 
 yum install -y screen
 
-wget http://grafanarel.s3.amazonaws.com/grafana-1.8.1.tar.gz
+wget http://grafanarel.s3.amazonaws.com/grafana-1.9.1.tar.gz
 
-tar xf grafana-1.8.1.tar.gz
-cd grafana-1.8.1
+tar xf grafana-1.9.1.tar.gz
+cd grafana-1.9.1
 cat << EOF > config.js
 
 // == Configuration
@@ -38,9 +38,9 @@ function (Settings) {
       },
       grafana: {
         type: 'influxdb',
-        url: "http://my_influxdb_server:8086/db/grafana",
-        username: 'root',
-        password: 'root',
+        url: "http://localhost:8086/db/grafana",
+        username: 'morgoth',
+        password: 'morgoth',
         grafanaDB: true
       },
     },

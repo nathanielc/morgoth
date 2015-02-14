@@ -1,9 +1,8 @@
 package config
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	"github.com/nvcook42/morgoth/defaults"
+	config "github.com/nvcook42/morgoth/config/types"
 )
 
 type MorgothConf struct {
@@ -15,14 +14,5 @@ func (self MorgothConf) Validate() error {
 }
 
 func (self *MorgothConf) Default() {
-	err := self.Validate()
-	if err != nil {
-		errs := err.(validator.ErrorMap)
-		for fieldName := range errs {
-			if ok, _ := defaults.HasDefault(self, fieldName); ok {
-				glog.Infof("Using default for Morgoth.%s", fieldName)
-				defaults.SetDefault(self, fieldName)
-			}
-		}
-	}
+	config.PerformDefault(self)
 }

@@ -56,6 +56,12 @@ func (self *GrafanaFitting) prepare() error {
 	if err != nil {
 		return err
 	}
+
+	glog.V(1).Info("Create default dashboard")
+	self.defaultDashboard()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -93,22 +99,23 @@ func (self *GrafanaFitting) download() (string, error) {
 func (self *GrafanaFitting) configure() error {
 	filepath := path.Join(self.conf.Dir, "config.js")
 
-	config := []byte(`
+	config := []byte(fmt.Sprintf(`
 define(['settings'],
 function (Settings) {
   return new Settings({
     datasources: {
       influxdb: {
         type: 'influxdb',
-        url: "http://localhost:8086/db/morgoth",
-        username: 'morgoth',
-        password: 'morgoth',
+        url: "http://%s:%d/db/%s",
+        username: "%s",
+        password: "%s",
+        default: true
       },
       grafana: {
         type: 'influxdb',
-        url: "http://localhost:8086/db/grafana",
-        username: 'morgoth',
-        password: 'morgoth',
+        url: "http://%s:%d/db/%s",
+        username: "%s",
+        password: "%s",
         grafanaDB: true
       },
     },
@@ -121,15 +128,199 @@ function (Settings) {
     admin: {
       password: ''
     },
-    window_title_prefix: 'Grafana - ',
+    window_title_prefix: 'Morgoth Dashboard- ',
     plugins: {
       panels: [],
       dependencies: [],
     }
   });
-});`)
+});`,
+		//Influxdb metric config
+		self.conf.InfluxDBConf.Host,
+		self.conf.InfluxDBConf.Port,
+		self.conf.InfluxDBConf.Database,
+		self.conf.InfluxDBConf.User,
+		self.conf.InfluxDBConf.Password,
+
+		//Influxdb GrafanaDB config
+		self.conf.InfluxDBConf.Host,
+		self.conf.InfluxDBConf.Port,
+		self.conf.GrafanaDB,
+		self.conf.InfluxDBConf.User,
+		self.conf.InfluxDBConf.Password,
+	))
 
 	err := ioutil.WriteFile(filepath, config, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (self *GrafanaFitting) defaultDashboard() error {
+	filepath := path.Join(self.conf.Dir, "app", "dashboards", "default.json")
+
+	dash := []byte(`
+{
+  "id": null,
+  "title": "Morgoth",
+  "originalTitle": "Morgoth",
+  "tags": [],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "sharedCrosshair": false,
+  "rows": [
+    {
+      "title": "test",
+      "height": "250px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "id": 4,
+          "span": 12,
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "scale": 1,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "max": null,
+            "min": null,
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "resolution": 100,
+          "lines": true,
+          "fill": 1,
+          "linewidth": 2,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "spyable": true,
+          "options": false,
+          "legend": {
+            "show": true,
+            "values": false,
+            "min": false,
+            "max": false,
+            "current": false,
+            "total": false,
+            "avg": false
+          },
+          "interactive": true,
+          "legend_counts": true,
+          "timezone": "browser",
+          "percentage": false,
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "query_as_alias": true,
+            "shared": false
+          },
+          "targets": [
+            {
+              "target": "randomWalk('random walk')",
+              "function": "first",
+              "column": "value",
+              "series": "/^m\\..*/",
+              "query": "select first(value) from /^m\\..*/ where $timeFilter group by time($interval) order asc",
+              "alias": ""
+            },
+            {
+              "target": "",
+              "function": "count",
+              "column": "value",
+              "series": "/^a\\..*/",
+              "query": "select count(value) from /^a\\..*/ where $timeFilter group by time($interval) order asc",
+              "alias": ""
+            }
+          ],
+          "aliasColors": {},
+          "aliasYAxis": {},
+          "title": "Morgoth",
+          "datasource": "graphite",
+          "renderer": "flot",
+          "annotate": {
+            "enable": false
+          },
+          "seriesOverrides": [
+            {
+              "alias": "/^a\\..*/",
+              "lines": false,
+              "yaxis": 2,
+              "points": true,
+              "pointradius": 5,
+              "stack": true
+            }
+          ],
+          "links": []
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "type": "timepicker",
+      "collapse": false,
+      "enable": true,
+      "status": "Stable",
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ],
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "now": true,
+      "notice": false
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "version": 6,
+  "hideAllLegends": false
+}`)
+
+	err := ioutil.WriteFile(filepath, dash, 0644)
 	if err != nil {
 		return err
 	}

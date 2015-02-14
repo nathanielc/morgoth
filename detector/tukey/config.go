@@ -1,9 +1,8 @@
 package tukey
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	"github.com/nvcook42/morgoth/defaults"
+	config "github.com/nvcook42/morgoth/config/types"
 )
 
 type TukeyConf struct {
@@ -11,19 +10,7 @@ type TukeyConf struct {
 }
 
 func (self *TukeyConf) Default() {
-	err := self.Validate()
-	if err != nil {
-		errs, ok := err.(validator.ErrorMap)
-		if !ok {
-			// Non validation error returned can't continue
-			return
-		}
-		for fieldName := range errs {
-			glog.Infof("Using default for TukeyConf.%s", fieldName)
-			defaults.SetDefault(self, fieldName)
-		}
-	}
-
+	config.PerformDefault(self)
 }
 
 func (self *TukeyConf) Validate() error {

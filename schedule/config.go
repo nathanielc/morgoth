@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	"github.com/nvcook42/morgoth/defaults"
+	config "github.com/nvcook42/morgoth/config/types"
 	"strconv"
 	"time"
 )
@@ -21,25 +21,12 @@ type ScheduleConf struct {
 
 //Sets any invalid fields to their defualt value
 func (self *ScheduleConf) Default() {
-	err := self.Validate()
-	if err != nil {
-		errs := err.(validator.ErrorMap)
-		for fieldName := range errs {
-			if ok, _ := defaults.HasDefault(self, fieldName); ok {
-				glog.Infof("Using default for Schedule.%s", fieldName)
-				defaults.SetDefault(self, fieldName)
-			}
-		}
-	}
+	config.PerformDefault(self)
 	if self.Rotations == nil {
 		self.Rotations = []RotationConf{
 			RotationConf{"5m", "10s"},
-			RotationConf{"15m", "30s"},
-			RotationConf{"1h", "1m"},
-			RotationConf{"6h", "6m"},
-			RotationConf{"1d", "24m"},
-			RotationConf{"10d", "4h"},
 		}
+		glog.Warning("No rotations were configured. Using one 5m, 10s rotation")
 	}
 
 }

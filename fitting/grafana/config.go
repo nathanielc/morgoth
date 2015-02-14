@@ -1,9 +1,8 @@
 package grafana
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	"github.com/nvcook42/morgoth/defaults"
+	config "github.com/nvcook42/morgoth/config/types"
 	"github.com/nvcook42/morgoth/engine/influxdb"
 )
 
@@ -26,17 +25,5 @@ func (self *GrafanaConf) Validate() error {
 //Sets any invalid fields to their default value
 func (self *GrafanaConf) Default() {
 	self.InfluxDBConf.Default()
-	err := self.Validate()
-	if err != nil {
-		if errs, ok := err.(validator.ErrorMap); ok {
-			for fieldName := range errs {
-				if ok, _ := defaults.HasDefault(self, fieldName); ok {
-					glog.Infof("Using default for GrafanaConf.%s", fieldName)
-					defaults.SetDefault(self, fieldName)
-				}
-			}
-		} else {
-			glog.Error(err)
-		}
-	}
+	config.PerformDefault(self)
 }
