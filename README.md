@@ -11,7 +11,7 @@ Elasticsearch integration is comming soon.
 Getting Started
 ---------------
 
-See the tutorial at http://docs.morgoth.io/docs/started.html for an example
+See the tutorial at http://docs.morgoth.io/docs/overview/getting-started/ for an example
 of detecting anomalies in graphite metrics.
 
 
