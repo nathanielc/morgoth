@@ -52,8 +52,8 @@
 		},
 		{
 			"ImportPath": "github.com/influxdb/influxdb/client",
-			"Comment": "v0.8.5-15-g87ef0d1",
-			"Rev": "87ef0d13e940f753a5966b6f0cdd94afc9f57b07"
+			"Comment": "v0.9.0-rc31",
+			"Rev": "8ade485b5865e642b128a7cc6eb20c9da73d1b48"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",

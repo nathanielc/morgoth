@@ -61,8 +61,7 @@ func TestRotationShouldConvertToString(t *testing.T) {
 	assert := assert.New(t)
 
 	r := schedule.Rotation{
-		Period:     time.Minute * 6,
-		Resolution: time.Second * 7,
+		Period: time.Minute * 6,
 	}
 
 	str := r.GetPrefix()

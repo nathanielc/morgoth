@@ -18,12 +18,12 @@ func TestScheduleConfShouldDefault(t *testing.T) {
 	sc.Default()
 
 	assert.Equal([]schedule.RotationConf{
-		schedule.RotationConf{"5m", "10s"},
-		schedule.RotationConf{"15m", "30s"},
-		schedule.RotationConf{"1h", "1m"},
-		schedule.RotationConf{"6h", "6m"},
-		schedule.RotationConf{"1d", "24m"},
-		schedule.RotationConf{"10d", "4h"},
+		schedule.RotationConf{"5m"},
+		schedule.RotationConf{"15m"},
+		schedule.RotationConf{"1h"},
+		schedule.RotationConf{"6h"},
+		schedule.RotationConf{"1d"},
+		schedule.RotationConf{"10d"},
 	}, sc.Rotations)
 	assert.Equal("1m", sc.Delay)
 }
@@ -33,7 +33,7 @@ func TestScheduleConfShouldValidate(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
-		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m", "1s"}},
+		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m"}},
 		Delay:     "4m",
 	}
 
@@ -47,7 +47,7 @@ func TestScheduleConfShouldFailValidateRotations(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
-		Rotations: []schedule.RotationConf{schedule.RotationConf{"1", "1s"}},
+		Rotations: []schedule.RotationConf{schedule.RotationConf{"1"}},
 		Delay:     "1m",
 	}
 
@@ -55,7 +55,7 @@ func TestScheduleConfShouldFailValidateRotations(t *testing.T) {
 	assert.NotNil(err)
 
 	sc = schedule.ScheduleConf{
-		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m", "1"}},
+		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m"}},
 		Delay:     "1m",
 	}
 
@@ -69,7 +69,7 @@ func TestScheduleConfShouldFailValidateDelay(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
-		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m", "1s"}},
+		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m"}},
 		Delay:     "",
 	}
 
@@ -96,9 +96,9 @@ delay: 60s
 	assert.Nil(err)
 
 	assert.Equal([]schedule.RotationConf{
-		schedule.RotationConf{"1m", "1s"},
-		schedule.RotationConf{"1h", "1m"},
-		schedule.RotationConf{"1d", "1h"},
+		schedule.RotationConf{"1m"},
+		schedule.RotationConf{"1h"},
+		schedule.RotationConf{"1d"},
 	}, sc.Rotations)
 	assert.Equal("60s", sc.Delay)
 }
@@ -108,7 +108,7 @@ func TestScheduleConfShouldGetSchedule(t *testing.T) {
 	assert := assert.New(t)
 
 	sc := schedule.ScheduleConf{
-		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m", "1s"}},
+		Rotations: []schedule.RotationConf{schedule.RotationConf{"1m"}},
 		Delay:     "60m",
 	}
 
@@ -120,7 +120,6 @@ func TestScheduleConfShouldGetSchedule(t *testing.T) {
 		assert.Fail("Schedule rotations should have exactly one element")
 	}
 	assert.Equal(time.Minute, s.Rotations[0].Period)
-	assert.Equal(time.Second, s.Rotations[0].Resolution)
 
 	assert.Equal(time.Hour, s.Delay)
 }

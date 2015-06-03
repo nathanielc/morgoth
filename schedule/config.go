@@ -10,8 +10,7 @@ import (
 )
 
 type RotationConf struct {
-	Period     string `validate:"timestr"`
-	Resolution string `validate:"timestr"`
+	Period string `validate:"timestr"`
 }
 
 type ScheduleConf struct {
@@ -23,9 +22,7 @@ type ScheduleConf struct {
 func (self *ScheduleConf) Default() {
 	config.PerformDefault(self)
 	if self.Rotations == nil {
-		self.Rotations = []RotationConf{
-			RotationConf{"5m", "10s"},
-		}
+		self.Rotations = []RotationConf{}
 		glog.Warning("No rotations were configured. Using one 5m, 10s rotation")
 	}
 
@@ -68,12 +65,7 @@ func (self *ScheduleConf) GetSchedule() Schedule {
 		if err != nil {
 			continue
 		}
-		r, err := StrToDuration(rotation.Resolution)
-		if err != nil {
-			continue
-		}
 		s.Rotations[i].Period = p
-		s.Rotations[i].Resolution = r
 	}
 
 	return s

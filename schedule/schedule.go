@@ -11,15 +11,14 @@ const (
 	day = time.Duration(24 * time.Hour)
 )
 
-type ScheduleFunc func(Rotation, time.Time, time.Time)
+type ScheduleFunc func(rotation Rotation, start, stop time.Time)
 
 type Rotation struct {
-	Period     time.Duration
-	Resolution time.Duration
+	Period time.Duration
 }
 
 func (self *Rotation) GetPrefix() string {
-	return fmt.Sprintf("rot.%d.%d.", self.Resolution/time.Second, self.Period/time.Second)
+	return fmt.Sprintf("rot.%d.", self.Period/time.Second)
 }
 
 type Schedule struct {

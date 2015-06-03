@@ -32,5 +32,4 @@ func TestNotify(t *testing.T) {
 	r.Notify("mgof", metric, start, stop)
 
 	assert.True(false)
-
 }
