@@ -4,8 +4,8 @@ import (
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/nvcook42/morgoth/fitting/grafana"
 	_ "github.com/nvcook42/morgoth/engine/list"
+	"github.com/nvcook42/morgoth/fitting/grafana"
 	"testing"
 )
 
@@ -28,9 +28,9 @@ func TestGrafanaConfShouldValidate(t *testing.T) {
 	assert := assert.New(t)
 
 	rc := grafana.GrafanaConf{
-		URL: "http://localhost/grafana.tar.gz",
-		Port: 42,
-		Dir: "/tmp/grafana",
+		URL:       "http://localhost/grafana.tar.gz",
+		Port:      42,
+		Dir:       "/tmp/grafana",
 		GrafanaDB: "grafanadb",
 	}
 
