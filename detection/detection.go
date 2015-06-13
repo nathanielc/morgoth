@@ -2,6 +2,7 @@ package detection
 
 import (
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nvcook42/morgoth/window"
 )
 
 type Detection struct {
@@ -41,11 +42,11 @@ func (self *Detection) AddFingerprinter(f Fingerprinter) {
 }
 
 // Determine if the window is anomalous
-func (self *Detection) IsAnomalous(window []float64) bool {
+func (self *Detection) IsAnomalous(window *window.Window) bool {
 
 	vote := 0.0
 	for _, fc := range self.counters {
-		fingerprint := fc.fingerprinter.Fingerprint(window)
+		fingerprint := fc.fingerprinter.Fingerprint(window.Data)
 		count := fc.counter.Count(fingerprint)
 		glog.Infof("Count: %d", count)
 		if count < self.normalCount {

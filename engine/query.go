@@ -5,6 +5,5 @@ import (
 )
 
 type Query interface {
-	QueryForTimeRange(start, stop time.Time)
+	QueryForTimeRange(start, stop time.Time) string
 }
-

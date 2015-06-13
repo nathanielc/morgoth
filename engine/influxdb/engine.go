@@ -1,13 +1,18 @@
 package influxdb
 
 import (
+	"encoding/json"
+	"net/url"
 	//"fmt"
 	//"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	//"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
 	//"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
+	"github.com/influxdb/influxdb/client"
+	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nvcook42/morgoth/engine"
 	metric "github.com/nvcook42/morgoth/metric/types"
 	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nvcook42/morgoth/window"
 	//"math"
 	//"regexp"
 	//"strings"
@@ -17,6 +22,69 @@ import (
 type InfluxDBEngine struct {
 	config *InfluxDBConf
 	//client *client.Client
+}
+
+func (self *InfluxDBEngine) ExecuteQuery(query string) ([]*window.Window, error) {
+
+	u, err := url.Parse("http://localhost:8086")
+	if err != nil {
+		return nil, err
+	}
+	conf := client.Config{
+		URL:      *u,
+		Username: "root",
+		Password: "root",
+	}
+
+	con, err := client.NewClient(conf)
+	if err != nil {
+		return nil, err
+	}
+	dur, ver, err := con.Ping()
+	if err != nil {
+		return nil, err
+	}
+	glog.Infof("Connected version: %s dur: %s", ver, dur)
+
+	q := client.Query{
+		Command:  query,
+		Database: "mydb",
+	}
+
+	glog.Infof("Q: %s", query)
+	response, err := con.Query(q)
+	if err != nil {
+		return nil, err
+	}
+
+	glog.Infof("Results: %v", response.Results)
+
+	result := response.Results[0]
+	windows := make([]*window.Window, len(result.Series))
+	for i, row := range result.Series {
+		w := &window.Window{
+			Name: row.Name,
+			Data: make([]float64, len(row.Values)),
+			Tags: row.Tags,
+		}
+
+		for j, point := range row.Values {
+			//We care only about the value not the time
+			//TODO check columns
+			p := point[1].(json.Number)
+			v, err := p.Float64()
+			if err != nil {
+				return nil, err
+			}
+			w.Data[j] = v
+		}
+
+		windows[i] = w
+		glog.Infof("W: %v", w)
+	}
+
+	glog.Infof("Windows: %v", windows)
+	return windows, nil
 }
 
 func (self *InfluxDBEngine) Initialize() error {

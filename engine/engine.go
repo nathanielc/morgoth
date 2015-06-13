@@ -4,6 +4,7 @@ import (
 	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
 	"github.com/nvcook42/morgoth/registery"
 	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nvcook42/morgoth/window"
 	"time"
 )
 
@@ -12,6 +13,7 @@ type Engine interface {
 	ConfigureSchedule(schedule *schedule.Schedule) error
 	GetReader() Reader
 	GetWriter() Writer
+	ExecuteQuery(query string) ([]*window.Window, error)
 }
 
 var (
