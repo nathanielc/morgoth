@@ -2,9 +2,9 @@ package riemann
 
 import (
 	"fmt"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/amir/raidman"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	metric "github.com/nvcook42/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/amir/raidman"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	metric "github.com/nathanielc/morgoth/metric/types"
 	"time"
 )
 

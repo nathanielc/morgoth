@@ -2,7 +2,7 @@
 package types
 
 import (
-	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nathanielc/morgoth/schedule"
 	"time"
 )
 

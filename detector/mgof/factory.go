@@ -3,8 +3,8 @@ package mgof
 import (
 	"errors"
 	"fmt"
-	"github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/detector"
+	"github.com/nathanielc/morgoth/config/types"
+	"github.com/nathanielc/morgoth/detector"
 )
 
 type MGOFFactory struct {

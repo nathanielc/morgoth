@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/nvcook42/morgoth/engine"
-	metric "github.com/nvcook42/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/engine"
+	metric "github.com/nathanielc/morgoth/metric/types"
 	"time"
 )
 

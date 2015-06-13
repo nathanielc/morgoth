@@ -2,7 +2,7 @@ package influxdb
 
 import (
 	//"fmt"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
 )
 
 func connect(config *InfluxDBConf) (*client.Client, error) {

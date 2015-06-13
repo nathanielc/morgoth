@@ -1,7 +1,7 @@
 package benchmarks
 
 import (
-	"github.com/nvcook42/morgoth/config"
+	"github.com/nathanielc/morgoth/config"
 	"testing"
 )
 

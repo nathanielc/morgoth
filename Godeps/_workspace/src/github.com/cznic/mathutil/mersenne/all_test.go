@@ -12,7 +12,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 func r32() *mathutil.FC32 {

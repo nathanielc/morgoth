@@ -5,9 +5,9 @@ package dynamic_type
 import (
 	"errors"
 	"fmt"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/registery"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"github.com/nathanielc/morgoth/config/types"
+	"github.com/nathanielc/morgoth/registery"
 )
 
 type configContainer interface {

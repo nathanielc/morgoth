@@ -3,7 +3,7 @@
 package stat
 
 import (
-	. "github.com/nvcook42/morgoth/stat/fn"
+	. "github.com/nathanielc/morgoth/stat/fn"
 )
 
 func Xsquare_PDF(n int64) func(x float64) float64 {

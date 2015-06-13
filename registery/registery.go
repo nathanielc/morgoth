@@ -7,7 +7,7 @@ package registery
 import (
 	"errors"
 	"fmt"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 )
 
 type // A Registery for mapping names to factories

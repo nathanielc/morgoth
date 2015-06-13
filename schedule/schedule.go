@@ -3,7 +3,7 @@ package schedule
 import (
 	"errors"
 	"fmt"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"time"
 )
 

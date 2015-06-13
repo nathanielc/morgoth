@@ -1,8 +1,8 @@
 package router
 
 import (
-	"github.com/nvcook42/morgoth/detection"
-	"github.com/nvcook42/morgoth/window"
+	"github.com/nathanielc/morgoth/detection"
+	"github.com/nathanielc/morgoth/window"
 	"regexp"
 )
 

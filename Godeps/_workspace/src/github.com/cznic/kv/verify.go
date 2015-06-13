@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/exp/lldb"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/exp/lldb"
 )
 
 func verifyAllocator(a *lldb.Allocator) error {

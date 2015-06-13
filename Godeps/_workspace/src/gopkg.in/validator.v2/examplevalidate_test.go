@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
 )
 
 // This example demonstrates a custom function to process template text.

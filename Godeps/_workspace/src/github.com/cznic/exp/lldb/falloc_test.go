@@ -17,9 +17,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/bufs"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/sortutil"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/zappy"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/bufs"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/sortutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/zappy"
 )
 
 var (

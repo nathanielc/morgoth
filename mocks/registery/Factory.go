@@ -1,8 +1,8 @@
 package mocks
 
-import "github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
+import "github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
 
-import "github.com/nvcook42/morgoth/config/types"
+import "github.com/nathanielc/morgoth/config/types"
 
 type Factory struct {
 	mock.Mock

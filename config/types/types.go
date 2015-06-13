@@ -2,9 +2,9 @@
 package types
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	"github.com/nvcook42/morgoth/defaults"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
+	"github.com/nathanielc/morgoth/defaults"
 	"reflect"
 )
 

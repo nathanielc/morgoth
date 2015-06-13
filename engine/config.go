@@ -4,7 +4,7 @@ import (
 	//"github.com/golang/glog"
 	"errors"
 	"fmt"
-	"github.com/nvcook42/morgoth/config/dynamic_type"
+	"github.com/nathanielc/morgoth/config/dynamic_type"
 )
 
 // The Data Engine subsection of the config

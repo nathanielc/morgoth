@@ -1,8 +1,8 @@
 package fitting
 
 import (
-	app "github.com/nvcook42/morgoth/app/types"
-	"github.com/nvcook42/morgoth/registery"
+	app "github.com/nathanielc/morgoth/app/types"
+	"github.com/nathanielc/morgoth/registery"
 )
 
 type Fitting interface {

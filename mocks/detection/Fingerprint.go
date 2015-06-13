@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/nvcook42/morgoth/detection"
+import "github.com/nathanielc/morgoth/detection"
 import "github.com/stretchr/testify/mock"
 
 type Fingerprint struct {

@@ -14,9 +14,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/bufs"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/zappy"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/bufs"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/zappy"
 )
 
 const (

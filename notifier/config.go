@@ -3,7 +3,7 @@ package notifier
 import (
 	"errors"
 	"fmt"
-	"github.com/nvcook42/morgoth/config/dynamic_type"
+	"github.com/nathanielc/morgoth/config/dynamic_type"
 )
 
 type NotifierConf struct {

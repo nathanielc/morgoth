@@ -3,8 +3,8 @@ package riemann
 import (
 	"errors"
 	"fmt"
-	"github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/notifier"
+	"github.com/nathanielc/morgoth/config/types"
+	"github.com/nathanielc/morgoth/notifier"
 )
 
 type RiemannFactory struct {

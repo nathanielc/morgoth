@@ -1,10 +1,10 @@
 package engine
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
-	"github.com/nvcook42/morgoth/registery"
-	"github.com/nvcook42/morgoth/schedule"
-	"github.com/nvcook42/morgoth/window"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
+	"github.com/nathanielc/morgoth/registery"
+	"github.com/nathanielc/morgoth/schedule"
+	"github.com/nathanielc/morgoth/window"
 	"time"
 )
 

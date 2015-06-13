@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 var _ Filer = (*OSFiler)(nil)

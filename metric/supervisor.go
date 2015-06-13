@@ -1,13 +1,13 @@
 package metric
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nvcook42/morgoth/detector"
-	"github.com/nvcook42/morgoth/engine"
-	"github.com/nvcook42/morgoth/metric/set"
-	"github.com/nvcook42/morgoth/metric/types"
-	"github.com/nvcook42/morgoth/notifier"
-	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/detector"
+	"github.com/nathanielc/morgoth/engine"
+	"github.com/nathanielc/morgoth/metric/set"
+	"github.com/nathanielc/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/notifier"
+	"github.com/nathanielc/morgoth/schedule"
 	"time"
 )
 

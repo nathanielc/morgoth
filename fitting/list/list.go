@@ -3,7 +3,7 @@
 package list
 
 import (
-	_ "github.com/nvcook42/morgoth/fitting/grafana"
-	_ "github.com/nvcook42/morgoth/fitting/graphite"
-	_ "github.com/nvcook42/morgoth/fitting/rest"
+	_ "github.com/nathanielc/morgoth/fitting/grafana"
+	_ "github.com/nathanielc/morgoth/fitting/graphite"
+	_ "github.com/nathanielc/morgoth/fitting/rest"
 )

@@ -2,7 +2,7 @@ package stat
 
 import (
 	"fmt"
-	. "github.com/nvcook42/morgoth/stat/fn"
+	. "github.com/nathanielc/morgoth/stat/fn"
 	"math"
 	"math/rand"
 	"testing"

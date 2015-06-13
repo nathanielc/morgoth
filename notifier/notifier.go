@@ -1,8 +1,8 @@
 package notifier
 
 import (
-	metric "github.com/nvcook42/morgoth/metric/types"
-	"github.com/nvcook42/morgoth/registery"
+	metric "github.com/nathanielc/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/registery"
 	"time"
 )
 

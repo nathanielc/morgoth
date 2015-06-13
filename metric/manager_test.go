@@ -1,9 +1,9 @@
 package metric_test
 
 import (
-	"github.com/nvcook42/morgoth/metric"
-	"github.com/nvcook42/morgoth/metric/types"
-	mock "github.com/nvcook42/morgoth/mocks/metric"
+	"github.com/nathanielc/morgoth/metric"
+	"github.com/nathanielc/morgoth/metric/types"
+	mock "github.com/nathanielc/morgoth/mocks/metric"
 	"testing"
 )
 

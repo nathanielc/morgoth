@@ -2,10 +2,10 @@ package riemann_test
 
 import (
 	"flag"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	metric "github.com/nvcook42/morgoth/metric/types"
-	"github.com/nvcook42/morgoth/notifier/riemann"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	metric "github.com/nathanielc/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/notifier/riemann"
 	"testing"
 	"time"
 )

@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/storage"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/storage"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 var (

@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
+import "github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
 
 type Configuration struct {
 	mock.Mock

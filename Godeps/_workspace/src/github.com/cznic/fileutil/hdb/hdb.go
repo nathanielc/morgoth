@@ -29,8 +29,8 @@ Conceptual analogy:
 package hdb
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/falloc"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/storage"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/falloc"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/storage"
 )
 
 type Store struct {

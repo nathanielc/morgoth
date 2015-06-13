@@ -1,9 +1,9 @@
 package mgof_test
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"github.com/nvcook42/morgoth/detector"
-	_ "github.com/nvcook42/morgoth/detector/list"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nathanielc/morgoth/detector"
+	_ "github.com/nathanielc/morgoth/detector/list"
 	"testing"
 )
 

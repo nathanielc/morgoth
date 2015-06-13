@@ -1,12 +1,12 @@
 package dynamic_type_test
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/nvcook42/morgoth/config/dynamic_type"
-	"github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/mocks/config/types"
-	"github.com/nvcook42/morgoth/registery"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	"github.com/nathanielc/morgoth/config/dynamic_type"
+	"github.com/nathanielc/morgoth/config/types"
+	"github.com/nathanielc/morgoth/mocks/config/types"
+	"github.com/nathanielc/morgoth/registery"
 	"testing"
 )
 

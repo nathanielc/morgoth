@@ -4,7 +4,7 @@
 
 package proto
 
-import proto1 "github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/protobuf/proto"
+import proto1 "github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/protobuf/proto"
 import json "encoding/json"
 import math "math"
 

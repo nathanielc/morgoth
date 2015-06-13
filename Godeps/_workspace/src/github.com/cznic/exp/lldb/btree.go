@@ -12,9 +12,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/bufs"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/sortutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/bufs"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/sortutil"
 )
 
 const (

@@ -1,7 +1,7 @@
 package stat
 
 import (
-	. "github.com/nvcook42/morgoth/stat/fn"
+	. "github.com/nathanielc/morgoth/stat/fn"
 )
 
 func CRP_PMF(α float64) func(x []int64) float64 {

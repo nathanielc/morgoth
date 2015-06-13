@@ -1,11 +1,11 @@
 package detector
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	app "github.com/nvcook42/morgoth/app/types"
-	metric "github.com/nvcook42/morgoth/metric/types"
-	"github.com/nvcook42/morgoth/registery"
-	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	app "github.com/nathanielc/morgoth/app/types"
+	metric "github.com/nathanielc/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/registery"
+	"github.com/nathanielc/morgoth/schedule"
 	"time"
 )
 

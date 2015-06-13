@@ -1,7 +1,7 @@
 package engine
 
 import (
-	metric "github.com/nvcook42/morgoth/metric/types"
+	metric "github.com/nathanielc/morgoth/metric/types"
 	"time"
 )
 

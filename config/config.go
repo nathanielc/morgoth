@@ -1,12 +1,12 @@
 package config
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	app "github.com/nvcook42/morgoth/app/types"
-	"github.com/nvcook42/morgoth/engine"
-	"github.com/nvcook42/morgoth/fitting"
-	"github.com/nvcook42/morgoth/metric"
-	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	app "github.com/nathanielc/morgoth/app/types"
+	"github.com/nathanielc/morgoth/engine"
+	"github.com/nathanielc/morgoth/fitting"
+	"github.com/nathanielc/morgoth/metric"
+	"github.com/nathanielc/morgoth/schedule"
 )
 
 // Base config struct for the entire morgoth config

@@ -12,8 +12,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/amir/raidman/proto"
-	pb "github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/protobuf/proto"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/amir/raidman/proto"
+	pb "github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/protobuf/proto"
 )
 
 type network interface {

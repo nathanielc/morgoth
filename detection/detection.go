@@ -1,8 +1,8 @@
 package detection
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nvcook42/morgoth/window"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/window"
 )
 
 type Detection struct {

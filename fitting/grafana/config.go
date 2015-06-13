@@ -1,9 +1,9 @@
 package grafana
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
-	config "github.com/nvcook42/morgoth/config/types"
-	"github.com/nvcook42/morgoth/engine/influxdb"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
+	config "github.com/nathanielc/morgoth/config/types"
+	"github.com/nathanielc/morgoth/engine/influxdb"
 )
 
 type GrafanaConf struct {

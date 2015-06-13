@@ -1,8 +1,8 @@
 package mocks
 
-import "github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
+import "github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
 
-import metric "github.com/nvcook42/morgoth/metric/types"
+import metric "github.com/nathanielc/morgoth/metric/types"
 import "time"
 
 type Writer struct {

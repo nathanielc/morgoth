@@ -2,9 +2,9 @@ package influxdb_test
 
 import (
 	"flag"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"github.com/nvcook42/morgoth/engine/influxdb"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nathanielc/morgoth/engine/influxdb"
 	"os"
 	"testing"
 	"time"

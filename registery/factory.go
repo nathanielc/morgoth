@@ -1,7 +1,7 @@
 package registery
 
 import (
-	"github.com/nvcook42/morgoth/config/types"
+	"github.com/nathanielc/morgoth/config/types"
 )
 
 // A Factory provides methods to create an empty configuration object

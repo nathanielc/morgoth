@@ -1,7 +1,7 @@
 package set
 
 import (
-	metric "github.com/nvcook42/morgoth/metric/types"
+	metric "github.com/nathanielc/morgoth/metric/types"
 )
 
 type Set struct {

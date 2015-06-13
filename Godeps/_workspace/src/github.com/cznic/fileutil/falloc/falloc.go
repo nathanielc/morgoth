@@ -16,7 +16,7 @@ package falloc
 
 import (
 	"bytes"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/storage"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/fileutil/storage"
 	"sync"
 )
 

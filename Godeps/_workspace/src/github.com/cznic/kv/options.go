@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/cznic/exp/lldb"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/cznic/exp/lldb"
 )
 
 const (

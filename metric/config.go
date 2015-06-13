@@ -1,12 +1,12 @@
 package metric
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	app "github.com/nvcook42/morgoth/app/types"
-	"github.com/nvcook42/morgoth/detector"
-	"github.com/nvcook42/morgoth/metric/types"
-	"github.com/nvcook42/morgoth/notifier"
-	"github.com/nvcook42/morgoth/schedule"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	app "github.com/nathanielc/morgoth/app/types"
+	"github.com/nathanielc/morgoth/detector"
+	"github.com/nathanielc/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/notifier"
+	"github.com/nathanielc/morgoth/schedule"
 )
 
 // Represents a single metric conf section

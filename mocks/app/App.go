@@ -1,10 +1,10 @@
 package mocks
 
-import "github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
+import "github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/mock"
 
-import "github.com/nvcook42/morgoth/engine"
-import "github.com/nvcook42/morgoth/schedule"
-import "github.com/nvcook42/morgoth/detector/metadata"
+import "github.com/nathanielc/morgoth/engine"
+import "github.com/nathanielc/morgoth/schedule"
+import "github.com/nathanielc/morgoth/detector/metadata"
 
 type App struct {
 	mock.Mock

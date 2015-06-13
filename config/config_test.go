@@ -1,8 +1,8 @@
 package config_test
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"github.com/nvcook42/morgoth/config"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nathanielc/morgoth/config"
 	"testing"
 )
 

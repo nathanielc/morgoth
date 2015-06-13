@@ -1,11 +1,11 @@
 package engine
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"github.com/nvcook42/morgoth/engine"
-	_ "github.com/nvcook42/morgoth/engine/list"
-	metric "github.com/nvcook42/morgoth/metric/types"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nathanielc/morgoth/engine"
+	_ "github.com/nathanielc/morgoth/engine/list"
+	metric "github.com/nathanielc/morgoth/metric/types"
 	"testing"
 	"time"
 )

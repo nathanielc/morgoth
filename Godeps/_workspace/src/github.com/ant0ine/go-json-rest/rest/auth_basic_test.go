@@ -2,7 +2,7 @@ package rest
 
 import (
 	"encoding/base64"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/ant0ine/go-json-rest/rest/test"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/ant0ine/go-json-rest/rest/test"
 	"testing"
 )
 

@@ -1,11 +1,11 @@
 package grafana_test
 
 import (
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"github.com/nvcook42/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	_ "github.com/nvcook42/morgoth/engine/list"
-	"github.com/nvcook42/morgoth/fitting/grafana"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
+	_ "github.com/nathanielc/morgoth/engine/list"
+	"github.com/nathanielc/morgoth/fitting/grafana"
 	"testing"
 )
 

@@ -3,7 +3,7 @@
 package list
 
 import (
-	_ "github.com/nvcook42/morgoth/detector/kstest"
-	_ "github.com/nvcook42/morgoth/detector/mgof"
-	_ "github.com/nvcook42/morgoth/detector/tukey"
+	_ "github.com/nathanielc/morgoth/detector/kstest"
+	_ "github.com/nathanielc/morgoth/detector/mgof"
+	_ "github.com/nathanielc/morgoth/detector/tukey"
 )
