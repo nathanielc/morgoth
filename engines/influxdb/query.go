@@ -1,19 +1,20 @@
 package influxdb
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"github.com/influxdb/influxdb/influxql"
+	"github.com/nathanielc/morgoth"
 	"time"
 )
 
-type Query struct {
+type QueryBuilder struct {
 	statement *influxql.SelectStatement
-	startTL *influxql.TimeLiteral
-	stopTL *influxql.TimeLiteral
+	startTL   *influxql.TimeLiteral
+	stopTL    *influxql.TimeLiteral
 }
 
-func NewQuery(quertStr string) (*Query, error) {
+func NewQueryBuilder(quertStr morgoth.Query) (*QueryBuilder, error) {
 
 	s, err := influxql.ParseStatement(quertStr)
 	if err != nil {
@@ -23,7 +24,6 @@ func NewQuery(quertStr string) (*Query, error) {
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("Query must be a select statement '%s'", quertStr))
 	}
-
 
 	//Add New BinaryExpr for time clause
 	startTL := &influxql.TimeLiteral{}
@@ -59,8 +59,8 @@ func NewQuery(quertStr string) (*Query, error) {
 
 	return &Query{
 		statement: stmt,
-		startTL: startTL,
-		stopTL:  stopTL,
+		startTL:   startTL,
+		stopTL:    stopTL,
 	}, nil
 }
 

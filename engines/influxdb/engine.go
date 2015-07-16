@@ -2,20 +2,14 @@ package influxdb
 
 import (
 	"encoding/json"
-	"net/url"
-	//"fmt"
-	//"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	//"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
-	//"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
 	"github.com/influxdb/influxdb/client"
+	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nathanielc/morgoth/engine"
 	metric "github.com/nathanielc/morgoth/metric/types"
 	"github.com/nathanielc/morgoth/schedule"
 	"github.com/nathanielc/morgoth/window"
-	//"math"
-	//"regexp"
-	//"strings"
+	"net/url"
 	"time"
 )
 
@@ -24,7 +18,7 @@ type InfluxDBEngine struct {
 	//client *client.Client
 }
 
-func (self *InfluxDBEngine) ExecuteQuery(query string) ([]*window.Window, error) {
+func (self *InfluxDBEngine) GetWindows(query morgoth.Query) ([]*window.Window, error) {
 
 	u, err := url.Parse("http://localhost:8086")
 	if err != nil {

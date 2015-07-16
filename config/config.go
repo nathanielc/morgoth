@@ -11,23 +11,15 @@ import (
 
 // Base config struct for the entire morgoth config
 type Config struct {
-	EngineConf engine.EngineConf             `yaml:"engine"`
-	Metrics    []metric.MetricSupervisorConf `yaml:"metrics"`
-	Fittings   []fitting.FittingConf         `yaml:"fittings"`
-	Schedule   schedule.ScheduleConf         `yaml:"schedule"`
-	Morgoth    MorgothConf                   `yaml:"morgoth"`
+	EngineConf engine.EngineConf     `yaml:"engine"`
+	Schedule   schedule.ScheduleConf `yaml:"schedule"`
+	Morgoth    MorgothConf           `yaml:"morgoth"`
 }
 
 func (self *Config) Default() {
 	self.EngineConf.Default()
 	self.Schedule.Default()
 	self.Morgoth.Default()
-	for i := range self.Metrics {
-		self.Metrics[i].Default()
-	}
-	for i := range self.Fittings {
-		self.Fittings[i].Default()
-	}
 }
 
 func (self Config) Validate() error {
@@ -46,44 +38,7 @@ func (self Config) Validate() error {
 	if valid != nil {
 		return valid
 	}
-
-	for i := range self.Metrics {
-		valid := self.Metrics[i].Validate()
-		if valid != nil {
-			return valid
-		}
-	}
-
-	for i := range self.Fittings {
-		valid := self.Fittings[i].Validate()
-		if valid != nil {
-			return valid
-		}
-	}
 	return nil
-}
-
-func (self *Config) GetSupervisors(app app.App) []metric.Supervisor {
-	supervisors := make([]metric.Supervisor, len(self.Metrics))
-	for i := range self.Metrics {
-		supervisors[i] = self.Metrics[i].GetSupervisor(app)
-	}
-
-	return supervisors
-}
-
-func (self *Config) GetFittings() []fitting.Fitting {
-	fittings := make([]fitting.Fitting, len(self.Fittings))
-	for i := range self.Fittings {
-		fitting, err := self.Fittings[i].GetFitting()
-		if err == nil && fitting != nil {
-			fittings[i] = fitting
-		} else {
-			glog.Error(err)
-		}
-	}
-
-	return fittings
 }
 
 func (self *Config) GetSchedule() schedule.Schedule {

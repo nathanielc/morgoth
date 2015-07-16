@@ -2,5 +2,5 @@
 package list
 
 import (
-	_ "github.com/nathanielc/morgoth/engine/influxdb"
+	_ "github.com/nathanielc/morgoth/engines/influxdb"
 )
