@@ -1,7 +1,7 @@
 package morgoth
 
 import (
-	_ "github.com/nathanielc/morgoth/engines/list"
+	//	_ "github.com/nathanielc/morgoth/engines/list"
 	"github.com/nathanielc/morgoth/registery"
 )
 

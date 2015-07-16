@@ -1,4 +1,4 @@
-package detector
+package counter
 
 import (
 	"math"
@@ -14,7 +14,7 @@ type lossyCounter struct {
 }
 
 type entry struct {
-	fingerprint Fingerprint
+	countable Countable
 	count       int
 	delta       int
 }
@@ -30,15 +30,15 @@ func NewLossyCounter(minSupport, errorTolerance float64) *lossyCounter {
 	}
 }
 
-// Count a fingerprint and return the number of time that fingerprint has
+// Count a countable and return the number of time that countable has
 // been seen within errorTolerance
-func (self *lossyCounter) Count(fingerprint Fingerprint) int {
+func (self *lossyCounter) Count(countable Countable) int {
 
 	self.total++
 
 	count := 0
 	for _, existing := range self.frequencies {
-		if existing.fingerprint.IsMatch(fingerprint) {
+		if existing.countable.IsMatch(countable) {
 			//Found match, count it
 			existing.count++
 			count = existing.count
@@ -50,7 +50,7 @@ func (self *lossyCounter) Count(fingerprint Fingerprint) int {
 		// No matches create new entry
 		count = 1
 		self.frequencies = append(self.frequencies, &entry{
-			fingerprint: fingerprint,
+			countable: countable,
 			count:       count,
 			delta:       self.bucket - 1,
 		})

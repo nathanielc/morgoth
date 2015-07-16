@@ -1,8 +1,6 @@
 package morgoth
 
 import (
-	"github.com/nathanielc/morgoth/detection"
-	"github.com/nathanielc/morgoth/window"
 	"hash/fnv"
 	"regexp"
 )
@@ -12,7 +10,7 @@ type Mapper struct {
 	detectorConfMaps *DetectorConfMap
 }
 
-func (self *Mapper) Map(w *window.Window) *detection.Detection {
+func (self *Mapper) Map(w *Window) *Detector {
 
 	// First check for match in detector maps
 	hash := calcHash()
@@ -56,10 +54,10 @@ func calcHash(name string, tags map[string]string) uint64 {
 type DetectorMap struct {
 	Name     string
 	Tags     map[string]string
-	detector *detection.Detection
+	detector *Detector
 }
 
-func NewDetectorMap(w *window.Window, detector *detection.Detection) *DetectorMap {
+func NewDetectorMap(w *Window, detector *Detector) *DetectorMap {
 	return &DetectorMap{
 		Name:     w.Name,
 		Tags:     w.Tags,
@@ -67,8 +65,8 @@ func NewDetectorMap(w *window.Window, detector *detection.Detection) *DetectorMa
 	}
 }
 
-func (self *DetectorMap) IsMatch(w *window.window) bool {
-	if self.Name != window.Name {
+func (self *DetectorMap) IsMatch(w *window) bool {
+	if self.Name != w.Name {
 		return false
 	}
 
@@ -87,7 +85,7 @@ func (self *DetectorMap) IsMatch(w *window.window) bool {
 	return true
 }
 
-func (self *DetectorMap) GetDetector() *detection.Detection {
+func (self *DetectorMap) GetDetector() *Detector {
 	if self.detector != nil {
 		return self.detector
 	}
@@ -96,19 +94,19 @@ func (self *DetectorMap) GetDetector() *detection.Detection {
 }
 
 type DetectorConfMap struct {
-	NamePattern         *regex.Regexp
+	NamePattern         *regexp.Regexp
 	TagPatterns         map[string]*regexp.Regexp
-	detectorConstructor func() *detection.Detection
+	detectorConstructor func() *Detector
 }
 
-func (self *DetectorConfMap) IsMatch(w *window.window) bool {
-	if !self.NamePattern.MatchString(window.Name) {
+func (self *DetectorConfMap) IsMatch(w *Window) bool {
+	if !self.NamePattern.MatchString(w.Name) {
 		return false
 	}
 
 	//Check only defined tags match patterns
 	for k, pattern := range self.TagPatterns {
-		if tag, ok := window.Tags[k]; !ok || !pattern.MatchString(tag) {
+		if tag, ok := w.Tags[k]; !ok || !pattern.MatchString(tag) {
 			return false
 		}
 	}
@@ -116,6 +114,6 @@ func (self *DetectorConfMap) IsMatch(w *window.window) bool {
 	return true
 }
 
-func (self *DetectorConfMap) NewDetectorMap(w *window.Window) *DetectorMap {
+func (self *DetectorConfMap) NewDetectorMap(w *Window) *DetectorMap {
 	return NewDetectorMap(w, self.detectorConstructor())
 }

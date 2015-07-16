@@ -1,9 +1,7 @@
 package morgoth
 
 import (
-	"github.com/nathanielc/morgoth/engine"
 	"github.com/nathanielc/morgoth/schedule"
-	"github.com/nathanielc/morgoth/window"
 	"time"
 )
 
@@ -18,7 +16,7 @@ func (self *Manager) Start() {
 	}
 }
 
-func (self *Manager) ProcessWindows(windows []*window.Window) {
+func (self *Manager) ProcessWindows(windows []*Window) {
 
 	var detector *detection.Detection
 	for _, w := range windows {
@@ -33,14 +31,14 @@ func (self *Manager) ProcessWindows(windows []*window.Window) {
 	}
 }
 
-func (self *Manager) RecordAnomalous(w *window.Window) {
+func (self *Manager) RecordAnomalous(w *Window) {
 	//TODO
 }
 
 type ScheduledQuery struct {
 	schedule *schedule.Schedule
-	query    engine.Query
-	engine   engine.Engine
+	query    Query
+	engine   Engine
 	manager  *Manager
 }
 
@@ -50,6 +48,6 @@ func (self *ScheduledQuery) Start() {
 
 func (self *ScheduledQuery) callback(rot schedule.Rotation, start, stop time.Time) {
 	q := query.QueryForTimeRange(start, stop)
-	windows := engine.ExecuteQuery(q)
+	windows := ExecuteQuery(q)
 	self.manager.ProcessWindows(windows)
 }

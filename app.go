@@ -3,6 +3,7 @@ package morgoth
 import (
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nathanielc/morgoth/schedule"
+	"github.com/nathanielc/morgoth/config"
 	"os"
 	"os/signal"
 	"sync"

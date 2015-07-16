@@ -1,8 +1,8 @@
-package detector
+package morgoth
 
 import (
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nathanielc/morgoth/window"
+	"github.com/nathanielc/morgoth/counter"
 )
 
 type Detector struct {
@@ -16,10 +16,10 @@ type Detector struct {
 // Pair of fingerprinter and counter
 type fingerprinterCounter struct {
 	fingerprinter Fingerprinter
-	counter       Counter
+	counter       counter.Counter
 }
 
-func New(normalCount int, consensus, minSupport, errorTolerance float64) *Detector {
+func NewDetector(normalCount int, consensus, minSupport, errorTolerance float64) *Detector {
 	//TODO perform sanity check on minsupport and normalcount to make sure
 	// its still possible to mark something as anomalous
 	return &Detector{
@@ -41,11 +41,11 @@ func (self *Detector) AddFingerprinter(f Fingerprinter) {
 }
 
 // Determine if the window is anomalous
-func (self *Detector) IsAnomalous(window *window.Window) bool {
+func (self *Detector) IsAnomalous(window *morgoth.Window) bool {
 
 	vote := 0.0
 	for _, fc := range self.counters {
-		fingerprint := fc.fingerprinter.Fingerprint(window.Data)
+		fingerprint := fc.fingerprinter.Fingerprint(morgoth.Data)
 		count := fc.counter.Count(fingerprint)
 		glog.Infof("Count: %d", count)
 		if count < self.normalCount {
