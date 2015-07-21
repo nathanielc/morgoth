@@ -5,8 +5,6 @@ Morgoth is a flexible anomaly detection application. It is designed to integrate
 with many existing technologies and provide powerful anomaly detection for those systems.
 Currently the only supported backend is an [InfluxDB](http://influxdb.com) 0.9.x database.
 
-## Architecture
-
 Morgoth consist of an anomaly detection framework and an alerting framework.
 
 ## Anomaly Detection

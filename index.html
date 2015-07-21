@@ -62,7 +62,7 @@
                     <p>Morgoth is open source software that provides simple and flexible anomaly detection for time series metric data.</p>
 
                 <h2>Getting Started</h2>
-                    <p>Follow a tutorial on using Morgoth with Graphite <a href="docs/overview/getting-started/">here</a></p>
+                    <p>Follow a tutorial on using Morgoth <a href="docs/overview/getting-started/">here</a></p>
 
                 <h2>Why use Morgoth?</h2>
                     <ul>
@@ -73,23 +73,19 @@
                     </ul>
 
                 <h2>Powerful anomaly detection built-in huh?</h2>
-                    <p>That's right. Primarily the MGOF algorithm is what has proven to
-                    be so useful.</p>
+                    <p> Have a look at <a href="docs/concepts/detection_framework">Detection Framework</a> for a detailed walk through of how the anomaly detection works.</p>
 
-                    <p>In a nut shell MGOF (Multinomial Goodness of Fit, as I am calling it) is an pattern learning algorithm adept at detecting anomalies in non Gaussian data.</p>
-
-                    <p>Using standard deviations or 3-sigma algorithms is a very common way of detecting anmalies in metric data.
+                    <p>One powerful component of Morgoth is its ability to use many different algorithms.
+                    Using standard deviations or 3-sigma algorithms is a very common way of detecting anmalies in metric data.
                     These techniques assume the data they operate on follows a <a href='http://en.wikipedia.org/wiki/Normal_distribution'>Gaussian distribution</a>.
                     Unfortunately much metric data is not Gaussian. Take cpu usage for example. Servers perfoming work from a queue tend to be nearly idle
                     then spike to 100% cpu usage and then drop back down. Most of the time the server is either near 0% utilization or 100% following a
                     <a href='http://en.wikipedia.org/wiki/Bimodal_distribution'>bimodal distribution</a>. If cpu usage were gaussian then the cpu would spend most
                     of the time around 50% utilized and rarley 10% or 90% utilized.</p>
 
-                    <p>The MGOF alorithm assumes no distribution of the data. Rather the way is detects anomalies is to calculate the distribution for
-                    different windows of time. Then compare each of those distributions to the distribution of the window in question using a simple
-                    <a href='http://en.wikipedia.org/wiki/Chi-squared_test'>chi-squared test</a>.</p>
-
-                    <p>In summary the MGOF algorithm is well suited for data collected from systems and applications because it doesn't assume a distribution of the data.</p>
+                    <p>Several alorithms that ship with Morgoth are non-parametric, aka they do not assume a normal distribution of the data.
+                    These alorithms often perform better on certain data sets.
+                    Morgoth lets you choose the alorithms and have them all vote on whether a window of data is anomalous.</p>
 
                 <h2>Join the community</h2>
                     <a href="https://groups.google.com/forum/#!forum/morgoth">Mailing list</a>
