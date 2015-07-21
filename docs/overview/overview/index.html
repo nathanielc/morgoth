@@ -51,6 +51,12 @@
                         
                             <li class="toctree-l2"><a href="#overview">Overview</a></li>
                             
+                                <li><a class="toctree-l3" href="#architecture">Architecture</a></li>
+                            
+                                <li><a class="toctree-l3" href="#anomaly-detection">Anomaly Detection</a></li>
+                            
+                                <li><a class="toctree-l3" href="#alerting">Alerting</a></li>
+                            
                                 <li><a class="toctree-l3" href="#getting-help">Getting help</a></li>
                             
                         
@@ -80,22 +86,28 @@
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/schedule">Schedule</a>
+                    <a class="" href="../../configuration/schedules">Schedules</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/metrics">Metrics</a>
+                    <a class="" href="../../configuration/mappings">Mappings</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/fittings">Fittings</a>
+                    <a class="" href="../../configuration/alerts">Alerts</a>
                     
                 </li>
             
+        
+
+    
+        
+        <span>Concepts</span>
+            
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/morgoth">Morgoth</a>
+                    <a class="" href="../../concepts/fingerprints">Fingerprints</a>
                     
                 </li>
             
@@ -126,7 +138,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="https://github.com/nvcook42/morgoth/" class="icon icon-github"> Edit on GitHub</a>
+            <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github"> Edit on GitHub</a>
           
         
       </li>
@@ -137,13 +149,26 @@
             <div class="section">
               <h1 id="overview">Overview</h1>
 <p>Morgoth is a flexible anomaly detection application. It is designed to integrate
-with many existing technologies and provide powerful anomaly detection for those systems.</p>
+with many existing technologies and provide powerful anomaly detection for those systems.
+Currently the only supported backend is an <a href="http://influxdb.com">InfluxDB</a> 0.9.x database.</p>
+<h2 id="architecture">Architecture</h2>
+<p>Morgoth consist of an anomaly detection framework and an alerting framework.</p>
+<h2 id="anomaly-detection">Anomaly Detection</h2>
+<p>The anomaly detection framework follows a basic workflow:</p>
+<ol>
+<li>Morgoth selects windows of data from its backend (InfluxDB) on configured intervals.</li>
+<li>The windows of data are processed through the anomaly detection algorithms (more on this later).</li>
+<li>Any detected anomalies are written back to the backend so that alerts can be triggered.</li>
+</ol>
+<h2 id="alerting">Alerting</h2>
+<p>The alerting framework is very light weight. It consists of scheduled queries that check against a configured threshold.
+If the threshold is crossed and alert is fired.</p>
 <h2 id="getting-help">Getting help</h2>
 <p>There are several places you can look for help with Morgoth.</p>
 <ul>
 <li><a href="https://groups.google.com/forum/#!forum/morgoth">Mailing List</a> -- Search or post a question</li>
 <li>IRC on freednode in #morgoth -- Come chat</li>
-<li><a href="https://github.com/nvcook42/morgoth">Github</a> -- File an issue or submit a PR.</li>
+<li><a href="https://github.com/nathanielc/morgoth">Github</a> -- File an issue or submit a PR.</li>
 </ul>
 
             </div>
@@ -181,7 +206,7 @@ with many existing technologies and provide powerful anomaly detection for those
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nvcook42/morgoth/"> GitHub</a>
+            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nathanielc/morgoth/"> GitHub</a>
         
       <span><a href="../.." style="color: #fcfcfc;">&laquo; Previous</a></span>
       <span style="margin-left: 15px"><a href="../getting-started" style="color: #fcfcfc">Next &raquo;</a></span>

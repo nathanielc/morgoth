@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Schedule - Morgoth - Documentation - Morgoth - Documentation</title>
+  <title>Mappings - Morgoth - Documentation - Morgoth - Documentation</title>
   
 
   
@@ -70,19 +70,17 @@
                     
                 </li>
             
+                <li class="toctree-l1 ">
+                    <a class="" href="../schedules">Schedules</a>
+                    
+                </li>
+            
                 <li class="toctree-l1 current">
-                    <a class="current" href=".">Schedule</a>
+                    <a class="current" href=".">Mappings</a>
                     
                         <ul>
                         
-                            <li class="toctree-l2"><a href="#schedule">Schedule</a></li>
-                            
-                                <li><a class="toctree-l3" href="#rotations">Rotations</a></li>
-                            
-                                <li><a class="toctree-l3" href="#delay">Delay</a></li>
-                            
-                        
-                            <li class="toctree-l2"><a href="#global-behavior">Global Behavior</a></li>
+                            <li class="toctree-l2"><a href="#mappings">Mappings</a></li>
                             
                         
                         </ul>
@@ -90,17 +88,18 @@
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../metrics">Metrics</a>
+                    <a class="" href="../alerts">Alerts</a>
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../fittings">Fittings</a>
-                    
-                </li>
+        
+
+    
+        
+        <span>Concepts</span>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../morgoth">Morgoth</a>
+                    <a class="" href="../../concepts/fingerprints">Fingerprints</a>
                     
                 </li>
             
@@ -127,11 +126,11 @@
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../..">Docs</a> &raquo;</li>
-    <li>Schedule</li>
+    <li>Mappings</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="https://github.com/nvcook42/morgoth/" class="icon icon-github"> Edit on GitHub</a>
+            <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github"> Edit on GitHub</a>
           
         
       </li>
@@ -140,43 +139,21 @@
 </div>
           <div role="main">
             <div class="section">
-              <h1 id="schedule">Schedule</h1>
-<p>All the activity within Morgoth is controlled by a schedule. The schedule consists
-of a list of rotations and a global delay:</p>
-<h2 id="rotations">Rotations</h2>
-<p>Rotations define how data is down sampled and when anomaly detection is triggered.</p>
-<p>Rotations have two properties:</p>
-<ul>
-<li>Period</li>
-<li>Resolution</li>
-</ul>
-<p>A rotation with a period of 5 minutes and a resolution of 10 seconds will down sample the raw metric data
-so that there is only a point every 10 seconds and will keep at most 5 minutes of data. This rotation will
-then always contain 30 data points. Every 5 minutes those 30 data points will be passed into the configured
-anomaly detection algorithms.</p>
-<p>In this way each rotation defines a down sampled buffer of data to consider when searching for anomalies.
-Most algorithms will perform best with at least 30 data points per rotation.</p>
-<h3 id="example-configuration">Example configuration</h3>
-<pre><code class="yaml">schedule:
-  rotations:
-    -  {period: 5m, resolution: 10s}
-    -  {period: 10m, resolution: 20s}
-    -  {period: 20m, resolution: 40s}
-</code></pre>
-
-<p>This configuration defines three rotations each with 30 data points.</p>
-<h2 id="delay">Delay</h2>
-<p>Because of some internal limitations data needs to arrive at Morgoth within a reasonable time of the timestamp
-on the data points. Configuring the delay defines the maximum time that Morgoth will tolerate data arriving late.</p>
-<h3 id="example-configuration_1">Example configuration</h3>
-<pre><code class="yaml">schedule:
-  delay: 15s
-</code></pre>
-
-<h1 id="global-behavior">Global Behavior</h1>
-<p>Currently the schedule is global to entire Morgoth application. This has been sufficient for current use
-cases. Defining a different schedule for different sets of metrics just adds unnecessary complexity. If
-different schedules are needed just run multiple instances of Morgoth.</p>
+              <h1 id="mappings">Mappings</h1>
+<p>Morgoth receives data from the scheduled queries.
+Once it receives this data it needs to decide which detection instance should process the data.
+This is done via simple <code>mappings</code>.</p>
+<p>The process for finding a detector instance is:</p>
+<ol>
+<li>Check all active detector instances for an exact match of name and all tags on the window. If found pass window to detector instance.</li>
+<li>Check configured <code>mappings</code> for regex match to a new detector instance. If found create new detector instance with name and all tags on the window, and pass it the window.</li>
+</ol>
+<p>A <code>mapping</code> is a name regex pattern and a set of tag regex patterns.
+The measurement name must match the name regex pattern.
+Each tag value must match its corresponding regex pattern.
+If a tag is not specified in the mapping but exists in the window it is ignored.
+Once a match is found, a new detector instance is created witht the configured detector settings.
+So if a new window arrives with different data but the same name and tag set it will be routed to the same detector.</p>
 
             </div>
           </div>
@@ -184,10 +161,10 @@ different schedules are needed just run multiple instances of Morgoth.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../metrics" class="btn btn-neutral float-right" title="Metrics"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../alerts" class="btn btn-neutral float-right" title="Alerts"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../engine" class="btn btn-neutral" title="Engine"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../schedules" class="btn btn-neutral" title="Schedules"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -213,10 +190,10 @@ different schedules are needed just run multiple instances of Morgoth.</p>
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nvcook42/morgoth/"> GitHub</a>
+            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nathanielc/morgoth/"> GitHub</a>
         
-      <span><a href="../engine" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../metrics" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../schedules" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../alerts" style="color: #fcfcfc">Next &raquo;</a></span>
     </span>
 </div>
 <script>

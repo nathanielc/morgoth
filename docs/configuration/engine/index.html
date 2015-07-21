@@ -70,27 +70,36 @@
                     
                         <ul>
                         
+                            <li class="toctree-l2"><a href="#engine">Engine</a></li>
+                            
+                        
                         </ul>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../schedule">Schedule</a>
+                    <a class="" href="../schedules">Schedules</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../metrics">Metrics</a>
+                    <a class="" href="../mappings">Mappings</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../fittings">Fittings</a>
+                    <a class="" href="../alerts">Alerts</a>
                     
                 </li>
             
+        
+
+    
+        
+        <span>Concepts</span>
+            
                 <li class="toctree-l1 ">
-                    <a class="" href="../morgoth">Morgoth</a>
+                    <a class="" href="../../concepts/fingerprints">Fingerprints</a>
                     
                 </li>
             
@@ -121,7 +130,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="https://github.com/nvcook42/morgoth/" class="icon icon-github"> Edit on GitHub</a>
+            <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github"> Edit on GitHub</a>
           
         
       </li>
@@ -130,14 +139,31 @@
 </div>
           <div role="main">
             <div class="section">
-              
+              <h1 id="engine">Engine</h1>
+<p>The only supported engine currently is <a href="https://influxdb.com">InfluxDB</a></p>
+<p>The configuration consists of these values:</p>
+<pre><code class="yaml">---
+engine:
+  influxdb:
+    host: localhost
+    port: 8086
+    user: root
+    password: root
+    database: metrics
+    # The name of the measurement to use when anomalies are written back to InfluxDB.
+    anomaly_measurement: anomaly
+    # The name of the tag to use for the measurement name.
+    measurement_tag: msrmnt # Note this cannot be 'measurement' since InfluxDB seems to have bugs associated with using key words.
+</code></pre>
+
+
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../schedule" class="btn btn-neutral float-right" title="Schedule"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../schedules" class="btn btn-neutral float-right" title="Schedules"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../configuration" class="btn btn-neutral" title="Configuration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -166,10 +192,10 @@
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nvcook42/morgoth/"> GitHub</a>
+            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nathanielc/morgoth/"> GitHub</a>
         
       <span><a href="../configuration" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../schedule" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span style="margin-left: 15px"><a href="../schedules" style="color: #fcfcfc">Next &raquo;</a></span>
     </span>
 </div>
 <script>

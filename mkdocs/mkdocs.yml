@@ -3,16 +3,16 @@ site_favicon: favicon.ico
 site_author: Nathaniel Cook
 site_url: http://docs.morgoth.io/docs/
 docs_dir: src
-repo_url: https://github.com/nvcook42/morgoth/
+repo_url: https://github.com/nathanielc/morgoth/
 pages:
   - index.md
   - overview/overview.md
   - overview/getting-started.md
   - configuration/configuration.md
   - configuration/engine.md
-  - configuration/schedule.md
-  - configuration/metrics.md
-  - configuration/fittings.md
-  - configuration/morgoth.md
+  - configuration/schedules.md
+  - configuration/mappings.md
+  - configuration/alerts.md
+  - concepts/fingerprints.md
 theme: readthedocs
 theme_dir: custom_theme

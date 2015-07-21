@@ -67,13 +67,11 @@
                         
                             <li class="toctree-l2"><a href="#detecting-anomalies">Detecting Anomalies</a></li>
                             
-                                <li><a class="toctree-l3" href="#getting-data-into-morgoth">Getting data into Morgoth</a></li>
+                                <li><a class="toctree-l3" href="#getting-data-for-morgoth">Getting data for Morgoth</a></li>
                             
-                                <li><a class="toctree-l3" href="#getting-data-out-of-morgoth">Getting data out of Morgoth</a></li>
+                                <li><a class="toctree-l3" href="#mapping-data">Mapping Data</a></li>
                             
-                                <li><a class="toctree-l3" href="#visualizing-anomalies">Visualizing anomalies</a></li>
-                            
-                                <li><a class="toctree-l3" href="#querying-for-anomalies">Querying for anomalies</a></li>
+                                <li><a class="toctree-l3" href="#alerting-on-anomalies">Alerting on Anomalies</a></li>
                             
                         
                         </ul>
@@ -97,22 +95,28 @@
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/schedule">Schedule</a>
+                    <a class="" href="../../configuration/schedules">Schedules</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/metrics">Metrics</a>
+                    <a class="" href="../../configuration/mappings">Mappings</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/fittings">Fittings</a>
+                    <a class="" href="../../configuration/alerts">Alerts</a>
                     
                 </li>
             
+        
+
+    
+        
+        <span>Concepts</span>
+            
                 <li class="toctree-l1 ">
-                    <a class="" href="../../configuration/morgoth">Morgoth</a>
+                    <a class="" href="../../concepts/fingerprints">Fingerprints</a>
                     
                 </li>
             
@@ -143,7 +147,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="https://github.com/nvcook42/morgoth/" class="icon icon-github"> Edit on GitHub</a>
+            <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github"> Edit on GitHub</a>
           
         
       </li>
@@ -157,13 +161,13 @@ how to detect anomalies with Morgoth. This tutorial assumes a Unix like environm
 will work fine on other OSes.</p>
 <h1 id="installation">Installation</h1>
 <p>Morgoth is go 'gettable' simply run:</p>
-<pre><code class="bash">$ go get github.com/nvcook42/morgoth
+<pre><code class="bash">$ go get github.com/nathanielc/morgoth/cmd/morgothd
 </code></pre>
 
-<p>Morgoth should now be downloaded and installed on your system. Make sure to add
+<p>Morgothd should now be downloaded and installed on your system. Make sure to add
 <code>$GOPATH/bin</code> to your <code>$PATH</code> in order for your system to find the newly installed morgoth binary.</p>
 <p>Try it out:</p>
-<pre><code class="bash">$ morgoth
+<pre><code class="bash">$ morgothd
 </code></pre>
 
 <p>You should see an error about morgoth not finding its configuration file. Now let's install
@@ -172,100 +176,82 @@ and configure the basic dependencies of Morgoth.</p>
 <p>Let's create a sandbox for morgoth and copy in the example configuration file:</p>
 <pre><code class="bash">$ mkdir morgoth
 $ cd morgoth
-$ cp $GOPATH/src/github.com/nvcook42/morgoth/examples/morgoth.yaml.example ./morgoth.yaml
+$ cp $GOPATH/src/github.com/nathanielc/morgoth/morgoth.yaml.example ./morgoth.yaml
 </code></pre>
 
 <p>Take a look at the configuration file. All Morgoth configuration is contained in this <a href="http://en.wikipedia.org/wiki/YAML">yaml</a> file.
 There are a few basic sections:</p>
 <ul>
 <li><strong>engine</strong> -- Defines the back end engine Morgoth should use. Currently only an <a href="http://influxdb.com">InfluxDB</a> engine is supported.</li>
-<li><strong>schedule</strong> -- Defines the schedule that Morgoth down samples the incoming data stream and searches for anomalies.</li>
-<li><strong>metrics</strong> -- Defines which detection algorithms to apply to which metrics.</li>
-<li><strong>fittings</strong> -- Defines which methods are enabled for input and output to Morgoth. For example the REST API is configured in this section.</li>
-<li><strong>morgoth</strong> -- Defines properties of the Morgoth application itself (data directories, etc). This section is absent in the example since we just need the defaults.</li>
+<li><strong>schedules</strong> -- Defines the schedule for selecting windows of data from the backend engine.</li>
+<li><strong>mappings</strong> -- Defines which detection algorithms to apply to which metrics.</li>
+<li><strong>alerts</strong> -- Defines a set of queries to execute in order to do simple threshold based alerting.</li>
 </ul>
 <p>More details of each of these sections can found in the <a href="../..//configuration/configuration">Configuration</a> section.</p>
 <h2 id="dependencies">Dependencies</h2>
 <h3 id="influxdb">InfluxDB</h3>
-<p>Morgoth uses <a href="http://influxdb.com">InfluxDB</a> to store and process metric data. The default configuration we
-just copied is looking for an InfluxDB instance to be running on <code>localhost</code> on port <code>8086</code>. It expects
-to be able to login as the default root user and connect to a database called <code>morgoth</code>.</p>
-<p>If you do not already have an InfluxDB instance running then I suggest using the provided Vagrantfile for InfluxDB. Just <code>cd $GOPATH/src/github.com/nvcook42/morgoth/influxdb/</code> and run
-<code>vagrant up</code>. Installing <a href="https://www.vagrantup.com/">Vagrant</a> is simple and can get your environment up and running quickly.</p>
+<p>Morgoth uses <a href="http://influxdb.com">InfluxDB</a> (specifically 0.9.x) as a source of metric data.
+Note, Morgoth does not ingest any data, it simple expects to query alreadt existing data from InfluxDB and process it.
+The default configuration we just copied is looking for an InfluxDB instance to be running on <code>localhost</code> on port <code>8086</code>.
+It expects to be able to login as the default root user and connect to a database called <code>morgoth</code>.</p>
 <p>At this point either create a <code>morgoth</code> database on your running InfluxDB instance or change the configuration to point to a different endpoint.</p>
 <p>Now that we have InfluxDB running Morgoth is ready to start detecting anomalies.</p>
 <h1 id="running-morgoth">Running Morgoth</h1>
 <p>Start Morgoth again from the sandbox directory.</p>
-<pre><code class="bash">$ morgoth
+<pre><code class="bash">$ morgothd
 </code></pre>
 
 <p>Morgoth algorithms can store metadata about what they have learned that persists from restart to restart.
-This data is stored in the current directory under a <code>meta</code> directory. If you wish to change that directory
-see <a href="../../configuration/morgoth/">this</a></p>
+This data is stored in a <a href="https://github.com/boltdb/bolt">BoltDB</a> database.</p>
 <h1 id="detecting-anomalies">Detecting Anomalies</h1>
-<h2 id="getting-data-into-morgoth">Getting data into Morgoth</h2>
-<p>Now that Morgoth is running lets give it some data. The example configuration has configured Morgoth to
-listen on port <code>2003</code> for graphite structured metrics.</p>
-<p>Let's with start a simple example using the load on the host running Morgoth. The <a href="#">MGOF</a> algorithm, while simple,
-requires that the data be bounded. Since load data isn't really bounded we will just use a good approximation.
-Edit the configuration and set the <code>max</code> value in the <code>metrics</code> section to 1.5 times the number of CPUs on the 
-host. Like this:</p>
-<pre><code class="yaml">metrics:
- - pattern: .*
-   detectors:
-     - mgof:
-         min: 0
-         max: 6 #NUM_CPUS * 1.5
+<h2 id="getting-data-for-morgoth">Getting data for Morgoth</h2>
+<p>Now that Morgoth is running lets tell it how to find data.
+In the <a href="../..//configuration/schedules">schedules</a> section we define several queries to run an on what frequency.
+We do not need to difine a <code>time</code> clause as Morgoth will do this for you, based on the current time.
+The example configuration is selecting data from the <code>cpu_idle</code> measurement and grouping by all tags.
+The result of this query is that serveral series are returned each with a unique tag set for the <code>cpu_idle</code> measurement.
+Each of these series or windows as Morgoth calls them are passed to the mappings in order to determine what to do with them.</p>
+<p>But before we can see this in action we need to get data into InfluxDB.
+If you already have data change the query to select data from a measurement in your data set.
+If you do not have data in InfluxDB install <a href="https://github.com/influxdb/telegraf">Telegraf</a> and start it up with simple config that only has the cpu and mem plugins enabled.</p>
+<p>Something like this:</p>
+<pre><code class="toml">[influxdb]
+url = &quot;http://localhost:8086&quot;
+database = &quot;metrics&quot;
+
+[agent]
+interval = &quot;5s&quot;
+debug = false
+hostname = &quot;morgoth1&quot;
+
+[cpu]
+  # no configuration
+[mem]
+  # no configuration
 </code></pre>
 
-<p>Now let's start a background process to send the load metric to morgoth every second.</p>
-<pre><code class="bash">$ while true; do echo &quot;load $(cat /proc/loadavg | awk '{print $1}') $(date +'%s')&quot; | nc localhost 2003; sleep 1; done &amp;
+<p>Now that telegraf is running confirm that you are getting data in InfluxDB.</p>
+<h2 id="mapping-data">Mapping Data</h2>
+<p>Now that InfluxDB has data, Morgoth can query it.
+Each window or series of data returned from InfluxDB will be sent to the mapper inside of Morgoth.
+The mapper is configured via the <a href="../..//configuration/mappings">mappings</a> section.
+Each mapping is a contains a <code>name</code> regex that will match against the measurement name, <code>cpu_idle</code> in this case, and a set of tag regexs.
+Each tag regex must also match for the window to match the mapping.
+Once a window with its name and tags matches a mapping it will be processed by an instance of a detector with the configured settings.
+The default configuration references some <a href="../..//concepts/fingerprints">fingerprinters</a> etc.
+Basically we have told the mapping to use a basic Sigma approach to finding anomalies in the <code>cpu_idle</code> data.</p>
+<p>The way the anomaly detection algorithms work is that they will always mark the first couple windows as anomalous.
+This gives us a chance to see an anomaly get recorded.</p>
+<p>After a few seconds run:</p>
+<pre><code class="sql">SELECT start FROM anomaly GROUP BY *
 </code></pre>
 
-<p>At this point Morgoth should be receiving the load of the host every second.</p>
-<h2 id="getting-data-out-of-morgoth">Getting data out of Morgoth</h2>
-<p>Morgoth has a REST API listening on port <code>7000</code> by default. Simply curl the data to see the load metrics so far.</p>
-<pre><code class="bash">$ curl -X GET http://localhost:7000/data/load
-</code></pre>
-
-<p>You should see some JSON that lists several data points since we started reporting load to Morgoth.</p>
-<p>Now we wait... Morgoth is detecting anomalies and does so by comparing one period of time to the next.</p>
-<p>While we wait let's learn about <a href="../../configuration/schedule/">schedules</a>.</p>
-<p>The default configuration schedule looks like this:</p>
-<pre><code class="yaml">schedule:
-  rotations:
-    - {period: 2m, resolution: 2s}
-    - {period: 4m, resolution: 4s}
-    - {period: 8m, resolution: 8s}
-    - {period: 24m, resolution: 24s}
-  delay: 15s
-</code></pre>
-
-<p>The smallest rotation is 2 minutes and the default <code>normal_count</code> for the MGOF algorithm is <code>3</code>. This means that
-we need to wait 6 minutes before Morgoth will consider the load metric as not anomalous(aka normal).</p>
-<p>This gives us a chance to query for detected anomalies since the first several rotations will be considered anomalous.</p>
-<h2 id="visualizing-anomalies">Visualizing anomalies</h2>
-<p>The default example configuration enables a grafana dashboard embedded into the morgoth application.
-Try it out: <a href="http://localhost:7001/#/dashboard/file/default.json">http://localhost:7001/#/dashboard/file/default.json</a></p>
-<h2 id="querying-for-anomalies">Querying for anomalies</h2>
-<p>The Morgoth REST API also has an endpoint for querying anomalies. Run this curl command:</p>
-<pre><code class="bash">$ curl -X GET http://localhost:7000/anomalies/load
-</code></pre>
-
-<p>If it has been a few minutes than there should be a few anomalies recorded so far.</p>
-<p>Now we need to wait until Morgoth no longer marks any rotations as anomalous.</p>
-<p>Once a few minutes have past without any 'anomalies' let's create a real anomaly for Morgoth to find.</p>
-<p>Run this command to create some pointless be real load.</p>
-<pre><code class="bash">$ for i in {1..2}; do { while true; do true ; done &amp; }; done
-</code></pre>
-
-<p>This command created two infinite while loops just spinning on the cpu. This should increase the load to at least 2 on the system.
-Let this run for a few minutes.</p>
-<p>Once you are satisfied that Morgoth was able to detect this anomaly you can kill both the while loops and the loops sending data to Morgoth
-via this command:</p>
-<pre><code class="bash">$ kill $(jobs -p)
-</code></pre>
-
+<p>Notice that <code>cpu_idle</code> has been converted into a tag now and the measurement we queried was the <code>anomaly</code> measurement.
+The measurement tag and the anomaly measurement name can be configured as well(see <a href="../..//configuration/engine">here</a></p>
+<h2 id="alerting-on-anomalies">Alerting on Anomalies</h2>
+<p>Now that we have a few anomalies Morgoth example configuration should have also queried for the number of anomalies and written a notification to a log (alerts.log based on the example config).
+Check this log now to see if the alert was fired.
+If so everything has worked as expected, you can now play around with the configuration to get alerts for anomalies you care about.</p>
 
             </div>
           </div>
@@ -302,7 +288,7 @@ via this command:</p>
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nvcook42/morgoth/"> GitHub</a>
+            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nathanielc/morgoth/"> GitHub</a>
         
       <span><a href="../overview" style="color: #fcfcfc;">&laquo; Previous</a></span>
       <span style="margin-left: 15px"><a href="../../configuration/configuration" style="color: #fcfcfc">Next &raquo;</a></span>

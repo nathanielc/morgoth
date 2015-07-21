@@ -84,22 +84,28 @@
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../schedule">Schedule</a>
+                    <a class="" href="../schedules">Schedules</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../metrics">Metrics</a>
+                    <a class="" href="../mappings">Mappings</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../fittings">Fittings</a>
+                    <a class="" href="../alerts">Alerts</a>
                     
                 </li>
             
+        
+
+    
+        
+        <span>Concepts</span>
+            
                 <li class="toctree-l1 ">
-                    <a class="" href="../morgoth">Morgoth</a>
+                    <a class="" href="../../concepts/fingerprints">Fingerprints</a>
                     
                 </li>
             
@@ -130,7 +136,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="https://github.com/nvcook42/morgoth/" class="icon icon-github"> Edit on GitHub</a>
+            <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github"> Edit on GitHub</a>
           
         
       </li>
@@ -144,19 +150,16 @@
 <p>The Morgoth configuration contains the following sections:</p>
 <ul>
 <li><a href="../engine">Engine</a></li>
-<li><a href="../schedule">Schedule</a></li>
-<li><a href="../metrics">Metrics</a></li>
-<li><a href="../fittings">Fittings</a></li>
-<li><a href="../morgoth">Morgoth</a></li>
+<li><a href="../schedules">Schedules</a></li>
+<li><a href="../mappings">Mappings</a></li>
+<li><a href="../alerts">Alerts</a></li>
 </ul>
 <h1 id="defaults">Defaults</h1>
 <p>Morgoth internally uses yaml marshaling to read the configuration.
-What this means is that defaults are stored as golang <a href="https://golang.org/ref/spec#Struct_types">tags</a> on the
-configuration structs. While this doesn't serve as extensive API
-documentation it is relatively quick to determine what configuration is
-being used where in Morgoth. Later I plan to leverage this feature to
-make the morgoth binary capable of generating the default configuration contained
-within itself.</p>
+What this means is that defaults are stored as golang <a href="https://golang.org/ref/spec#Struct_types">tags</a> on the configuration structs.
+While this doesn't serve as extensive API documentation it is relatively quick to determine what configuration is being used where in Morgoth.
+More verbose logging will print out each time a default value is used.
+Later I plan to leverage this feature to make the morgoth binary capable of generating the default configuration contained within itself.</p>
 
             </div>
           </div>
@@ -193,7 +196,7 @@ within itself.</p>
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nvcook42/morgoth/"> GitHub</a>
+            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nathanielc/morgoth/"> GitHub</a>
         
       <span><a href="../../overview/getting-started" style="color: #fcfcfc;">&laquo; Previous</a></span>
       <span style="margin-left: 15px"><a href="../engine" style="color: #fcfcfc">Next &raquo;</a></span>

@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Fittings - Morgoth - Documentation - Morgoth - Documentation</title>
+  <title>Schedules - Morgoth - Documentation - Morgoth - Documentation</title>
   
 
   
@@ -70,27 +70,36 @@
                     
                 </li>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../schedule">Schedule</a>
-                    
-                </li>
-            
-                <li class="toctree-l1 ">
-                    <a class="" href="../metrics">Metrics</a>
-                    
-                </li>
-            
                 <li class="toctree-l1 current">
-                    <a class="current" href=".">Fittings</a>
+                    <a class="current" href=".">Schedules</a>
                     
                         <ul>
+                        
+                            <li class="toctree-l2"><a href="#schedules">Schedules</a></li>
+                            
                         
                         </ul>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../morgoth">Morgoth</a>
+                    <a class="" href="../mappings">Mappings</a>
+                    
+                </li>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../alerts">Alerts</a>
+                    
+                </li>
+            
+        
+
+    
+        
+        <span>Concepts</span>
+            
+                <li class="toctree-l1 ">
+                    <a class="" href="../../concepts/fingerprints">Fingerprints</a>
                     
                 </li>
             
@@ -117,11 +126,11 @@
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../..">Docs</a> &raquo;</li>
-    <li>Fittings</li>
+    <li>Schedules</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="https://github.com/nvcook42/morgoth/" class="icon icon-github"> Edit on GitHub</a>
+            <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github"> Edit on GitHub</a>
           
         
       </li>
@@ -130,17 +139,53 @@
 </div>
           <div role="main">
             <div class="section">
-              
+              <h1 id="schedules">Schedules</h1>
+<p>Since Morgoth does not ingest data itself it needs to be told were and how to get data.
+This is were schedules come in, they define a query and a period that the query should be run.
+Each time the query is run Morgoth adds a time clause resticting it to just the window of time since the last time the query ran.</p>
+<p>The basic components of a scheduled query are:</p>
+<ol>
+<li>query -- The query to run without any time clause.</li>
+<li>period -- How often to run the query. Can be any duration string (s,m,h,w,d, etc.)</li>
+<li>delay -- How long to wait from real time before executing the query. Usefull if data takes time to arrive at InfluxDB.</li>
+<li>tags -- Static set of tags to set on all windows returned from the query</li>
+</ol>
+<p>As the queries execute data receives data and processes by sending it to the mapper.
+Since the mapper uses tags to make mapping decisions its possible to define a set of static tags to be set on the results of a given query.
+This allows the mapper to make decisions based on which retention policy, etc. the data came from.</p>
+<p>Here is an example schedules config section:</p>
+<pre><code class="yaml">schedules:
+  - query: SELECT value FROM &quot;day&quot;.cpu_idle GROUP BY *
+    period: 30s
+    delay: 10s
+    tags:
+      ret: day
+  - query: SELECT value FROM &quot;week&quot;.cpu_idle GROUP BY *
+    period: 5m
+    delay: 1m
+    tags:
+      ret: week
+  - query: SELECT value FROM &quot;month&quot;.cpu_idle GROUP BY *
+    period: 1h
+    delay: 1m
+    tags:
+      ret: month
+</code></pre>
+
+<p>Notice that these queries are selecting data from different retention policies and adding a tag as such.
+This way Morgoth can map to a new detector for each set of data for different retention policies allowing for detection of anomalies of widely different time scales.</p>
+<p>Also note the  <code>GROUP BY *</code> InfluxDB will not return tags in the result unless the are requested, so either add a <code>GROUP BY *</code> or explicity name each tag used in the mappings section.</p>
+
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../morgoth" class="btn btn-neutral float-right" title="Morgoth"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../mappings" class="btn btn-neutral float-right" title="Mappings"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../metrics" class="btn btn-neutral" title="Metrics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../engine" class="btn btn-neutral" title="Engine"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -166,10 +211,10 @@
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
         
-            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nvcook42/morgoth/"> GitHub</a>
+            <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nathanielc/morgoth/"> GitHub</a>
         
-      <span><a href="../metrics" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../morgoth" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../engine" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../mappings" style="color: #fcfcfc">Next &raquo;</a></span>
     </span>
 </div>
 <script>
