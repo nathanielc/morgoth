@@ -13,6 +13,7 @@ pages:
   - configuration/schedules.md
   - configuration/mappings.md
   - configuration/alerts.md
+  - concepts/detection_framework.md
   - concepts/fingerprints.md
 theme: readthedocs
 theme_dir: custom_theme

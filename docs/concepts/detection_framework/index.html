@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Alerts - Morgoth - Documentation - Morgoth - Documentation</title>
+  <title>Detection framework - Morgoth - Documentation - Morgoth - Documentation</title>
   
 
   
@@ -61,31 +61,27 @@
         <span>Configuration</span>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../configuration">Configuration</a>
+                    <a class="" href="../../configuration/configuration">Configuration</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../engine">Engine</a>
+                    <a class="" href="../../configuration/engine">Engine</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../schedules">Schedules</a>
+                    <a class="" href="../../configuration/schedules">Schedules</a>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../mappings">Mappings</a>
+                    <a class="" href="../../configuration/mappings">Mappings</a>
                     
                 </li>
             
-                <li class="toctree-l1 current">
-                    <a class="current" href=".">Alerts</a>
-                    
-                        <ul>
-                        
-                        </ul>
+                <li class="toctree-l1 ">
+                    <a class="" href="../../configuration/alerts">Alerts</a>
                     
                 </li>
             
@@ -95,13 +91,22 @@
         
         <span>Concepts</span>
             
-                <li class="toctree-l1 ">
-                    <a class="" href="../../concepts/detection_framework">Detection framework</a>
+                <li class="toctree-l1 current">
+                    <a class="current" href=".">Detection framework</a>
+                    
+                        <ul>
+                        
+                            <li class="toctree-l2"><a href="#detection-framework">Detection Framework</a></li>
+                            
+                                <li><a class="toctree-l3" href="#lossy-counting">Lossy Counting</a></li>
+                            
+                        
+                        </ul>
                     
                 </li>
             
                 <li class="toctree-l1 ">
-                    <a class="" href="../../concepts/fingerprints">Fingerprints</a>
+                    <a class="" href="../fingerprints">Fingerprints</a>
                     
                 </li>
             
@@ -128,7 +133,7 @@
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href="../..">Docs</a> &raquo;</li>
-    <li>Alerts</li>
+    <li>Detection framework</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -141,17 +146,37 @@
 </div>
           <div role="main">
             <div class="section">
-              
+              <h1 id="detection-framework">Detection Framework</h1>
+<p>There are two basic components to the detection framework Morgoth employs.</p>
+<ol>
+<li>A Lossy Counting strategy for finding anomlous behavior.</li>
+<li>A fingerprinting mechanism to summarize/fingperprint behaviors.</li>
+</ol>
+<p>At a high level Morgoth fingperprints each window of data it sees and keeps track of which fingperprints it has seen before and marks new/infrequent fingperprints as anomalous.
+The power of the framework is in which fingerprinting algorithms are used and in the simplicity of configuring how to count frequent fingperprints.</p>
+<h2 id="lossy-counting">Lossy Counting</h2>
+<p>The <a href="http://www.vldb.org/conf/2002/S10P03.pdf">Lossy Counting algorithm</a> is a way of counting frequent items efficiently.
+The algorithm is lossy since it will drop infrequent items but does so in such a way that it can guarantee certain behaviors:</p>
+<ol>
+<li>There are no false negatives. The frequency of an item cannot be over estimated.</li>
+<li>False positives are guaranteed to have a frequency of at least <code>sN-eN</code>, where <code>N</code> is the number of items processed, <code>s</code> is the minimum support and <code>e</code> is the error tolerance.</li>
+<li>The frequency of an item can be underestimated by at most <code>eN</code>.</li>
+<li>The space requirements of the algorithm are <code>1/e log(eN)</code>.</li>
+</ol>
+<p>These constraints allow the user to have intuitive control over what is considered an anomaly.
+For example <code>#3</code> states that items can be underestimated by at most <code>eN</code>.
+What this means given an <code>e=0.10</code> that items that are less than 10% frequent might get dropped and when they occur again could be marked as anomalies.</p>
+
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../../concepts/detection_framework" class="btn btn-neutral float-right" title="Detection framework"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../fingerprints" class="btn btn-neutral float-right" title="Fingerprints"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../mappings" class="btn btn-neutral" title="Mappings"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../configuration/alerts" class="btn btn-neutral" title="Alerts"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -179,8 +204,8 @@
         
             <a class="icon icon-github" style="float: left; color: #fcfcfc" href="https://github.com/nathanielc/morgoth/"> GitHub</a>
         
-      <span><a href="../mappings" style="color: #fcfcfc;">&laquo; Previous</a></span>
-      <span style="margin-left: 15px"><a href="../../concepts/detection_framework" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../../configuration/alerts" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../fingerprints" style="color: #fcfcfc">Next &raquo;</a></span>
     </span>
 </div>
 <script>
