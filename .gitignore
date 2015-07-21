@@ -9,7 +9,8 @@ bin
 .vagrant
 *.test
 meta/*
-morgoth
+morgothd
+morgoth.db
 logs/
 debugging/mgof/
 debugging/kstest/

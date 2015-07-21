@@ -3,7 +3,7 @@ package morgoth
 import (
 	"bytes"
 	"encoding/gob"
-	"github.com/boltdb/bolt"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/boltdb/bolt"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"runtime"
 )
