@@ -1,9 +1,15 @@
 package morgoth
 
+import (
+	"time"
+)
+
 type Window struct {
-	Name string
-	Data []float64
-	Tags map[string]string
+	Name  string
+	Data  []float64
+	Tags  map[string]string
+	Start time.Time
+	Stop  time.Time
 }
 
 // Search all given tags to see if they match the window's tags

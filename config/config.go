@@ -2,45 +2,46 @@ package config
 
 import (
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	app "github.com/nathanielc/morgoth/app/types"
-	"github.com/nathanielc/morgoth/engine"
-	"github.com/nathanielc/morgoth/fitting"
-	"github.com/nathanielc/morgoth/metric"
-	"github.com/nathanielc/morgoth/schedule"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/validator.v2"
+	"github.com/nathanielc/morgoth/defaults"
+	"reflect"
+	"strings"
 )
 
-// Base config struct for the entire morgoth config
-type Config struct {
-	EngineConf engine.EngineConf     `yaml:"engine"`
-	Schedule   schedule.ScheduleConf `yaml:"schedule"`
-	Morgoth    MorgothConf           `yaml:"morgoth"`
+type Validator interface {
+	Validate() error
 }
 
-func (self *Config) Default() {
-	self.EngineConf.Default()
-	self.Schedule.Default()
-	self.Morgoth.Default()
+type Configuration interface {
+	defaults.Defaulter
+	Validator
 }
 
-func (self Config) Validate() error {
-	glog.V(2).Infof("Validating Config %v", self)
-	valid := self.EngineConf.Validate()
-	if valid != nil {
-		return valid
+//Sets any invalid fields to their default value
+func PerformDefault(conf Configuration) {
+	err := conf.Validate()
+	name := reflect.ValueOf(conf).Type()
+	if err != nil {
+		if errs, ok := err.(validator.ErrorMap); ok {
+			for fieldName := range errs {
+				if strings.Contains(fieldName, ".") {
+					//If field Name contains a '.' than it is a subfield of a current field
+					continue
+				}
+				glog.V(4).Info("Invalid field searching for default ", fieldName)
+				if ok, err := defaults.HasDefault(conf, fieldName); ok {
+					value, err := defaults.SetDefault(conf, fieldName)
+					if err != nil {
+						glog.Errorf("Failed to set default of %s on %s", fieldName, name)
+					} else {
+						glog.Infof("Defaulted %v.%s to '%v'", name, fieldName, value)
+					}
+				} else {
+					glog.V(4).Info("No default found: ", err)
+				}
+			}
+		} else {
+			glog.Errorf("Failed to validate %s: %s", name, err)
+		}
 	}
-
-	valid = self.Schedule.Validate()
-	if valid != nil {
-		return valid
-	}
-
-	valid = self.Morgoth.Validate()
-	if valid != nil {
-		return valid
-	}
-	return nil
-}
-
-func (self *Config) GetSchedule() schedule.Schedule {
-	return self.Schedule.GetSchedule()
 }

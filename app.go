@@ -1,102 +1,161 @@
 package morgoth
 
 import (
+	"fmt"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nathanielc/morgoth/schedule"
-	"github.com/nathanielc/morgoth/config"
 	"os"
 	"os/signal"
-	"sync"
+	"regexp"
+	"syscall"
 )
 
 type App struct {
-	mapper   *Mapper
-	engine   Engine
-	config   *config.Config
-	schedule *schedule.Schedule
+	apiServer     *APIServer
+	alertsManager *AlertsManager
+	mapper        *Mapper
+	manager       *Manager
+	engine        Engine
+	config        *Config
+	shutdownChan  chan bool
+	Stats         AppStats
 }
 
-func New(config *config.Config) *App {
+type AppStats struct {
+	MapperStats *MapperStats
+}
+
+func NewApp(config *Config) *App {
 	app := App{
-		config: config,
+		config:       config,
+		shutdownChan: make(chan bool),
 	}
-	app.schedule = config.GetSchedule()
 	return &app
 }
 
-func (self *App) Run() error {
+func (self *App) Run() (err error) {
+	glog.Info("Starting app")
 	glog.Info("Setup signal handler")
 	go self.signalHandler()
 
-	glog.Info("Setup engine")
-	eng, err := self.config.EngineConf.GetEngine()
+	glog.Info("Setup Engine")
+	self.engine, err = self.config.EngineConf.GetEngine()
 	if err != nil {
-		return err
+		return
 	}
-	self.engine = eng
 	err = self.engine.Initialize()
 	if err != nil {
-		return err
+		return
 	}
 
-	glog.Info("Setup metrics manager")
-	supervisors := self.config.GetSupervisors(self)
-	glog.V(2).Infof("Supervisors: %v", supervisors)
-	self.manager = metric.NewManager(supervisors)
-
-	glog.Info("Setup metric schedules")
-	err = self.engine.ConfigureSchedule(&self.schedule)
-	if err != nil {
-		glog.Errorf("Error configuring schedules %s", err.Error())
-	}
-
-	self.fittings = self.config.GetFittings()
-	glog.Infof("Starting all fittings: %v", self.fittings)
-	var wg sync.WaitGroup
-	for i, f := range self.fittings {
-		if f == nil {
-			glog.Errorf("Fitting #%d is nil", i+1)
-			continue
+	glog.Info("Setup Mapper")
+	detectorMatchers := make([]*DetectorMatcher, len(self.config.Mappings))
+	for i, mapping := range self.config.Mappings {
+		namePattern, err := regexp.Compile(mapping.Name)
+		if err != nil {
+			return fmt.Errorf("Error parsing regexp: %s: %s", mapping.Name, err)
 		}
-		wg.Add(1)
-		go func(fitting fitting.Fitting, wg *sync.WaitGroup) {
-			defer wg.Done()
-			glog.Infof("Starting fitting %v", fitting.Name())
-			fitting.Start(self)
-		}(f, &wg)
+		tagPatterns := make(map[string]*regexp.Regexp, len(mapping.Tags))
+		for tag, pattern := range mapping.Tags {
+			r, err := regexp.Compile(pattern)
+			if err != nil {
+				return fmt.Errorf("Error parsing regexp: %s: %s", pattern, err)
+			}
+			tagPatterns[tag] = r
+		}
+		fingerprinters := make([]Fingerprinter, len(mapping.Detector.Fingerprinters))
+		for i, fp := range mapping.Detector.Fingerprinters {
+			f, err := fp.GetFingerprinter()
+			if err != nil {
+				return fmt.Errorf("Error creating Fingerprinter: %s", err)
+			}
+
+			fingerprinters[i] = f
+		}
+		detectorBuilder := NewDetectorBuilder(
+			mapping.Detector.NormalCount,
+			mapping.Detector.Consensus,
+			mapping.Detector.MinSupport,
+			mapping.Detector.ErrorTolerance,
+			fingerprinters,
+		)
+		glog.V(1).Infof("Created detector builder: %v", mapping.Detector)
+		matcher := NewDetectorMatcher(namePattern, tagPatterns, detectorBuilder)
+		glog.V(1).Infof("Created detector matcher: %v", matcher)
+		detectorMatchers[i] = matcher
 
 	}
+	detectorMappers := make([]*DetectorMapper, 0)
+	self.mapper = NewMapper(detectorMappers, detectorMatchers)
+	self.Stats.MapperStats = &self.mapper.Stats
 
-	glog.Info("Starting metric manager")
-	self.schedule.Callback = self.manager.Detect
-	self.schedule.Start()
+	glog.Info("Setup Manager")
+	scheduledQueryBuilders := make([]*ScheduledQueryBuilder, len(self.config.Schedules))
+	for i, sc := range self.config.Schedules {
+		builder, err := self.engine.NewQueryBuilder(sc.Query)
+		if err != nil {
+			return fmt.Errorf("Invalid query string: '%s', %s", sc.Query, err)
+		}
+		sq := NewScheduledQueryBuilder(builder, sc.Delay, sc.Period, sc.Tags)
+		scheduledQueryBuilders[i] = sq
+	}
 
-	glog.Info("Waiting for fittings to terminate")
-	wg.Wait()
+	self.manager = NewManager(self.mapper, self.engine, scheduledQueryBuilders)
 
-	glog.Info("All fittings have finished. Exiting")
+	glog.Info("Starting Manager...")
+	self.manager.Start()
 
-	return nil
+	glog.Infof("Starting APIServer on :%d", self.config.APIPort)
+	self.apiServer = NewAPIServer(self, self.config.APIPort)
+	self.apiServer.Start()
+
+	glog.Infof("Starting Alert Manger...")
+	scheduledQueries := make([]*ScheduledQuery, len(self.config.Alerts))
+	for i, ac := range self.config.Alerts {
+		notifiers := make([]Notifier, len(ac.Notifiers))
+		for i, nc := range ac.Notifiers {
+			n, err := nc.GetNotifier()
+			if err != nil {
+				return fmt.Errorf("Invalid Notifier for query: '%s' Err: %s", ac.Query, err)
+			}
+			notifiers[i] = n
+		}
+
+		q := AlertQuery{
+			Query:     Query{Command: ac.Query},
+			Threshold: ac.Threshold,
+			Notifiers: notifiers,
+			Message:   ac.Message,
+		}
+
+		sq := NewScheduledQuery(q, ac.Delay, ac.Period)
+		scheduledQueries[i] = sq
+	}
+
+	self.alertsManager = NewAlertsManager(self.engine, scheduledQueries)
+	self.alertsManager.Start()
+
+	// Wait for shutdown
+	<-self.shutdownChan
+
+	// Begin shutdown
+	self.manager.Stop()
+	self.apiServer.Stop()
+
+	glog.Info("App shutdown")
+	return
 }
 
-func (self *App) shutdown() {
-	glog.V(2).Info("Closing all metastores...")
-	for _, db := range self.metastores {
-		db.Close()
-	}
-	glog.V(2).Info("Stopping all fittings...")
-	for _, fitting := range self.fittings {
-		fitting.Stop()
-	}
-	glog.Info("App shutdown complete")
+func (self *App) shutdownHandler() {
+	self.shutdownChan <- true
+	glog.Info("App shutdown handler complete")
 }
 
 func (self *App) signalHandler() {
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
-	for _ = range signals {
-		glog.Info("Received interrupt, shuting down...")
-		self.shutdown()
+	for signal := range signals {
+		glog.Infof("Received %s, shuting down...", signal)
+		self.shutdownHandler()
 	}
 }

@@ -3,29 +3,42 @@ package influxdb
 import (
 	"errors"
 	"fmt"
-	"github.com/nathanielc/morgoth/config/types"
-	"github.com/nathanielc/morgoth/engine"
+	"github.com/influxdb/influxdb/client"
+	"github.com/nathanielc/morgoth"
+	"github.com/nathanielc/morgoth/config"
+	"net/url"
 )
 
 type InfluxDBFactory struct {
 }
 
-func (self *InfluxDBFactory) NewConf() types.Configuration {
+func (self *InfluxDBFactory) NewConf() config.Configuration {
 	return new(InfluxDBConf)
 }
 
-func (self *InfluxDBFactory) GetInstance(config types.Configuration) (interface{}, error) {
+func (self *InfluxDBFactory) GetInstance(config config.Configuration) (interface{}, error) {
 	conf, ok := config.(*InfluxDBConf)
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("Configuration is not InfluxDBConf%v", config))
 	}
+	url, err := url.Parse(fmt.Sprintf("http://%s:%d", conf.Host, conf.Port))
+	if err != nil {
+		return nil, err
+	}
 	engine := &InfluxDBEngine{
-		config: conf,
+		conf: client.Config{
+			URL:      *url,
+			Username: conf.User,
+			Password: conf.Password,
+		},
+		database:           conf.Database,
+		anomalyMeasurement: conf.AnomalyMeasurement,
+		measurementTag:     conf.MeasurementTag,
 	}
 	return engine, nil
 }
 
 func init() {
 	factory := new(InfluxDBFactory)
-	engine.Registery.RegisterFactory("influxdb", factory)
+	morgoth.EngineRegistery.RegisterFactory("influxdb", factory)
 }

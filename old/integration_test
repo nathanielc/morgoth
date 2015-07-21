@@ -1,6 +1,0 @@
-#!/bin/bash
-
-cd "$( dirname "${BASH_SOURCE[0]}" )"
-
-echo "Performing all integration tests..."
-godep go list ./tests/integration/... | xargs go test

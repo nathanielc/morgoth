@@ -4,8 +4,20 @@ import (
 	"time"
 )
 
-type Query string
+type Query struct {
+	Command string
+	Start   time.Time
+	Stop    time.Time
+	tags    map[string]string
+}
 
-type QueryConstructor interface {
+type QueryBuilder interface {
 	GetForTimeRange(start, stop time.Time) Query
+}
+
+type AlertQuery struct {
+	Query     Query
+	Threshold float64
+	Notifiers []Notifier
+	Message   string
 }

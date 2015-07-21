@@ -14,7 +14,7 @@ type QueryBuilder struct {
 	stopTL    *influxql.TimeLiteral
 }
 
-func NewQueryBuilder(quertStr morgoth.Query) (*QueryBuilder, error) {
+func NewQueryBuilder(quertStr string) (*QueryBuilder, error) {
 
 	s, err := influxql.ParseStatement(quertStr)
 	if err != nil {
@@ -57,17 +57,21 @@ func NewQueryBuilder(quertStr morgoth.Query) (*QueryBuilder, error) {
 		}
 	}
 
-	return &Query{
+	return &QueryBuilder{
 		statement: stmt,
 		startTL:   startTL,
 		stopTL:    stopTL,
 	}, nil
 }
 
-func (self *Query) QueryForTimeRange(start, stop time.Time) string {
+func (self *QueryBuilder) GetForTimeRange(start, stop time.Time) morgoth.Query {
 
 	self.startTL.Val = start
 	self.stopTL.Val = stop
 
-	return self.statement.String()
+	return morgoth.Query{
+		Command: self.statement.String(),
+		Start:   start,
+		Stop:    stop,
+	}
 }

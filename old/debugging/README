@@ -1,6 +1,0 @@
-This dir contains scripts for debugging the decisions of detectos and the like
-
-If your turn on -v=3 level logging than very verbose logs will be created about why each detector
-makes it particular choice.
-
-These scripts can consume those logs and provide some useful insight.

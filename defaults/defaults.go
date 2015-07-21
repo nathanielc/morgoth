@@ -112,7 +112,7 @@ func HasDefault(obj interface{}, fieldName string) (bool, error) {
 
 	field, exists := objType.FieldByName(fieldName)
 	if !exists {
-		return false, errors.New(fmt.Sprintf("Not field %s exists", fieldName))
+		return false, errors.New(fmt.Sprintf("No field %s exists", fieldName))
 	}
 	defaultStr := field.Tag.Get(tag)
 	return len(defaultStr) > 0, nil

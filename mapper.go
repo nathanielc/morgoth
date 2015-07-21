@@ -3,33 +3,123 @@ package morgoth
 import (
 	"hash/fnv"
 	"regexp"
+	"sort"
 )
 
 type Mapper struct {
-	detectorMaps     map[uint64]*DetectorMap
-	detectorConfMaps *DetectorConfMap
+	detectorMappers  map[uint64][]*DetectorMapper
+	detectorMatchers []*DetectorMatcher
+	Stats            MapperStats
+}
+
+type MapperStats struct {
+	WindowCount  uint64
+	MapperStats  []*DetectorMapperStats
+	MatcherStats []*DetectorMatcherStats
+}
+
+type DetectorMatcher struct {
+	NamePattern     *regexp.Regexp
+	TagPatterns     map[string]*regexp.Regexp
+	DetectorBuilder func() *Detector
+	Stats           DetectorMatcherStats
+}
+
+type DetectorMatcherStats struct {
+	NamePattern string
+	TagPatterns map[string]string
+	MatchCount  uint64
+}
+
+type DetectorMapper struct {
+	Name     string
+	Tags     map[string]string
+	detector *Detector
+	Stats    DetectorMapperStats
+}
+
+type DetectorMapperStats struct {
+	Name          string
+	Tags          map[string]string
+	MapCount      uint64
+	DetectorStats *DetectorStats
+}
+
+func NewMapper(detectorMappers []*DetectorMapper, detectorMatchers []*DetectorMatcher) *Mapper {
+	mapper := &Mapper{
+		detectorMappers: make(
+			map[uint64][]*DetectorMapper,
+			len(detectorMappers),
+		),
+		detectorMatchers: make(
+			[]*DetectorMatcher,
+			0,
+			len(detectorMatchers),
+		),
+	}
+	for _, m := range detectorMappers {
+		mapper.addDetectorMapper(m)
+	}
+	for _, m := range detectorMatchers {
+		mapper.addDetectorMatcher(m)
+	}
+	return mapper
+}
+
+func (self *Mapper) addDetectorMapper(mapper *DetectorMapper) {
+	hash := calcHash(mapper.Name, mapper.Tags)
+	self.detectorMappers[hash] = append(
+		self.detectorMappers[hash],
+		mapper,
+	)
+	self.Stats.MapperStats = append(
+		self.Stats.MapperStats,
+		&mapper.Stats,
+	)
+}
+
+func (self *Mapper) addDetectorMatcher(matcher *DetectorMatcher) {
+	self.detectorMatchers = append(
+		self.detectorMatchers,
+		matcher,
+	)
+	self.Stats.MatcherStats = append(
+		self.Stats.MatcherStats,
+		&matcher.Stats,
+	)
 }
 
 func (self *Mapper) Map(w *Window) *Detector {
 
-	// First check for match in detector maps
-	hash := calcHash()
-	for _, detectorMap := range self.detectorMaps {
-		if detectorMap.IsMatch(w) {
-			return detectorMap.GetDetector()
+	self.Stats.WindowCount++
+
+	// First check for match in detector mappers
+	hash := calcHash(w.Name, w.Tags)
+	for _, mapper := range self.detectorMappers[hash] {
+		detector := mapper.Map(w)
+		if detector != nil {
+			return detector
 		}
 	}
 
-	// Last check for match in dectector conf maps
-	for _, detectorConfMap := range self.detectorConfMap {
-		if detectorConfMap.IsMatch(w) {
-			detectorMap := detectorConfMap.NewDetectorMap(w)
-			self.detectorMaps = append(self.detectorMaps, detectorMap)
-			return detectorMap.GetDetector()
+	// Last check for match in Detector matchers
+	for _, matcher := range self.detectorMatchers {
+		if matcher.IsMatch(w) {
+			mapper := matcher.NewDetectorMapper(w)
+			self.addDetectorMapper(mapper)
+			return mapper.detector
 		}
 	}
 	// No mapping found
 	return nil
+}
+
+func (self *Mapper) GetDetectorMappings() []*DetectorMapper {
+	mappings := make([]*DetectorMapper, 0, len(self.detectorMappers))
+	for _, value := range self.detectorMappers {
+		mappings = append(mappings, value...)
+	}
+	return mappings
 }
 
 func calcHash(name string, tags map[string]string) uint64 {
@@ -48,58 +138,62 @@ func calcHash(name string, tags map[string]string) uint64 {
 		hash.Write([]byte(k))
 		hash.Write([]byte(tags[k]))
 	}
-	return fnv.Sum64()
+	return hash.Sum64()
 }
 
-type DetectorMap struct {
-	Name     string
-	Tags     map[string]string
-	detector *Detector
-}
-
-func NewDetectorMap(w *Window, detector *Detector) *DetectorMap {
-	return &DetectorMap{
+func NewDetectorMapper(w *Window, detector *Detector) *DetectorMapper {
+	m := &DetectorMapper{
 		Name:     w.Name,
 		Tags:     w.Tags,
 		detector: detector,
+		Stats: DetectorMapperStats{
+			Name:          w.Name,
+			Tags:          w.Tags,
+			DetectorStats: &detector.Stats,
+		},
 	}
+	return m
 }
 
-func (self *DetectorMap) IsMatch(w *window) bool {
+func (self *DetectorMapper) Map(w *Window) *Detector {
 	if self.Name != w.Name {
-		return false
+		return nil
 	}
 
 	// Check that window doesn't have extra tags
 	if len(self.Tags) != len(w.Tags) {
-		return false
+		return nil
 	}
 
 	// Check that tag sets match
 	for k, mapTag := range self.Tags {
 		if tag, ok := w.Tags[k]; !ok || tag != mapTag {
-			return false
+			return nil
 		}
 	}
 
-	return true
+	self.Stats.MapCount++
+
+	return self.detector
 }
 
-func (self *DetectorMap) GetDetector() *Detector {
-	if self.detector != nil {
-		return self.detector
+func NewDetectorMatcher(namePattern *regexp.Regexp, tagPatterns map[string]*regexp.Regexp, detectorBuilder DetectorBuilder) *DetectorMatcher {
+	tags := make(map[string]string, len(tagPatterns))
+	for tag, pattern := range tagPatterns {
+		tags[tag] = pattern.String()
 	}
-
-	// Go fetch detector from db
+	return &DetectorMatcher{
+		NamePattern:     namePattern,
+		TagPatterns:     tagPatterns,
+		DetectorBuilder: detectorBuilder,
+		Stats: DetectorMatcherStats{
+			NamePattern: namePattern.String(),
+			TagPatterns: tags,
+		},
+	}
 }
 
-type DetectorConfMap struct {
-	NamePattern         *regexp.Regexp
-	TagPatterns         map[string]*regexp.Regexp
-	detectorConstructor func() *Detector
-}
-
-func (self *DetectorConfMap) IsMatch(w *Window) bool {
+func (self *DetectorMatcher) IsMatch(w *Window) bool {
 	if !self.NamePattern.MatchString(w.Name) {
 		return false
 	}
@@ -111,9 +205,12 @@ func (self *DetectorConfMap) IsMatch(w *Window) bool {
 		}
 	}
 
+	self.Stats.MatchCount++
+
 	return true
 }
 
-func (self *DetectorConfMap) NewDetectorMap(w *Window) *DetectorMap {
-	return NewDetectorMap(w, self.detectorConstructor())
+func (self *DetectorMatcher) NewDetectorMapper(w *Window) *DetectorMapper {
+	detector := self.DetectorBuilder()
+	return NewDetectorMapper(w, detector)
 }

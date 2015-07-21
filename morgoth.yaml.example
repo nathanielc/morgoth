@@ -1,0 +1,69 @@
+---
+engine:
+  influxdb:
+    host: localhost
+    port: 8086
+    user: root
+    password: root
+    database: metrics
+    anomaly_measurement: anomaly
+    measurement_tag: m
+
+schedules:
+  - query: SELECT value FROM "day".cpu GROUP BY *
+    period: 10s
+    tags:
+      ret: day
+  - query: SELECT value FROM "week".cpu GROUP BY *
+    period: 5m
+    tags:
+      ret: week
+  - query: SELECT value FROM "month".cpu GROUP BY *
+    period: 1h
+    tags:
+      ret: month
+
+mappings:
+  - name: cpu
+    tags:
+      dc: nyc
+      ret: day
+    detector:
+      fingerprints:
+        - sigma:
+            deviations: 10
+  - name: cpu
+    tags:
+      dc: nyc
+      ret: week
+    detector:
+      fingerprints:
+        - sigma:
+            deviations: 10
+  - name: cpu
+    tags:
+      dc: nyc
+      ret: month
+    detector:
+      fingerprints:
+        - sigma:
+            deviations: 10
+
+  - name: cpu
+    tags:
+      dc: sfc
+    detector:
+      fingerprints:
+        - sigma:
+            deviations: 40
+        - sigma:
+            deviations: 30
+
+alerts:
+  - query: SELECT COUNT(start) FROM anomaly WHERE time > now() - 5m GROUP BY time(5m), *
+    message: Too many anomalies detected
+    threshold: 1
+    period: 5m
+    notifiers:
+      - log:
+          file: alerts.log

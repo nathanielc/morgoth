@@ -2,355 +2,127 @@ package influxdb
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/influxdb/influxdb/client"
 	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nathanielc/morgoth/engine"
-	metric "github.com/nathanielc/morgoth/metric/types"
-	"github.com/nathanielc/morgoth/schedule"
-	"github.com/nathanielc/morgoth/window"
-	"net/url"
-	"time"
 )
 
 type InfluxDBEngine struct {
-	config *InfluxDBConf
-	//client *client.Client
+	conf               client.Config
+	database           string
+	anomalyMeasurement string
+	measurementTag     string
 }
 
-func (self *InfluxDBEngine) GetWindows(query morgoth.Query) ([]*window.Window, error) {
+func (self *InfluxDBEngine) Initialize() error {
+	return nil
+}
 
-	u, err := url.Parse("http://localhost:8086")
-	if err != nil {
-		return nil, err
-	}
-	conf := client.Config{
-		URL:      *u,
-		Username: "root",
-		Password: "root",
+func (self *InfluxDBEngine) NewQueryBuilder(queryTemplate string) (morgoth.QueryBuilder, error) {
+	return NewQueryBuilder(queryTemplate)
+}
+
+func (self *InfluxDBEngine) RecordAnomalous(w *morgoth.Window) error {
+	w.Tags[self.measurementTag] = w.Name
+	point := client.Point{
+		Measurement: self.anomalyMeasurement,
+		Tags:        w.Tags,
+		Fields: map[string]interface{}{
+			"start": w.Start.Unix(),
+			"stop":  w.Stop.Unix(),
+		},
+		Time:      w.Start,
+		Precision: "s",
 	}
 
-	con, err := client.NewClient(conf)
+	batch := client.BatchPoints{
+		Points:   []client.Point{point},
+		Database: self.database,
+	}
+
+	con, err := client.NewClient(self.conf)
+	if err != nil {
+		return err
+	}
+	_, err = con.Write(batch)
+	return err
+}
+
+func (self *InfluxDBEngine) GetWindows(query morgoth.Query) ([]*morgoth.Window, error) {
+
+	con, err := client.NewClient(self.conf)
 	if err != nil {
 		return nil, err
 	}
-	dur, ver, err := con.Ping()
-	if err != nil {
-		return nil, err
-	}
-	glog.Infof("Connected version: %s dur: %s", ver, dur)
 
 	q := client.Query{
-		Command:  query,
-		Database: "mydb",
+		Command:  query.Command,
+		Database: self.database,
 	}
 
-	glog.Infof("Q: %s", query)
+	glog.V(3).Infof("Q: %s", query)
 	response, err := con.Query(q)
 	if err != nil {
 		return nil, err
 	}
-
-	glog.Infof("Results: %v", response.Results)
-
-	result := response.Results[0]
-	windows := make([]*window.Window, len(result.Series))
-	for i, row := range result.Series {
-		w := &window.Window{
-			Name: row.Name,
-			Data: make([]float64, len(row.Values)),
-			Tags: row.Tags,
+	if response.Err != nil {
+		return nil, response.Err
+	}
+	windowCount := 0
+	for _, result := range response.Results {
+		if result.Err != nil {
+			return nil, result.Err
 		}
+		windowCount += len(result.Series)
+	}
+	windows := make([]*morgoth.Window, windowCount)
 
-		for j, point := range row.Values {
-			//We care only about the value not the time
-			//TODO check columns
-			p := point[1].(json.Number)
-			v, err := p.Float64()
-			if err != nil {
-				return nil, err
+	glog.V(3).Infof("Results: %v", response.Results)
+
+	i := 0
+	for _, result := range response.Results {
+		for _, row := range result.Series {
+			w := &morgoth.Window{
+				Name:  row.Name,
+				Data:  make([]float64, len(row.Values)),
+				Tags:  row.Tags,
+				Start: query.Start,
+				Stop:  query.Stop,
 			}
-			w.Data[j] = v
-		}
 
-		windows[i] = w
-		glog.Infof("W: %v", w)
+			//Find non time column
+			if len(row.Columns) != 2 {
+				return nil, errors.New("Queries must select only two columns, a time column and a numeric column")
+			}
+			numberColumn := 0
+			for c, name := range row.Columns {
+				if name != "time" {
+					numberColumn = c
+					break
+				}
+			}
+
+			for j, point := range row.Values {
+				//We care only about the value not the time
+				//TODO check columns
+				value := point[numberColumn]
+				if value != nil {
+					p := value.(json.Number)
+					v, err := p.Float64()
+					if err != nil {
+						return nil, err
+					}
+					w.Data[j] = v
+				}
+			}
+
+			windows[i] = w
+			i++
+			glog.V(4).Infof("W: %v", w)
+		}
 	}
 
-	glog.Infof("Windows: %v", windows)
+	glog.V(3).Infof("Windows: %v", windows)
 	return windows, nil
-}
-
-func (self *InfluxDBEngine) Initialize() error {
-	//client, err := connect(self.config)
-	//if err != nil {
-	//	return err
-	//}
-	//self.client = client
-
-	return nil
-}
-
-func (self *InfluxDBEngine) GetReader() engine.Reader {
-	return self
-}
-
-func (self *InfluxDBEngine) GetWriter() engine.Writer {
-	return self
-}
-
-func (self *InfluxDBEngine) ConfigureSchedule(schedule *schedule.Schedule) error {
-
-	//result, err := self.client.Query("list continuous queries")
-	//if err != nil {
-	//	return err
-	//}
-
-	//existing := make([]string, 0)
-	//for _, series := range result {
-	//	for _, row := range series.GetPoints() {
-	//		existing = append(existing, row[2].(string))
-	//	}
-	//}
-
-	//pattern := regexp.QuoteMeta(metric.MetricPrefix)
-	//for _, rotation := range schedule.Rotations {
-	//	resolution := int64(math.Ceil(rotation.Resolution.Seconds()))
-	//	q := fmt.Sprintf(
-	//		"select first(value) as value from /^%s.*/ group by time(%ds) into %s:series_name",
-	//		pattern,
-	//		resolution,
-	//		rotation.GetPrefix(),
-	//	)
-	//	found := false
-	//	for _, e := range existing {
-	//		if e == q {
-	//			found = true
-	//			break
-	//		}
-	//	}
-	//	if found {
-	//		continue
-	//	}
-	//	glog.Infof("Creating continuous query '%s'", q)
-	//	_, err = self.client.Query(q)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-
-	return nil
-
-}
-
-//////////////////////
-// Writer Methods
-//////////////////////
-
-func (self *InfluxDBEngine) Insert(datetime time.Time, metric metric.MetricID, value float64) {
-	//series := new(client.Series)
-	//series.Name = metric.GetRawPath()
-	//series.Columns = []string{
-	//	"time",
-	//	"value",
-	//}
-	//series.Points = [][]interface{}{
-	//	[]interface{}{datetime.Unix(), value},
-	//}
-	//err := self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
-	//if err != nil {
-	//	glog.Error(err)
-	//}
-}
-
-func (self *InfluxDBEngine) RecordAnomalous(metric metric.MetricID, start, stop time.Time) {
-	//series := new(client.Series)
-	//series.Name = metric.GetAnomalyPath()
-	//series.Columns = []string{
-	//	"time",
-	//	"value",
-	//	"uuid",
-	//}
-	//id, err := uuid.NewV4()
-	//if err != nil {
-	//	glog.Errorf("Error creating ID for anomaly: %s", err)
-	//	return
-	//}
-	//series.Points = [][]interface{}{
-	//	[]interface{}{start.Unix(), stop.Unix(), id.String()},
-	//}
-	//err = self.client.WriteSeriesWithTimePrecision([]*client.Series{series}, client.Second)
-	//if err != nil {
-	//	glog.Error(err)
-	//}
-}
-
-func (self *InfluxDBEngine) DeleteMetric(metric metric.MetricID) {
-}
-
-//////////////////////
-// Reader Methods
-//////////////////////
-
-func (self *InfluxDBEngine) GetMetrics() []metric.MetricID {
-
-	//query := fmt.Sprintf(
-	//	"list series /^%s/",
-	//	metric.MetricPrefix,
-	//)
-
-	//result, err := self.client.Query(query)
-
-	//if err != nil {
-	//	glog.Error(err.Error())
-	//	return []metric.MetricID{}
-	//}
-	//if len(result) == 0 {
-	//	return []metric.MetricID{}
-	//}
-
-	//glog.Infof("List series: %v", result[0].GetPoints())
-	//points := result[0].GetPoints()
-	//metrics := make([]metric.MetricID, len(points))
-	//for i, row := range points {
-	//	metrics[i] = metric.MetricID(
-	//		strings.Replace(row[1].(string), metric.MetricPrefix, "", 1),
-	//	)
-	//}
-	metrics := make([]metric.MetricID, 0)
-	return metrics
-}
-func (self *InfluxDBEngine) GetData(rotation *schedule.Rotation, metric metric.MetricID, start, stop time.Time) []engine.Point {
-	//query := fmt.Sprintf(
-	//	"select value from %s",
-	//	metric.GetRotationPath(rotation),
-	//)
-	//if !start.IsZero() {
-	//	query += fmt.Sprintf(" where time > %ds", start.Unix())
-	//}
-	//if !stop.IsZero() {
-	//	if start.IsZero() {
-	//		query += " where "
-	//	} else {
-	//		query += " and "
-	//	}
-	//	query += fmt.Sprintf("time < %ds", stop.Unix())
-	//}
-	//result, err := self.client.Query(query, client.Second)
-
-	//if err != nil {
-	//	glog.Error(err.Error())
-	//	return []engine.Point{}
-	//}
-	//if len(result) == 0 {
-	//	return []engine.Point{}
-	//}
-
-	//series := result[0]
-	//points := series.GetPoints()
-	//data := make([]engine.Point, len(points))
-	data := make([]engine.Point, 0)
-	//for i, row := range points {
-	//	sec := int64(row[0].(float64))
-	//	data[i].Time = time.Unix(sec, 0)
-	//	data[i].Value = row[2].(float64)
-	//}
-	return data
-}
-
-func (self *InfluxDBEngine) GetAnomalies(metric metric.MetricID, start, stop time.Time) []engine.Anomaly {
-	//query := fmt.Sprintf(
-	//	"select time, value, uuid from %s",
-	//	metric.GetAnomalyPath(),
-	//)
-	//if !start.IsZero() {
-	//	query += fmt.Sprintf(" where time > %ds", start.Unix())
-	//}
-	//if !stop.IsZero() {
-	//	if start.IsZero() {
-	//		query += " where "
-	//	} else {
-	//		query += " and "
-	//	}
-	//	query += fmt.Sprintf("time < %ds", stop.Unix())
-	//}
-	//result, err := self.client.Query(query, client.Second)
-
-	//if err != nil {
-	//	glog.Error(err.Error())
-	//	return []engine.Anomaly{}
-	//}
-	//if len(result) == 0 {
-	//	return []engine.Anomaly{}
-	//}
-
-	//series := result[0]
-	//points := series.GetPoints()
-	//data := make([]engine.Anomaly, len(points))
-	//for i, row := range points {
-	//	start := int64(row[0].(float64))
-	//	stop := int64(row[3].(float64))
-	//	idStr := row[2].(string)
-	//	id, err := uuid.ParseHex(idStr)
-	//	if err != nil {
-	//		glog.Warningf("Failed to parse UUID %s: %s", idStr, err)
-	//		continue
-	//	}
-	//	data[i].UUID = id
-	//	data[i].Start = time.Unix(start, 0)
-	//	data[i].Stop = time.Unix(stop, 0)
-	//}
-	data := make([]engine.Anomaly, 0)
-	return data
-}
-func (self *InfluxDBEngine) GetHistogram(rotation *schedule.Rotation, metric metric.MetricID, nbins uint, start, stop time.Time, min, max float64) *engine.Histogram {
-	hist := new(engine.Histogram)
-	//hist.Min = min
-	//hist.Max = max
-
-	//stepSize := (max - min) / float64(nbins)
-
-	//q := fmt.Sprintf("select count(value), histogram(value, %f, %f, %f) from %s where time > %ds and time < %ds",
-	//	stepSize,
-	//	min,
-	//	max,
-	//	metric.GetRotationPath(rotation),
-	//	start.Unix(),
-	//	stop.Unix(),
-	//)
-
-	//result, err := self.client.Query(q)
-
-	//if err != nil {
-	//	glog.Error(err.Error())
-	//	return hist
-	//}
-	//if len(result) != 1 {
-	//	glog.Error("Invalid results returned for Histogram")
-	//	return hist
-	//}
-
-	//series := result[0]
-	//points := series.GetPoints()
-	//hist.Bins = make([]float64, nbins)
-	//for _, row := range points {
-	//	total := row[1].(float64)
-	//	bucketStart := row[2].(float64)
-	//	count := row[3].(float64)
-	//	i := int((bucketStart - min) / stepSize)
-	//	if i == int(nbins) { //Handle last bucket including max value
-	//		i--
-	//	}
-	//	hist.Bins[i] += count / total
-	//	hist.Count = uint(total)
-	//}
-	//if hist.Count == 1 {
-	//	glog.V(2).Info("Small hist ", q)
-	//}
-
-	return hist
-
-}
-func (self *InfluxDBEngine) GetPercentile(rotation *schedule.Rotation, metric metric.MetricID, percentile float64, start, stop time.Time) float64 {
-	return 0.0
 }

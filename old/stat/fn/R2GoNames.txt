@@ -1,5 +1,0 @@
-R:					Go:
-choose(n, k)			LnFChoose(n, k)
-lchoose(n, k)			LnFChoose(n, k)
-lgamma(x)			LnΓ(x)
-gammafn				math.Gamma(x)
