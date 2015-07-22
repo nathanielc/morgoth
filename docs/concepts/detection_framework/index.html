@@ -100,6 +100,10 @@
                             
                                 <li><a class="toctree-l3" href="#lossy-counting">Lossy Counting</a></li>
                             
+                                <li><a class="toctree-l3" href="#what-is-considered-anomalous">What is considered anomalous?</a></li>
+                            
+                                <li><a class="toctree-l3" href="#putting-it-all-together">Putting it all together</a></li>
+                            
                         
                         </ul>
                     
@@ -165,7 +169,24 @@ The algorithm is lossy since it will drop infrequent items but does so in such a
 </ol>
 <p>These constraints allow the user to have intuitive control over what is considered an anomaly.
 For example <code>#3</code> states that items can be underestimated by at most <code>eN</code>.
-What this means given an <code>e=0.10</code> that items that are less than 10% frequent might get dropped and when they occur again could be marked as anomalies.</p>
+What this means given an <code>e=0.10</code>, items that are less than 10% frequent could be underestimated to have 0% frequency as a worst case.
+As result these items would get dropped from the algorithm and when they occur again will be marked as anomalies.
+By settings the error tolerance and minimum support one can control how lossy the counting alogorithm is for a given use case.</p>
+<h2 id="what-is-considered-anomalous">What is considered anomalous?</h2>
+<p>The answer is simple; everytime the Lossy Counting algorithm is given an fingperprint is checks to see how many times it has seen that fingperprint.
+If the fingperprint has been counted less than a given <code>normal count</code> than it is considered anomalous.</p>
+<h3 id="consensus-model">Consensus Model</h3>
+<p>Each detector instance can have more than one fingperprinting algorithm.
+In this case the detector will mark the window as anomalous only of the percentage of fingperprinters that agree is greater than a <code>consensus</code> threshold.</p>
+<h2 id="putting-it-all-together">Putting it all together</h2>
+<p>Each detector instance has five parameters:</p>
+<ol>
+<li><code>Normal Count</code> -- How many times a window must be seen before it is considered normal, aka no longer anomalous.</li>
+<li><code>Error Tolerance</code> -- Controls the maximum error that will be tolerated while counting fingperprints.</li>
+<li><code>Minimum Support</code> -- The minimum frequency a fingperprint must have in order to be considered frequent.</li>
+<li><code>Consensus</code> -- The percentage of fingperprinters that must agree in order to mark a window as anomalous.</li>
+<li><code>Fingerprinters</code> -- List of fingperprinters to be used by the detector.</li>
+</ol>
 
             </div>
           </div>
