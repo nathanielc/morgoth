@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/influxdb/influxdb/influxql"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/influxql"
 )
 
 // Query is used to send a command to the server. Both Command and Database are required.

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/influxdb/influxdb/client"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
 )
 
 func ExampleNewClient() {

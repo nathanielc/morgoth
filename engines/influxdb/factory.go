@@ -3,8 +3,8 @@ package influxdb
 import (
 	"errors"
 	"fmt"
-	"github.com/influxdb/influxdb/client"
 	"github.com/nathanielc/morgoth"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
 	"github.com/nathanielc/morgoth/config"
 	"net/url"
 )

@@ -3,7 +3,7 @@ package kstest
 import (
 	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/stretchr/testify/assert"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )

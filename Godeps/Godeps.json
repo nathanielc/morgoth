@@ -1,6 +1,6 @@
 {
-	"ImportPath": "github.com/nvcook42/morgoth",
-	"GoVersion": "go1.3.3",
+	"ImportPath": "github.com/nathanielc/morgoth",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
@@ -15,32 +15,17 @@
 			"Rev": "89aa984f73ec6f56dee0a00d048a6862c0ce1b31"
 		},
 		{
-			"ImportPath": "github.com/cznic/bufs",
-			"Rev": "3dcccbd7064a1689f9c093a988ea11ac00e21f51"
+			"ImportPath": "github.com/armon/go-metrics",
+			"Rev": "b2d95e5291cdbc26997d1301a5e467ecbb240e25"
 		},
 		{
-			"ImportPath": "github.com/cznic/exp/lldb",
-			"Rev": "9b0e4be12fbdb7b843e0a658a04c35d160371789"
+			"ImportPath": "github.com/boltdb/bolt",
+			"Comment": "v1.0-106-g5eb31d5",
+			"Rev": "5eb31d5821750fbc84284d610c0ce85261662adb"
 		},
 		{
-			"ImportPath": "github.com/cznic/fileutil",
-			"Rev": "21ae57c9dce724a15e88bd9cd46d5668f3e880a5"
-		},
-		{
-			"ImportPath": "github.com/cznic/kv",
-			"Rev": "a9e92863f9c096cd0de82eb9c71af2a59174e671"
-		},
-		{
-			"ImportPath": "github.com/cznic/mathutil",
-			"Rev": "1dc74626b71a300f674026585083535b6a4d3853"
-		},
-		{
-			"ImportPath": "github.com/cznic/sortutil",
-			"Rev": "e14776c5119b49f2cf829486056e411043b6b6b2"
-		},
-		{
-			"ImportPath": "github.com/cznic/zappy",
-			"Rev": "47331054e4f96186e3ff772877c0443909368a45"
+			"ImportPath": "github.com/gogo/protobuf/proto",
+			"Rev": "499788908625f4d83de42a204d1350fde8588e4f"
 		},
 		{
 			"ImportPath": "github.com/golang/glog",
@@ -51,25 +36,57 @@
 			"Rev": "7f07925444bb51fa4cf9dfe6f7661876f8852275"
 		},
 		{
+			"ImportPath": "github.com/hashicorp/go-msgpack/codec",
+			"Rev": "fa3f63826f7c23912c15263591e65d54d080b458"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/raft",
+			"Rev": "49b234fdb37416026a971bc5da2ba66d7370d130"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/raft-boltdb",
+			"Rev": "d1e82c1ec3f15ee991f7cc7ffd5b67ff6f5bbaee"
+		},
+		{
 			"ImportPath": "github.com/influxdb/influxdb/client",
-			"Comment": "v0.9.0-rc31",
-			"Rev": "8ade485b5865e642b128a7cc6eb20c9da73d1b48"
+			"Rev": "237b52b46ae0dc41bf926500991b69121c681c67"
 		},
 		{
-			"ImportPath": "github.com/nu7hatch/gouuid",
-			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+			"ImportPath": "github.com/influxdb/influxdb/influxql",
+			"Comment": "v0.9.1-rc1-302-g237b52b",
+			"Rev": "237b52b46ae0dc41bf926500991b69121c681c67"
 		},
 		{
-			"ImportPath": "github.com/stretchr/objx",
-			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
+			"ImportPath": "github.com/influxdb/influxdb/meta",
+			"Comment": "v0.9.1-rc1-302-g237b52b",
+			"Rev": "237b52b46ae0dc41bf926500991b69121c681c67"
+		},
+		{
+			"ImportPath": "github.com/influxdb/influxdb/snapshot",
+			"Comment": "v0.9.1-rc1-302-g237b52b",
+			"Rev": "237b52b46ae0dc41bf926500991b69121c681c67"
+		},
+		{
+			"ImportPath": "github.com/influxdb/influxdb/toml",
+			"Comment": "v0.9.1-rc1-302-g237b52b",
+			"Rev": "237b52b46ae0dc41bf926500991b69121c681c67"
+		},
+		{
+			"ImportPath": "github.com/influxdb/influxdb/tsdb",
+			"Comment": "v0.9.1-rc1-302-g237b52b",
+			"Rev": "237b52b46ae0dc41bf926500991b69121c681c67"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
 			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
 		},
 		{
-			"ImportPath": "github.com/stretchr/testify/mock",
-			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+			"ImportPath": "golang.org/x/crypto/bcrypt",
+			"Rev": "c10c31b5e94b6f7a0283272dc2bb27163dcea24b"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/blowfish",
+			"Rev": "c10c31b5e94b6f7a0283272dc2bb27163dcea24b"
 		},
 		{
 			"ImportPath": "gopkg.in/validator.v2",

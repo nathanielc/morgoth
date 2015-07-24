@@ -3,9 +3,9 @@ package influxdb
 import (
 	"encoding/json"
 	"errors"
-	"github.com/influxdb/influxdb/client"
 	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
 )
 
 type InfluxDBEngine struct {
