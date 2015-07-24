@@ -8,6 +8,6 @@ deploy:
   api_key:
     secure: cK0/w0ggcVawInO+b++4qqwMGrVoP7PzNkTxaNq+tbFc9cu8CSUS2+PlgRkdoRYfD+fohri3lqdzHUH0rcC7gOfx/Dvtw7mcs14gzfvuNL+/xMlKn/mBoPkOGPXQeh86qsmGbsrgDzv/BwGNgxqqEimxdiev2ZDlssTD16RQZR8=
   file: "./morgothd"
+  skip_cleanup: true
   on:
-    repo: nathanielc/morgoth
-    branch: feature/lossy_counting
+    tags: true
