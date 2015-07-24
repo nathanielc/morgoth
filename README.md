@@ -1,5 +1,5 @@
 
-Morgoth [![Build Status](https://travis-ci.org/nvcook42/morgoth.svg?branch=master)](https://travis-ci.org/nvcook42/morgoth)
+Morgoth [![Build Status](https://travis-ci.org/nathanielc/morgoth.svg?branch=master)](https://travis-ci.org/nathanielc/morgoth)
 =======
 
 Morgoth is a flexible anomaly detection application.
