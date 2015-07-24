@@ -10,7 +10,7 @@ import (
 )
 
 func Test_SeriesIDs_Equals( // Test comparing SeriesIDs for equality.
-t *testing.T) {
+	t *testing.T) {
 	ids1 := tsdb.SeriesIDs{1, 2, 3}
 	ids2 := tsdb.SeriesIDs{1, 2, 3}
 	ids3 := tsdb.SeriesIDs{4, 5, 6}

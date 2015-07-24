@@ -6,7 +6,6 @@ type Counter interface {
 	Count(Countable) int
 }
 
-
 type Countable interface {
 	IsMatch(other Countable) bool
 }

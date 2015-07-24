@@ -21,7 +21,7 @@ import (
 )
 
 func TestStore_Open_ErrStoreOpen( // Ensure the store returns an error
-t *testing.T) {
+	t *testing.T) {
 	t.Parallel()
 	s := MustOpenStore()
 	defer s.Close()

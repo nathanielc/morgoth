@@ -14,7 +14,7 @@ import (
 )
 
 func TestData_CreateNode( // Ensure a node can be created.
-t *testing.T) {
+	t *testing.T) {
 	var data meta.Data
 	if err := data.CreateNode("host0"); err != nil {
 		t.Fatal(err)

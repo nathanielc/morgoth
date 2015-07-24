@@ -10,9 +10,78 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdb/influxdb"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
 )
+
+func BenchmarkUnmarshalJSON2Tags(b *testing.B) {
+	var bp client.BatchPoints
+	data := []byte(`
+{
+    "database": "foo",
+    "retentionPolicy": "bar",
+    "points": [
+        {
+            "name": "cpu",
+            "tags": {
+                "host": "server01",
+                "region": "us-east1"
+            },
+            "time": 14244733039069373,
+            "precision": "n",
+            "fields": {
+                    "value": 4541770385657154000
+            }
+        }
+    ]
+}
+`)
+
+	for i := 0; i < b.N; i++ {
+		if err := json.Unmarshal(data, &bp); err != nil {
+			b.Errorf("unable to unmarshal nanosecond data: %s", err.Error())
+		}
+		b.SetBytes(int64(len(data)))
+	}
+}
+
+func BenchmarkUnmarshalJSON10Tags(b *testing.B) {
+	var bp client.BatchPoints
+	data := []byte(`
+{
+    "database": "foo",
+    "retentionPolicy": "bar",
+    "points": [
+        {
+            "name": "cpu",
+            "tags": {
+                "host": "server01",
+                "region": "us-east1",
+                "tag1": "value1",
+                "tag2": "value2",
+                "tag2": "value3",
+                "tag4": "value4",
+                "tag5": "value5",
+                "tag6": "value6",
+                "tag7": "value7",
+                "tag8": "value8"
+            },
+            "time": 14244733039069373,
+            "precision": "n",
+            "fields": {
+                    "value": 4541770385657154000
+            }
+        }
+    ]
+}
+`)
+
+	for i := 0; i < b.N; i++ {
+		if err := json.Unmarshal(data, &bp); err != nil {
+			b.Errorf("unable to unmarshal nanosecond data: %s", err.Error())
+		}
+		b.SetBytes(int64(len(data)))
+	}
+}
 
 func TestNewClient(t *testing.T) {
 	config := client.Config{}
@@ -46,7 +115,7 @@ func TestClient_Ping(t *testing.T) {
 
 func TestClient_Query(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var data influxdb.Response
+		var data client.Response
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(data)
 	}))
@@ -71,7 +140,7 @@ func TestClient_BasicAuth(t *testing.T) {
 		u, p, ok := r.BasicAuth()
 
 		if !ok {
-			t.Errorf("basic auth failed")
+			t.Errorf("basic auth error")
 		}
 		if u != "username" {
 			t.Errorf("unexpected username, expected %q, actual %q", "username", u)
@@ -99,7 +168,7 @@ func TestClient_BasicAuth(t *testing.T) {
 
 func TestClient_Write(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var data influxdb.Response
+		var data client.Response
 		w.WriteHeader(http.StatusNoContent)
 		_ = json.NewEncoder(w).Encode(data)
 	}))
@@ -127,7 +196,7 @@ func TestClient_UserAgent(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedUserAgent = r.UserAgent()
 
-		var data influxdb.Response
+		var data client.Response
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(data)
 	}))
@@ -315,27 +384,27 @@ func TestPoint_MarshalOmitempty(t *testing.T) {
 	}{
 		{
 			name:     "all empty",
-			point:    client.Point{Name: "cpu", Fields: map[string]interface{}{"value": 1.1}},
+			point:    client.Point{Measurement: "cpu", Fields: map[string]interface{}{"value": 1.1}},
 			now:      now,
-			expected: `{"name":"cpu","fields":{"value":1.1}}`,
+			expected: `{"measurement":"cpu","fields":{"value":1.1}}`,
 		},
 		{
 			name:     "with time",
-			point:    client.Point{Name: "cpu", Fields: map[string]interface{}{"value": 1.1}, Time: now},
+			point:    client.Point{Measurement: "cpu", Fields: map[string]interface{}{"value": 1.1}, Time: now},
 			now:      now,
-			expected: fmt.Sprintf(`{"name":"cpu","time":"%s","fields":{"value":1.1}}`, now.Format(time.RFC3339Nano)),
+			expected: fmt.Sprintf(`{"measurement":"cpu","time":"%s","fields":{"value":1.1}}`, now.Format(time.RFC3339Nano)),
 		},
 		{
 			name:     "with tags",
-			point:    client.Point{Name: "cpu", Fields: map[string]interface{}{"value": 1.1}, Tags: map[string]string{"foo": "bar"}},
+			point:    client.Point{Measurement: "cpu", Fields: map[string]interface{}{"value": 1.1}, Tags: map[string]string{"foo": "bar"}},
 			now:      now,
-			expected: `{"name":"cpu","tags":{"foo":"bar"},"fields":{"value":1.1}}`,
+			expected: `{"measurement":"cpu","tags":{"foo":"bar"},"fields":{"value":1.1}}`,
 		},
 		{
 			name:     "with precision",
-			point:    client.Point{Name: "cpu", Fields: map[string]interface{}{"value": 1.1}, Precision: "ms"},
+			point:    client.Point{Measurement: "cpu", Fields: map[string]interface{}{"value": 1.1}, Precision: "ms"},
 			now:      now,
-			expected: `{"name":"cpu","fields":{"value":1.1},"precision":"ms"}`,
+			expected: `{"measurement":"cpu","fields":{"value":1.1},"precision":"ms"}`,
 		},
 	}
 
@@ -424,6 +493,38 @@ func TestBatchPoints_Normal(t *testing.T) {
 `)
 
 	if err := json.Unmarshal(data, &bp); err != nil {
-		t.Errorf("failed to unmarshal nanosecond data: %s", err.Error())
+		t.Errorf("unable to unmarshal nanosecond data: %s", err.Error())
+	}
+}
+
+func TestClient_Timeout(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(1 * time.Second)
+		var data client.Response
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(data)
+	}))
+	defer ts.Close()
+
+	u, _ := url.Parse(ts.URL)
+	config := client.Config{URL: *u, Timeout: 500 * time.Millisecond}
+	c, err := client.NewClient(config)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
+	}
+
+	query := client.Query{}
+	_, err = c.Query(query)
+	if err == nil {
+		t.Fatalf("unexpected success.  expected timeout error")
+	} else if !strings.Contains(err.Error(), "use of closed network connection") {
+		t.Fatalf("unexpected error.  expected 'use of closed network connection' error, got %v", err)
+	}
+
+	confignotimeout := client.Config{URL: *u}
+	cnotimeout, err := client.NewClient(confignotimeout)
+	_, err = cnotimeout.Query(query)
+	if err != nil {
+		t.Fatalf("unexpected error.  expected %v, actual %v", nil, err)
 	}
 }

@@ -15,8 +15,8 @@ type lossyCounter struct {
 
 type entry struct {
 	countable Countable
-	count       int
-	delta       int
+	count     int
+	delta     int
 }
 
 //Create a new lossycounter with specified minSupport and errorTolerance
@@ -51,8 +51,8 @@ func (self *lossyCounter) Count(countable Countable) int {
 		count = 1
 		self.frequencies = append(self.frequencies, &entry{
 			countable: countable,
-			count:       count,
-			delta:       self.bucket - 1,
+			count:     count,
+			delta:     self.bucket - 1,
 		})
 	}
 

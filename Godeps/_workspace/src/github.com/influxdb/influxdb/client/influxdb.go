@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/influxql"
+	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/tsdb"
 )
 
 // Query is used to send a command to the server. Both Command and Database are required.
@@ -23,11 +25,13 @@ type Query struct {
 // URL: The URL of the server connecting to.
 // Username/Password are optional.  They will be passed via basic auth if provided.
 // UserAgent: If not provided, will default "InfluxDBClient",
+// Timeout: If not provided, will default to 0 (no timeout)
 type Config struct {
 	URL       url.URL
 	Username  string
 	Password  string
 	UserAgent string
+	Timeout   time.Duration
 }
 
 // Client is used to make calls to the server.
@@ -39,13 +43,20 @@ type Client struct {
 	userAgent  string
 }
 
+const (
+	ConsistencyOne    = "one"
+	ConsistencyAll    = "all"
+	ConsistencyQuorum = "quorum"
+	ConsistencyAny    = "any"
+)
+
 // NewClient will instantiate and return a connected client to issue commands to the server.
 func NewClient(c Config) (*Client, error) {
 	client := Client{
 		url:        c.URL,
 		username:   c.Username,
 		password:   c.Password,
-		httpClient: http.DefaultClient,
+		httpClient: &http.Client{Timeout: c.Timeout},
 		userAgent:  c.UserAgent,
 	}
 	if client.userAgent == "" {
@@ -111,20 +122,45 @@ func (c *Client) Query(q Query) (*Response, error) {
 func (c *Client) Write(bp BatchPoints) (*Response, error) {
 	c.url.Path = "write"
 
-	b, err := json.Marshal(&bp)
-	if err != nil {
-		return nil, err
+	var b bytes.Buffer
+	for _, p := range bp.Points {
+		if p.Raw != "" {
+			if _, err := b.WriteString(p.Raw); err != nil {
+				return nil, err
+			}
+		} else {
+			for k, v := range bp.Tags {
+				if p.Tags == nil {
+					p.Tags = make(map[string]string, len(bp.Tags))
+				}
+				p.Tags[k] = v
+			}
+
+			if _, err := b.WriteString(p.MarshalString()); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := b.WriteByte('\n'); err != nil {
+			return nil, err
+		}
 	}
 
-	req, err := http.NewRequest("POST", c.url.String(), bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", c.url.String(), &b)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "")
 	req.Header.Set("User-Agent", c.userAgent)
 	if c.username != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
+	params := req.URL.Query()
+	params.Add("db", bp.Database)
+	params.Add("rp", bp.RetentionPolicy)
+	params.Add("precision", bp.Precision)
+	params.Add("consistency", bp.WriteConsistency)
+	req.URL.RawQuery = params.Encode()
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -133,22 +169,22 @@ func (c *Client) Write(bp BatchPoints) (*Response, error) {
 	defer resp.Body.Close()
 
 	var response Response
-	dec := json.NewDecoder(resp.Body)
-	dec.UseNumber()
-	err = dec.Decode(&response)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil && err.Error() != "EOF" {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusNoContent {
-		return &response, response.Error()
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		var err = fmt.Errorf(string(body))
+		response.Err = err
+		return &response, err
 	}
 
 	return nil, nil
 }
 
 // Ping will check to see if the server is up
-// Ping returns how long the requeset took, the version of the server it connected to, and an error if one occured.
+// Ping returns how long the request took, the version of the server it connected to, and an error if one occurred.
 func (c *Client) Ping() (time.Duration, string, error) {
 	now := time.Now()
 	u := c.url
@@ -304,15 +340,16 @@ func (r Response) Error() error {
 }
 
 // Point defines the fields that will be written to the database
-// Name, Time, and Fields are required
+// Measurement, Time, and Fields are required
 // Precision can be specified if the time is in epoch format (integer).
 // Valid values for Precision are n, u, ms, s, m, and h
 type Point struct {
-	Name      string
-	Tags      map[string]string
-	Time      time.Time
-	Fields    map[string]interface{}
-	Precision string
+	Measurement string
+	Tags        map[string]string
+	Time        time.Time
+	Fields      map[string]interface{}
+	Precision   string
+	Raw         string
 }
 
 // MarshalJSON will format the time in RFC3339Nano
@@ -320,16 +357,16 @@ type Point struct {
 // Or another way to say it is we always send back in nanosecond precision
 func (p *Point) MarshalJSON() ([]byte, error) {
 	point := struct {
-		Name      string                 `json:"name,omitempty"`
-		Tags      map[string]string      `json:"tags,omitempty"`
-		Time      string                 `json:"time,omitempty"`
-		Fields    map[string]interface{} `json:"fields,omitempty"`
-		Precision string                 `json:"precision,omitempty"`
+		Measurement string                 `json:"measurement,omitempty"`
+		Tags        map[string]string      `json:"tags,omitempty"`
+		Time        string                 `json:"time,omitempty"`
+		Fields      map[string]interface{} `json:"fields,omitempty"`
+		Precision   string                 `json:"precision,omitempty"`
 	}{
-		Name:      p.Name,
-		Tags:      p.Tags,
-		Fields:    p.Fields,
-		Precision: p.Precision,
+		Measurement: p.Measurement,
+		Tags:        p.Tags,
+		Fields:      p.Fields,
+		Precision:   p.Precision,
 	}
 	// Let it omit empty if it's really zero
 	if !p.Time.IsZero() {
@@ -338,21 +375,25 @@ func (p *Point) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&point)
 }
 
+func (p *Point) MarshalString() string {
+	return tsdb.NewPoint(p.Measurement, p.Tags, p.Fields, p.Time).String()
+}
+
 // UnmarshalJSON decodes the data into the Point struct
 func (p *Point) UnmarshalJSON(b []byte) error {
 	var normal struct {
-		Name      string                 `json:"name"`
-		Tags      map[string]string      `json:"tags"`
-		Time      time.Time              `json:"time"`
-		Precision string                 `json:"precision"`
-		Fields    map[string]interface{} `json:"fields"`
+		Measurement string                 `json:"measurement"`
+		Tags        map[string]string      `json:"tags"`
+		Time        time.Time              `json:"time"`
+		Precision   string                 `json:"precision"`
+		Fields      map[string]interface{} `json:"fields"`
 	}
 	var epoch struct {
-		Name      string                 `json:"name"`
-		Tags      map[string]string      `json:"tags"`
-		Time      *int64                 `json:"time"`
-		Precision string                 `json:"precision"`
-		Fields    map[string]interface{} `json:"fields"`
+		Measurement string                 `json:"measurement"`
+		Tags        map[string]string      `json:"tags"`
+		Time        *int64                 `json:"time"`
+		Precision   string                 `json:"precision"`
+		Fields      map[string]interface{} `json:"fields"`
 	}
 
 	if err := func() error {
@@ -371,7 +412,7 @@ func (p *Point) UnmarshalJSON(b []byte) error {
 				return err
 			}
 		}
-		p.Name = epoch.Name
+		p.Measurement = epoch.Measurement
 		p.Tags = epoch.Tags
 		p.Time = ts
 		p.Precision = epoch.Precision
@@ -387,7 +428,7 @@ func (p *Point) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	normal.Time = SetPrecision(normal.Time, normal.Precision)
-	p.Name = normal.Name
+	p.Measurement = normal.Measurement
 	p.Tags = normal.Tags
 	p.Time = normal.Time
 	p.Precision = normal.Precision
@@ -423,12 +464,13 @@ func normalizeFields(fields map[string]interface{}) map[string]interface{} {
 // Precision can be specified if the time is in epoch format (integer).
 // Valid values for Precision are n, u, ms, s, m, and h
 type BatchPoints struct {
-	Points          []Point           `json:"points,omitempty"`
-	Database        string            `json:"database,omitempty"`
-	RetentionPolicy string            `json:"retentionPolicy,omitempty"`
-	Tags            map[string]string `json:"tags,omitempty"`
-	Time            time.Time         `json:"time,omitempty"`
-	Precision       string            `json:"precision,omitempty"`
+	Points           []Point           `json:"points,omitempty"`
+	Database         string            `json:"database,omitempty"`
+	RetentionPolicy  string            `json:"retentionPolicy,omitempty"`
+	Tags             map[string]string `json:"tags,omitempty"`
+	Time             time.Time         `json:"time,omitempty"`
+	Precision        string            `json:"precision,omitempty"`
+	WriteConsistency string            `json:"-"`
 }
 
 // UnmarshalJSON decodes the data into the BatchPoints struct
@@ -517,7 +559,7 @@ func EpochToTime(epoch int64, precision string) (time.Time, error) {
 	case "n":
 		t = time.Unix(0, epoch)
 	default:
-		return time.Time{}, fmt.Errorf("Unknowm precision %q", precision)
+		return time.Time{}, fmt.Errorf("Unknown precision %q", precision)
 	}
 	return t, nil
 }

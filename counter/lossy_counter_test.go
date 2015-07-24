@@ -4,7 +4,6 @@ import (
 	"flag"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-
 	"math"
 	"os"
 	"testing"
