@@ -135,4 +135,5 @@ The measurement tag and the anomaly measurement name can be configured as well(s
 Now that we have a few anomalies Morgoth example configuration should have also queried for the number of anomalies and written a notification to a log (alerts.log based on the example config).
 Check this log now to see if the alert was fired.
 If so everything has worked as expected, you can now play around with the configuration to get alerts for anomalies you care about.
+Just like the scheduled queries above the alert queries will have an time where clause automatically append to them based on their period.
 
