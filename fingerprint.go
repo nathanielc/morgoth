@@ -12,7 +12,7 @@ type Fingerprint interface {
 }
 
 type Fingerprinter interface {
-	Fingerprint(window *Window) Fingerprint
+	Fingerprint(window Window) Fingerprint
 }
 
 var FingerprinterRegistery *config.Registery

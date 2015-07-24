@@ -89,17 +89,24 @@ func (self *App) Run() (err error) {
 	self.Stats.MapperStats = &self.mapper.Stats
 
 	glog.Info("Setup Manager")
-	scheduledQueryBuilders := make([]*ScheduledQueryBuilder, len(self.config.Schedules))
+	scheduledDataQueries := make([]*scheduledDataQuery, len(self.config.Schedules))
 	for i, sc := range self.config.Schedules {
 		builder, err := self.engine.NewQueryBuilder(sc.Query)
 		if err != nil {
 			return fmt.Errorf("Invalid query string: '%s', %s", sc.Query, err)
 		}
-		sq := NewScheduledQueryBuilder(builder, sc.Delay, sc.Period, sc.Tags)
-		scheduledQueryBuilders[i] = sq
+		q := &scheduledDataQuery{
+			sq: NewScheduledQuery(
+				builder,
+				sc.Delay,
+				sc.Period,
+			),
+			tags: sc.Tags,
+		}
+		scheduledDataQueries[i] = q
 	}
 
-	self.manager = NewManager(self.mapper, self.engine, scheduledQueryBuilders)
+	self.manager = NewManager(self.mapper, self.engine, scheduledDataQueries)
 
 	glog.Info("Starting Manager...")
 	self.manager.Start()
@@ -109,8 +116,13 @@ func (self *App) Run() (err error) {
 	self.apiServer.Start()
 
 	glog.Infof("Starting Alert Manger...")
-	scheduledQueries := make([]*ScheduledQuery, len(self.config.Alerts))
+	scheduledAlertQueries := make([]*scheduledAlertQuery, len(self.config.Alerts))
 	for i, ac := range self.config.Alerts {
+		builder, err := self.engine.NewQueryBuilder(ac.Query)
+		if err != nil {
+			return fmt.Errorf("Invalid query string: '%s', %s", ac.Query, err)
+		}
+
 		notifiers := make([]Notifier, len(ac.Notifiers))
 		for i, nc := range ac.Notifiers {
 			n, err := nc.GetNotifier()
@@ -120,18 +132,21 @@ func (self *App) Run() (err error) {
 			notifiers[i] = n
 		}
 
-		q := AlertQuery{
-			Query:     Query{Command: ac.Query},
-			Threshold: ac.Threshold,
-			Notifiers: notifiers,
-			Message:   ac.Message,
+		q := &scheduledAlertQuery{
+			sq: NewScheduledQuery(
+				builder,
+				ac.Delay,
+				ac.Period,
+			),
+			threshold: ac.Threshold,
+			notifiers: notifiers,
+			message:   ac.Message,
 		}
 
-		sq := NewScheduledQuery(q, ac.Delay, ac.Period)
-		scheduledQueries[i] = sq
+		scheduledAlertQueries[i] = q
 	}
 
-	self.alertsManager = NewAlertsManager(self.engine, scheduledQueries)
+	self.alertsManager = NewAlertsManager(self.engine, scheduledAlertQueries)
 	self.alertsManager.Start()
 
 	// Wait for shutdown

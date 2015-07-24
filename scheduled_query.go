@@ -6,21 +6,22 @@ import (
 	"time"
 )
 
+type QueryCallback func(q Query)
+
 type ScheduledQuery struct {
-	query      AlertQuery
-	schedule   *schedule.Schedule
-	queryQueue chan AlertQuery
-	tags       map[string]string
+	builder  QueryBuilder
+	schedule *schedule.Schedule
+	Callback QueryCallback
 }
 
-func NewScheduledQuery(query AlertQuery, delay, period time.Duration) *ScheduledQuery {
+func NewScheduledQuery(builder QueryBuilder, delay, period time.Duration) *ScheduledQuery {
 
 	schedule := &schedule.Schedule{
 		Delay:  delay,
 		Period: period,
 	}
 	sq := &ScheduledQuery{
-		query:    query,
+		builder:  builder,
 		schedule: schedule,
 	}
 	schedule.Callback = sq.callback
@@ -29,12 +30,14 @@ func NewScheduledQuery(query AlertQuery, delay, period time.Duration) *Scheduled
 
 }
 
-func (self *ScheduledQuery) Start(queryQueue chan AlertQuery) {
-	self.queryQueue = queryQueue
+func (self *ScheduledQuery) Start() {
 	self.schedule.Start()
 }
 
 func (self *ScheduledQuery) callback(start, stop time.Time) {
-	glog.V(1).Info("Scheduling query:", self.query)
-	self.queryQueue <- self.query
+	query := self.builder.GetForTimeRange(start, stop)
+	if self.callback != nil {
+		glog.V(1).Info("Scheduling query:", query)
+		self.Callback(query)
+	}
 }

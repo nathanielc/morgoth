@@ -13,24 +13,24 @@ const queryBufferSize = 100
 var workerCount = runtime.NumCPU()
 
 type Manager struct {
-	scheduledQueries []*ScheduledQueryBuilder
-	mapper           *Mapper
-	engine           Engine
-	queryQueue       chan Query
-	db               *bolt.DB
+	scheduledDataQueries []*scheduledDataQuery
+	mapper               *Mapper
+	engine               Engine
+	queryQueue           chan dataQuery
+	db                   *bolt.DB
 }
 
-func NewManager(mapper *Mapper, engine Engine, scheduledQueries []*ScheduledQueryBuilder) *Manager {
+func NewManager(mapper *Mapper, engine Engine, scheduledDataQueries []*scheduledDataQuery) *Manager {
 	return &Manager{
-		scheduledQueries: scheduledQueries,
-		mapper:           mapper,
-		engine:           engine,
-		queryQueue:       make(chan Query, queryBufferSize),
+		scheduledDataQueries: scheduledDataQueries,
+		mapper:               mapper,
+		engine:               engine,
+		queryQueue:           make(chan dataQuery, queryBufferSize),
 	}
 }
 
 func (self *Manager) Start() (err error) {
-	for _, sq := range self.scheduledQueries {
+	for _, sq := range self.scheduledDataQueries {
 		sq.Start(self.queryQueue)
 	}
 
@@ -85,7 +85,7 @@ func (self *Manager) Stop() {
 func (self *Manager) processQueries() {
 	for query := range self.queryQueue {
 		glog.V(2).Info("Executing query:", query)
-		windows, err := self.engine.GetWindows(query)
+		windows, err := self.engine.GetWindows(query.query)
 		if err != nil {
 			glog.Errorf("Failed to execute query: '%s' %s", query, err)
 			continue
@@ -119,10 +119,34 @@ func (self *Manager) ProcessWindows(windows []*Window) {
 }
 
 func (self *Manager) RecordAnomalous(w *Window) {
-	//TODO
 	glog.Infof("Found anomalous window: %s %s %s", w.Name, w.Tags, w.Start)
-	err := self.engine.RecordAnomalous(w)
+	err := self.engine.RecordAnomalous(w.Copy())
 	if err != nil {
 		glog.Errorf("Error recording anomaly: %s", err)
 	}
+}
+
+type scheduledDataQuery struct {
+	sq    *ScheduledQuery
+	tags  map[string]string
+	queue chan dataQuery
+}
+
+func (self *scheduledDataQuery) Start(queue chan dataQuery) {
+	self.queue = queue
+	self.sq.Callback = self.callback
+	self.sq.Start()
+}
+
+func (self *scheduledDataQuery) callback(query Query) {
+	dq := dataQuery{
+		query: query,
+		tags:  self.tags,
+	}
+	self.queue <- dq
+}
+
+type dataQuery struct {
+	query Query
+	tags  map[string]string
 }

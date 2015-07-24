@@ -10,7 +10,7 @@ type Engine interface {
 	Initialize() error
 	GetWindows(query Query) ([]*Window, error)
 	NewQueryBuilder(queryTemplate string) (QueryBuilder, error)
-	RecordAnomalous(w *Window) error
+	RecordAnomalous(w Window) error
 }
 
 var EngineRegistery *config.Registery

@@ -61,7 +61,7 @@ func (self *Detector) IsAnomalous(window *Window) bool {
 
 	vote := 0.0
 	for _, fc := range self.counters {
-		fingerprint := fc.fingerprinter.Fingerprint(window)
+		fingerprint := fc.fingerprinter.Fingerprint(window.Copy())
 		count := fc.counter.Count(fingerprint)
 		if count < self.normalCount {
 			vote++

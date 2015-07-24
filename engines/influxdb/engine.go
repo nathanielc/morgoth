@@ -23,7 +23,7 @@ func (self *InfluxDBEngine) NewQueryBuilder(queryTemplate string) (morgoth.Query
 	return NewQueryBuilder(queryTemplate)
 }
 
-func (self *InfluxDBEngine) RecordAnomalous(w *morgoth.Window) error {
+func (self *InfluxDBEngine) RecordAnomalous(w morgoth.Window) error {
 	w.Tags[self.measurementTag] = w.Name
 	point := client.Point{
 		Measurement: self.anomalyMeasurement,

@@ -10,54 +10,37 @@ engine:
     measurement_tag: m
 
 schedules:
-  - query: SELECT value FROM "day".cpu GROUP BY *
-    period: 10s
+  - query: SELECT value FROM "default".cpu_idle GROUP BY *
+    period: 30s
+    delay: 10s
     tags:
       ret: day
-  - query: SELECT value FROM "week".cpu GROUP BY *
+  - query: SELECT value FROM "week".cpu_idle GROUP BY *
     period: 5m
+    delay: 1m
     tags:
       ret: week
-  - query: SELECT value FROM "month".cpu GROUP BY *
+  - query: SELECT value FROM "month".cpu_idle GROUP BY *
     period: 1h
+    delay: 1m
     tags:
       ret: month
 
 mappings:
-  - name: cpu
+  - name: cpu_.*
     tags:
-      dc: nyc
       ret: day
     detector:
       fingerprints:
         - sigma:
             deviations: 10
-  - name: cpu
+  - name: mem_.*
     tags:
-      dc: nyc
-      ret: week
+      ret: day
     detector:
       fingerprints:
         - sigma:
             deviations: 10
-  - name: cpu
-    tags:
-      dc: nyc
-      ret: month
-    detector:
-      fingerprints:
-        - sigma:
-            deviations: 10
-
-  - name: cpu
-    tags:
-      dc: sfc
-    detector:
-      fingerprints:
-        - sigma:
-            deviations: 40
-        - sigma:
-            deviations: 30
 
 alerts:
   - query: SELECT COUNT(start) FROM anomaly WHERE time > now() - 5m GROUP BY time(5m), *

@@ -21,3 +21,22 @@ func (self *Window) IsTagsMatch(tags map[string]string) bool {
 	}
 	return true
 }
+
+func (self *Window) Copy() Window {
+
+	data := make([]float64, len(self.Data))
+	copy(data, self.Data)
+
+	tags := make(map[string]string, len(self.Tags))
+	for k, v := range self.Tags {
+		tags[k] = v
+	}
+
+	return Window{
+		Name:  self.Name,
+		Data:  data,
+		Tags:  tags,
+		Start: self.Start,
+		Stop:  self.Stop,
+	}
+}

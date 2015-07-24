@@ -2,5 +2,6 @@
 package fingerprinters
 
 import (
+	_ "github.com/nathanielc/morgoth/fingerprinters/kstest"
 	_ "github.com/nathanielc/morgoth/fingerprinters/sigma"
 )

@@ -11,7 +11,7 @@ type Sigma struct {
 	deviations float64
 }
 
-func (self *Sigma) Fingerprint(window *morgoth.Window) morgoth.Fingerprint {
+func (self *Sigma) Fingerprint(window morgoth.Window) morgoth.Fingerprint {
 
 	mean, std := calcStats(window.Data)
 	glog.V(4).Infof("N: %d Mean: %f Std: %f", len(window.Data), mean, std)
