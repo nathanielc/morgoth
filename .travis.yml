@@ -1,13 +1,13 @@
 language: go
 sudo: false
-
 go:
-  - 1.4
-
+- 1.4
 script: go build ./cmd/morgothd
-
 deploy:
-  provider: bintray
-  file: ./morgothd
-  user: nathanielc
-  key: myfakekey
+  provider: releases
+  api_key:
+    secure: cK0/w0ggcVawInO+b++4qqwMGrVoP7PzNkTxaNq+tbFc9cu8CSUS2+PlgRkdoRYfD+fohri3lqdzHUH0rcC7gOfx/Dvtw7mcs14gzfvuNL+/xMlKn/mBoPkOGPXQeh86qsmGbsrgDzv/BwGNgxqqEimxdiev2ZDlssTD16RQZR8=
+  file: "./morgothd"
+  on:
+    repo: nathanielc/morgoth
+    branch: feature/lossy_counting
