@@ -1,15 +1,15 @@
 package influxdb_test
 
 import (
+	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"github.com/nathanielc/morgoth/engine"
-	_ "github.com/nathanielc/morgoth/engine/list"
+	_ "github.com/nathanielc/morgoth/engines"
 	"testing"
 )
 
 func TestInfluxDBShouldBeRegistered(t *testing.T) {
 	assert := assert.New(t)
 
-	_, err := engine.Registery.GetFactory("influxdb")
+	_, err := morgoth.EngineRegistery.GetFactory("influxdb")
 	assert.Nil(err)
 }

@@ -3,7 +3,7 @@ package influxdb_test
 import (
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/nathanielc/morgoth/engine/influxdb"
+	"github.com/nathanielc/morgoth/engines/influxdb"
 	"testing"
 )
 

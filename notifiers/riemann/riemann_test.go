@@ -4,8 +4,7 @@ import (
 	"flag"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	metric "github.com/nathanielc/morgoth/metric/types"
-	"github.com/nathanielc/morgoth/notifier/riemann"
+	"github.com/nathanielc/morgoth/notifiers/riemann"
 	"testing"
 	"time"
 )
@@ -26,10 +25,10 @@ func TestNotify(t *testing.T) {
 		t.FailNow()
 	}
 
-	metric := metric.MetricID("cpu")
 	stop := time.Now()
 	start := stop.Add(-time.Hour)
-	r.Notify("mgof", metric, start, stop)
+	w := &morgoth.Window{}
+	r.Notify("mgof", w)
 
 	assert.True(false)
 }

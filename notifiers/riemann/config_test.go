@@ -3,7 +3,7 @@ package riemann_test
 import (
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/nathanielc/morgoth/notifier/riemann"
+	"github.com/nathanielc/morgoth/notifiers/riemann"
 	"testing"
 )
 

@@ -3,14 +3,13 @@ package config_test
 import (
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
-	"github.com/nathanielc/morgoth/mocks/config/types"
-	"github.com/nathanielc/morgoth/registery"
+	"github.com/nathanielc/morgoth/config"
 	"testing"
 )
 
 type testStruct struct {
 	assert    *assert.Assertions
-	registery *registery.Registery
+	registery *config.Registery
 }
 
 type testConfig struct {
@@ -29,11 +28,11 @@ func (self testConfig) Validate() error {
 type testFactory struct {
 }
 
-func (self *testFactory) NewConf() types.Configuration {
+func (self *testFactory) NewConf() config.Configuration {
 	return new(testConfig)
 }
 
-func (self *testFactory) GetInstance(config types.Configuration) (interface{}, error) {
+func (self *testFactory) GetInstance(config config.Configuration) (interface{}, error) {
 	return nil, nil
 }
 
@@ -50,7 +49,7 @@ func (self *testStruct) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func TestDynamicType(t *testing.T) {
 	assert := assert.New(t)
-	registery := registery.New()
+	registery := config.NewRegistry()
 	tf := testFactory{}
 	registery.RegisterFactory("jim", &tf)
 
@@ -68,7 +67,7 @@ jim:
 
 func TestDynamicConfiguratonShouldDefault(t *testing.T) {
 
-	mockConf := new(mocks.Configuration)
+	mockConf := new(config.Configuration)
 
 	dc := dynamic_type.DynamicConfiguration{
 		Type: "test",
@@ -86,7 +85,7 @@ func TestDynamicConfiguratonShouldDefault(t *testing.T) {
 func TestDynamicConfiguratonShouldValidate(t *testing.T) {
 	assert := assert.New(t)
 
-	mockConf := new(mocks.Configuration)
+	mockConf := new(config.Configuration)
 
 	dc := dynamic_type.DynamicConfiguration{
 		Type: "test",
