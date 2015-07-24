@@ -1,0 +1,13 @@
+language: go
+
+go:
+  - 1.4
+  - tip
+
+script: go build ./cmd/morgothd
+
+deploy:
+  provider: bintray
+  file: ./morgothd
+  user: nathanielc
+  key: myfakekey
