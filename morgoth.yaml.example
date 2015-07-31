@@ -43,10 +43,11 @@ mappings:
             deviations: 10
 
 alerts:
-  - query: SELECT COUNT(start) FROM anomaly GROUP BY time(5m), *
+  - query: SELECT COUNT(start) FROM anomaly GROUP BY *
     message: Too many anomalies detected
     threshold: 1
-    period: 5m
+    period: 1m
+    group_by_interval: 5m
     notifiers:
       - log:
           file: alerts.log

@@ -20,10 +20,11 @@ type Config struct {
 }
 
 type ScheduleConf struct {
-	Query  string
-	Period time.Duration
-	Delay  time.Duration
-	Tags   map[string]string
+	Query           string
+	Period          time.Duration
+	GroupByInterval time.Duration `yaml:"group_by_interval"`
+	Delay           time.Duration
+	Tags            map[string]string
 }
 
 type MappingConf struct {
@@ -41,12 +42,13 @@ type DetectorConf struct {
 }
 
 type AlertConf struct {
-	Message   string
-	Threshold float64
-	Query     string
-	Period    time.Duration
-	Delay     time.Duration
-	Notifiers []*NotifierConf
+	Message         string
+	Threshold       float64
+	Query           string
+	Period          time.Duration
+	GroupByInterval time.Duration `yaml:"group_by_interval"`
+	Delay           time.Duration
+	Notifiers       []*NotifierConf
 }
 
 func (self *Config) Default() {

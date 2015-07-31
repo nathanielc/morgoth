@@ -91,7 +91,7 @@ func (self *App) Run() (err error) {
 	glog.Info("Setup Manager")
 	scheduledDataQueries := make([]*scheduledDataQuery, len(self.config.Schedules))
 	for i, sc := range self.config.Schedules {
-		builder, err := self.engine.NewQueryBuilder(sc.Query)
+		builder, err := self.engine.NewQueryBuilder(sc.Query, sc.GroupByInterval)
 		if err != nil {
 			return fmt.Errorf("Invalid query string: '%s', %s", sc.Query, err)
 		}
@@ -118,7 +118,7 @@ func (self *App) Run() (err error) {
 	glog.Infof("Starting Alert Manger...")
 	scheduledAlertQueries := make([]*scheduledAlertQuery, len(self.config.Alerts))
 	for i, ac := range self.config.Alerts {
-		builder, err := self.engine.NewQueryBuilder(ac.Query)
+		builder, err := self.engine.NewQueryBuilder(ac.Query, ac.GroupByInterval)
 		if err != nil {
 			return fmt.Errorf("Invalid query string: '%s', %s", ac.Query, err)
 		}

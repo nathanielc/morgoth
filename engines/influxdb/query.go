@@ -1,7 +1,6 @@
 package influxdb
 
 import (
-	"errors"
 	"fmt"
 	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/influxql"
@@ -14,7 +13,7 @@ type QueryBuilder struct {
 	stopTL    *influxql.TimeLiteral
 }
 
-func NewQueryBuilder(quertStr string) (*QueryBuilder, error) {
+func NewQueryBuilder(quertStr string, groupByInterval time.Duration) (*QueryBuilder, error) {
 
 	s, err := influxql.ParseStatement(quertStr)
 	if err != nil {
@@ -22,7 +21,11 @@ func NewQueryBuilder(quertStr string) (*QueryBuilder, error) {
 	}
 	stmt, ok := s.(*influxql.SelectStatement)
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("Query must be a select statement '%s'", quertStr))
+		return nil, fmt.Errorf("Query must be a select statement '%s'", quertStr)
+	}
+
+	if dur, err := stmt.GroupByInterval(); err == nil && dur > 0 {
+		return nil, fmt.Errorf("Must not specify the 'GROUP BY time(x)' in query. Use the groupByInterval property.")
 	}
 
 	//Add New BinaryExpr for time clause
@@ -39,6 +42,20 @@ func NewQueryBuilder(quertStr string) (*QueryBuilder, error) {
 		LHS: &influxql.VarRef{Val: "time"},
 		RHS: stopTL,
 	}
+
+	if groupByInterval > 0 {
+		stmt.Dimensions = append(stmt.Dimensions,
+			&influxql.Dimension{
+				Expr: &influxql.Call{
+					Name: "time",
+					Args: []influxql.Expr{
+						&influxql.DurationLiteral{groupByInterval},
+					},
+				},
+			},
+		)
+	}
+
 	if stmt.Condition != nil {
 		stmt.Condition = &influxql.BinaryExpr{
 			Op:  influxql.AND,

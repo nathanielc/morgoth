@@ -4,12 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nathanielc/morgoth/config"
+	"time"
 )
 
 type Engine interface {
 	Initialize() error
 	GetWindows(query Query) ([]*Window, error)
-	NewQueryBuilder(queryTemplate string) (QueryBuilder, error)
+	NewQueryBuilder(queryTemplate string, groupByInterval time.Duration) (QueryBuilder, error)
 	RecordAnomalous(w Window) error
 }
 

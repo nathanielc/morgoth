@@ -3,6 +3,8 @@ package influxdb
 import (
 	"encoding/json"
 	"errors"
+	"time"
+
 	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/influxdb/influxdb/client"
@@ -19,8 +21,8 @@ func (self *InfluxDBEngine) Initialize() error {
 	return nil
 }
 
-func (self *InfluxDBEngine) NewQueryBuilder(queryTemplate string) (morgoth.QueryBuilder, error) {
-	return NewQueryBuilder(queryTemplate)
+func (self *InfluxDBEngine) NewQueryBuilder(queryTemplate string, groupByInterval time.Duration) (morgoth.QueryBuilder, error) {
+	return NewQueryBuilder(queryTemplate, groupByInterval)
 }
 
 func (self *InfluxDBEngine) RecordAnomalous(w morgoth.Window) error {
