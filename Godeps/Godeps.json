@@ -77,8 +77,16 @@
 			"Rev": "237b52b46ae0dc41bf926500991b69121c681c67"
 		},
 		{
+			"ImportPath": "github.com/stretchr/objx",
+			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
+		},
+		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+			"Rev": "e4ec8152c15fc46bd5056ce65997a07c7d415325"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/mock",
+			"Rev": "e4ec8152c15fc46bd5056ce65997a07c7d415325"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/bcrypt",
