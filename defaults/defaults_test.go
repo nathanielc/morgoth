@@ -18,7 +18,7 @@ func TestDefaultShouldDefaultErrorOnNonPtr(t *testing.T) {
 
 	s := S{}
 
-	err := SetDefault(s, "A")
+	_, err := SetDefault(s, "A")
 	assert.NotNil(err)
 
 }
@@ -31,7 +31,7 @@ func TestDefaultShouldDefaultErrorOnMissingTag(t *testing.T) {
 
 	s := S{}
 
-	err := SetDefault(&s, "A")
+	_, err := SetDefault(&s, "A")
 	assert.NotNil(err)
 
 }
@@ -45,7 +45,7 @@ func TestDefaultShouldDefaultErrorOnMissingField(t *testing.T) {
 
 	s := S{}
 
-	err := SetDefault(&s, "B")
+	_, err := SetDefault(&s, "B")
 	assert.NotNil(err)
 
 }
@@ -60,9 +60,10 @@ func TestDefaultShouldDefaultBool(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, false)
-	err := SetDefault(&s, "A")
+	v, err := SetDefault(&s, "A")
 	assert.Nil(err)
 	assert.Equal(s.A, true)
+	assert.Equal(s.A, v)
 
 }
 
@@ -76,7 +77,7 @@ func TestDefaultShouldNotDefaultInvalidBool(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, false)
-	err := SetDefault(&s, "A")
+	_, err := SetDefault(&s, "A")
 	assert.NotNil(err)
 
 }
@@ -90,9 +91,10 @@ func TestDefaultShouldDefaultInt(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, 0)
-	err := SetDefault(&s, "A")
+	v, err := SetDefault(&s, "A")
 	assert.Nil(err)
 	assert.Equal(s.A, -1)
+	assert.Equal(s.A, v)
 
 }
 
@@ -106,7 +108,7 @@ func TestDefaultShouldNotDefaultInvalidInt(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, 0)
-	err := SetDefault(&s, "A")
+	_, err := SetDefault(&s, "A")
 	assert.NotNil(err)
 
 }
@@ -121,9 +123,10 @@ func TestDefaultShouldDefaultUint(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, 0)
-	err := SetDefault(&s, "A")
+	v, err := SetDefault(&s, "A")
 	assert.Nil(err)
 	assert.Equal(s.A, 1)
+	assert.Equal(s.A, v)
 
 }
 
@@ -137,7 +140,7 @@ func TestDefaultShouldNotDefaultInvalidUint(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, 0)
-	err := SetDefault(&s, "A")
+	_, err := SetDefault(&s, "A")
 	assert.NotNil(err)
 
 }
@@ -152,9 +155,10 @@ func TestDefaultShouldDefaultFloat(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, 0.0)
-	err := SetDefault(&s, "A")
+	v, err := SetDefault(&s, "A")
 	assert.Nil(err)
 	assert.Equal(s.A, 1.0)
+	assert.Equal(s.A, v)
 
 }
 
@@ -168,7 +172,7 @@ func TestDefaultShouldNotDefaultInvalidFloat(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, 0.0)
-	err := SetDefault(&s, "A")
+	_, err := SetDefault(&s, "A")
 	assert.NotNil(err)
 
 }
@@ -183,9 +187,10 @@ func TestDefaultShouldDefaultString(t *testing.T) {
 	s := S{}
 
 	assert.Equal(s.A, "")
-	err := SetDefault(&s, "A")
+	v, err := SetDefault(&s, "A")
 	assert.Nil(err)
 	assert.Equal(s.A, "1.0")
+	assert.Equal(s.A, v)
 }
 
 func TestDefaultShouldDefaultMultipleFields(t *testing.T) {
@@ -203,17 +208,19 @@ func TestDefaultShouldDefaultMultipleFields(t *testing.T) {
 	assert.Equal(s.B, "")
 	assert.Equal(s.C, 0)
 
-	err := SetDefault(&s, "A")
+	v, err := SetDefault(&s, "A")
 	assert.Nil(err)
 	assert.Equal(s.A, "i am a string")
+	assert.Equal(s.A, v)
 
-	err = SetDefault(&s, "B")
+	_, err = SetDefault(&s, "B")
 	assert.NotNil(err)
 	assert.Equal(s.B, "")
 
-	err = SetDefault(&s, "C")
+	v, err = SetDefault(&s, "C")
 	assert.Nil(err)
 	assert.Equal(s.C, 1)
+	assert.Equal(s.C, v)
 }
 
 //////////////////////////////////////////////////////////
