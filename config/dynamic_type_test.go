@@ -4,6 +4,7 @@ import (
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 	"github.com/nathanielc/morgoth/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/nathanielc/morgoth/config"
+	"github.com/nathanielc/morgoth/config/mocks"
 	"testing"
 )
 
@@ -37,7 +38,7 @@ func (self *testFactory) GetInstance(config config.Configuration) (interface{}, 
 }
 
 func (self *testStruct) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	engineType, config, err := dynamic_type.UnmarshalDynamicType(self.registery, unmarshal)
+	engineType, config, err := config.UnmarshalDynamicType(self.registery, unmarshal)
 	self.assert.Nil(err)
 	self.assert.Equal("jim", engineType)
 	if !self.assert.NotNil(config) {
@@ -67,9 +68,9 @@ jim:
 
 func TestDynamicConfiguratonShouldDefault(t *testing.T) {
 
-	mockConf := new(config.Configuration)
+	mockConf := new(mocks.Configuration)
 
-	dc := dynamic_type.DynamicConfiguration{
+	dc := config.DynamicConfiguration{
 		Type: "test",
 		Conf: mockConf,
 	}
@@ -85,14 +86,14 @@ func TestDynamicConfiguratonShouldDefault(t *testing.T) {
 func TestDynamicConfiguratonShouldValidate(t *testing.T) {
 	assert := assert.New(t)
 
-	mockConf := new(config.Configuration)
+	mockConf := new(mocks.Configuration)
 
-	dc := dynamic_type.DynamicConfiguration{
+	dc := config.DynamicConfiguration{
 		Type: "test",
 		Conf: mockConf,
 	}
 
-	mockConf.On("Validate").Return()
+	mockConf.On("Validate").Return(nil)
 
 	err := dc.Validate()
 	assert.Nil(err)
@@ -104,7 +105,7 @@ func TestDynamicConfiguratonShouldValidate(t *testing.T) {
 func TestDynamicConfiguratonDefaultShouldIgnoreNilConf(t *testing.T) {
 	assert := assert.New(t)
 
-	dc := dynamic_type.DynamicConfiguration{
+	dc := config.DynamicConfiguration{
 		Type: "test",
 		Conf: nil,
 	}
@@ -117,7 +118,7 @@ func TestDynamicConfiguratonDefaultShouldIgnoreNilConf(t *testing.T) {
 func TestDynamicConfiguratonValidateShouldFailNilConf(t *testing.T) {
 	assert := assert.New(t)
 
-	dc := dynamic_type.DynamicConfiguration{
+	dc := config.DynamicConfiguration{
 		Type: "test",
 		Conf: nil,
 	}
