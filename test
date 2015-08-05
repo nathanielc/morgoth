@@ -1,6 +1,0 @@
-#!/bin/bash
-
-cd "$( dirname "${BASH_SOURCE[0]}" )"
-
-echo "Testing all packages..."
-godep go list ./... | grep -vP '(\/(learners|integration|plugins|mocks|list)(\/|$))|(morgoth$)' | xargs go test

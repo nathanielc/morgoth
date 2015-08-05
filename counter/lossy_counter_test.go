@@ -50,7 +50,7 @@ func TestLossyCounterShouldByLossy(t *testing.T) {
 	assert := assert.New(t)
 
 	//Create Lossy Counter that will drop items less than 10% frequent
-	lc := NewLossyCounter(0.05, 0.01)
+	lc := NewLossyCounter(0.05, 0.10)
 
 	fp1 := &fp{1}
 	fp2 := &fp{2}

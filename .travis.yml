@@ -2,7 +2,6 @@ language: go
 sudo: false
 go:
 - 1.4
-script: go build ./cmd/morgothd
 deploy:
   provider: releases
   api_key:
