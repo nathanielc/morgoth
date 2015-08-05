@@ -14,14 +14,14 @@ func TestScheduleShouldStartAndStop(t *testing.T) {
 
 	unit := 10 * time.Millisecond
 	calledCount := 0
-	testF := func(rotation schedule.Rotation, start time.Time, dur time.Time) {
+	testF := func(start time.Time, dur time.Time) {
 		remainder := start.Nanosecond() % int(unit)
 		assert.Equal(0, remainder, "Start not truncated to 10ms")
 		calledCount++
 	}
 	s := schedule.Schedule{
-		Callback:  testF,
-		Rotations: []schedule.Rotation{schedule.Rotation{Period: unit}},
+		Callback: testF,
+		Period:   unit,
 	}
 
 	assert.NotNil(s)
@@ -41,8 +41,8 @@ func TestScheduleShouldNotDoubleStart(t *testing.T) {
 	assert := assert.New(t)
 
 	s := schedule.Schedule{
-		Callback:  func(rotation schedule.Rotation, start time.Time, dur time.Time) {},
-		Rotations: []schedule.Rotation{schedule.Rotation{Period: time.Millisecond}},
+		Callback: func(start time.Time, dur time.Time) {},
+		Period:   time.Millisecond,
 	}
 
 	assert.NotNil(s)
@@ -54,16 +54,4 @@ func TestScheduleShouldNotDoubleStart(t *testing.T) {
 	assert.NotNil(err)
 
 	s.Stop()
-}
-
-func TestRotationShouldConvertToString(t *testing.T) {
-	defer glog.Flush()
-	assert := assert.New(t)
-
-	r := schedule.Rotation{
-		Period: time.Minute * 6,
-	}
-
-	str := r.GetPrefix()
-	assert.Equal("rot.7.360.", str)
 }
