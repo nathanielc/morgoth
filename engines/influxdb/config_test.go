@@ -13,8 +13,8 @@ func TestInfluxDBConfShouldDefaultEmpty(t *testing.T) {
 	conf := influxdb.InfluxDBConf{}
 	conf.Default()
 
-	assert.Equal(conf.Host, "localhost")
-	assert.Equal(conf.Port, 8083)
+	assert.Equal("localhost", conf.Host)
+	assert.Equal(uint(8083), conf.Port)
 
 }
 
@@ -27,9 +27,9 @@ func TestInfluxDBConfShouldDefaultNonEmpty(t *testing.T) {
 	}
 	conf.Default()
 
-	assert.Equal(conf.Host, "localhost")
-	assert.Equal(conf.Port, 8083)
-	assert.Equal(conf.Database, "morgoth")
+	assert.Equal("localhost", conf.Host)
+	assert.Equal(uint(8083), conf.Port)
+	assert.Equal("morgoth", conf.Database)
 
 }
 
@@ -43,9 +43,9 @@ func TestInfluxDBConfDefaultShouldIgnoreValidFields(t *testing.T) {
 	}
 	conf.Default()
 
-	assert.Equal(conf.Host, "influx")
-	assert.Equal(conf.Port, 42)
-	assert.Equal(conf.Database, "morgoth")
+	assert.Equal("influx", conf.Host)
+	assert.Equal(uint(42), conf.Port)
+	assert.Equal("morgoth", conf.Database)
 
 }
 
@@ -67,7 +67,7 @@ database: morgothdb
 	assert.Nil(err)
 
 	assert.Equal("influx1.example.com", ic.Host)
-	assert.Equal(4242, ic.Port)
+	assert.Equal(uint(4242), ic.Port)
 	assert.Equal("morgoth", ic.User)
 	assert.Equal("mysecret", ic.Password)
 	assert.Equal("morgothdb", ic.Database)

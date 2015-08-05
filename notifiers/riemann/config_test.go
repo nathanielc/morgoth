@@ -15,7 +15,7 @@ func TestRiemannConfShouldDefault(t *testing.T) {
 	rc.Default()
 
 	assert.Equal("localhost", rc.Host)
-	assert.Equal(5555, rc.Port)
+	assert.Equal(uint(5555), rc.Port)
 
 }
 
@@ -31,7 +31,7 @@ func TestRiemannConfShouldValidate(t *testing.T) {
 	assert.Nil(err)
 
 	assert.Equal("example.com", rc.Host)
-	assert.Equal(42, rc.Port)
+	assert.Equal(uint(42), rc.Port)
 
 }
 
@@ -50,6 +50,6 @@ port: 43
 	assert.Nil(err)
 
 	assert.Equal("riemann", rc.Host)
-	assert.Equal(43, rc.Port)
+	assert.Equal(uint(43), rc.Port)
 
 }

@@ -122,10 +122,10 @@ func TestDefaultShouldDefaultUint(t *testing.T) {
 
 	s := S{}
 
-	assert.Equal(s.A, 0)
+	assert.Equal(s.A, uint(0))
 	v, err := SetDefault(&s, "A")
 	assert.Nil(err)
-	assert.Equal(s.A, 1)
+	assert.Equal(s.A, uint(1))
 	assert.Equal(s.A, v)
 
 }
@@ -139,7 +139,7 @@ func TestDefaultShouldNotDefaultInvalidUint(t *testing.T) {
 
 	s := S{}
 
-	assert.Equal(s.A, 0)
+	assert.Equal(s.A, uint(0))
 	_, err := SetDefault(&s, "A")
 	assert.NotNil(err)
 
