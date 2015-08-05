@@ -20,7 +20,10 @@ func (self *JSDivFactory) GetInstance(config config.Configuration) (interface{},
 		return nil, errors.New(fmt.Sprintf("Configuration is not JSDivConf%v", config))
 	}
 	engine := &JSDiv{
-		deviations: conf.Deviations,
+		min:    conf.Min,
+		max:    conf.Max,
+		nBins:  conf.NBins,
+		pValue: conf.PValue,
 	}
 	return engine, nil
 }

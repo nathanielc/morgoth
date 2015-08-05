@@ -45,30 +45,15 @@ func TestScheduleQueryShouldAddTimeWhereCondition(t *testing.T) {
 	}
 
 	test := func(tc testCase) {
-		q, err := influxdb.NewQuery(tc.quertStr)
+		q, err := influxdb.NewQueryBuilder(tc.quertStr, 0)
 		assert.Nil(err)
 		assert.Equal(
 			tc.expectedStr,
-			q.QueryForTimeRange(tc.start, tc.stop),
+			q.GetForTimeRange(tc.start, tc.stop).Command,
 		)
 	}
 
 	for _, tc := range testCases {
 		test(tc)
 	}
-}
-
-func TestExecQuery(t *testing.T) {
-	assert := assert.New(t)
-
-	engine := new(influxdb.InfluxDBEngine)
-
-	q, err := influxdb.NewQuery("SELECT value FROM /cpu_load_.*/ WHERE host='server01' group by *")
-	assert.Nil(err)
-
-	start := time.Unix(1433378783, 0)
-	stop := time.Unix(1433624798, 0)
-	qStr := q.QueryForTimeRange(start, stop)
-
-	engine.ExecuteQuery(qStr)
 }
