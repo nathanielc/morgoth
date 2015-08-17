@@ -146,17 +146,17 @@
             <div class="section">
               <h1 id="schedules">Schedules</h1>
 <p>Since Morgoth does not ingest data itself it needs to be told were and how to get data.
-This is were schedules come in, they define a query and a period that the query should be run.
-Each time the query is run Morgoth adds a time clause resticting it to just the window of time since the last time the query ran.</p>
+This is were schedules come in. They define a query and a period that the query should be run.
+Each time the query is run, Morgoth adds a time clause restricting it to just the window of time since the last time the query ran.</p>
 <p>The basic components of a scheduled query are:</p>
 <ol>
 <li>query -- The query to run without any time clause.</li>
 <li>period -- How often to run the query. Can be any duration string (s,m,h,w,d, etc.)</li>
-<li>delay -- How long to wait from real time before executing the query. Usefull if data takes time to arrive at InfluxDB.</li>
+<li>delay -- How long to wait from real time before executing the query. Useful if data takes time to arrive at InfluxDB.</li>
 <li>tags -- Static set of tags to set on all windows returned from the query</li>
 </ol>
 <p>As the queries execute data receives data and processes by sending it to the mapper.
-Since the mapper uses tags to make mapping decisions its possible to define a set of static tags to be set on the results of a given query.
+Since the mapper uses tags to make mapping decisions, it's possible to define a set of static tags to be set on the results of a given query.
 This allows the mapper to make decisions based on which retention policy, etc. the data came from.</p>
 <p>Here is an example schedules config section:</p>
 <pre><code class="yaml">schedules:
@@ -179,7 +179,7 @@ This allows the mapper to make decisions based on which retention policy, etc. t
 
 <p>Notice that these queries are selecting data from different retention policies and adding a tag as such.
 This way Morgoth can map to a new detector for each set of data for different retention policies allowing for detection of anomalies of widely different time scales.</p>
-<p>Also note the  <code>GROUP BY *</code> InfluxDB will not return tags in the result unless the are requested, so either add a <code>GROUP BY *</code> or explicity name each tag used in the mappings section.</p>
+<p>Also note the  <code>GROUP BY *</code>. InfluxDB will not return tags in the result unless they are requested, so either add a <code>GROUP BY *</code> or explicity name each tag used in the mappings section.</p>
 
             </div>
           </div>
