@@ -34,7 +34,7 @@ called MGOF (Multinomial Goodness of Fit), and has been adapted from this resear
 What is MGOF?
 -------------
 
-In a nut shell MGOF (Multinomial Goodness of Fit, as I am calling it) is an pattern
+In a nutshell MGOF (Multinomial Goodness of Fit, as I am calling it) is a pattern
 learning algorithm adept at detecting anomalies in non Gaussian data.
 
 Using standard deviations or 3-sigma algorithms is a very common way of detecting anmalies in metric data.
