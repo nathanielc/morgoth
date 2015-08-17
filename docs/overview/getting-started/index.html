@@ -196,11 +196,11 @@ There are a few basic sections:</p>
 <h2 id="dependencies">Dependencies</h2>
 <h3 id="influxdb">InfluxDB</h3>
 <p>Morgoth uses <a href="http://influxdb.com">InfluxDB</a> (specifically 0.9.x) as a source of metric data.
-Note, Morgoth does not ingest any data, it simple expects to query alreadt existing data from InfluxDB and process it.
+Note, Morgoth does not ingest any data, it simply expects to query already existing data from InfluxDB and process it.
 The default configuration we just copied is looking for an InfluxDB instance to be running on <code>localhost</code> on port <code>8086</code>.
 It expects to be able to login as the default root user and connect to a database called <code>morgoth</code>.</p>
 <p>At this point either create a <code>morgoth</code> database on your running InfluxDB instance or change the configuration to point to a different endpoint.</p>
-<p>Now that we have InfluxDB running Morgoth is ready to start detecting anomalies.</p>
+<p>Now that we have InfluxDB running, Morgoth is ready to start detecting anomalies.</p>
 <h1 id="running-morgoth">Running Morgoth</h1>
 <p>Start Morgoth again from the sandbox directory.</p>
 <pre><code class="bash">$ morgothd
@@ -210,12 +210,12 @@ It expects to be able to login as the default root user and connect to a databas
 This data is stored in a <a href="https://github.com/boltdb/bolt">BoltDB</a> database.</p>
 <h1 id="detecting-anomalies">Detecting Anomalies</h1>
 <h2 id="getting-data-for-morgoth">Getting data for Morgoth</h2>
-<p>Now that Morgoth is running lets tell it how to find data.
-In the <a href="../..//configuration/schedules">schedules</a> section we define several queries to run an on what frequency.
-We do not need to difine a <code>time</code> clause as Morgoth will do this for you, based on the current time.
+<p>Now that Morgoth is running, lets tell it how to find data.
+In the <a href="../..//configuration/schedules">schedules</a> section we define several queries to run and on what frequency.
+We do not need to define a <code>time</code> clause as Morgoth will do this for you, based on the current time.
 The example configuration is selecting data from the <code>cpu_idle</code> measurement and grouping by all tags.
-The result of this query is that serveral series are returned each with a unique tag set for the <code>cpu_idle</code> measurement.
-Each of these series or windows as Morgoth calls them are passed to the mappings in order to determine what to do with them.</p>
+The result of this query is that serveral series are returned; each with a unique tag set for the <code>cpu_idle</code> measurement.
+Each of these series &ndash; or windows as Morgoth calls them &ndash; are passed to the mappings in order to determine what to do with them.</p>
 <p>But before we can see this in action we need to get data into InfluxDB.
 If you already have data change the query to select data from a measurement in your data set.
 If you do not have data in InfluxDB install <a href="https://github.com/influxdb/telegraf">Telegraf</a> and start it up with simple config that only has the cpu and mem plugins enabled.</p>
@@ -240,7 +240,7 @@ hostname = &quot;morgoth1&quot;
 <p>Now that InfluxDB has data, Morgoth can query it.
 Each window or series of data returned from InfluxDB will be sent to the mapper inside of Morgoth.
 The mapper is configured via the <a href="../..//configuration/mappings">mappings</a> section.
-Each mapping is a contains a <code>name</code> regex that will match against the measurement name, <code>cpu_idle</code> in this case, and a set of tag regexs.
+Each mapping contains a <code>name</code> regex that will match against the measurement name, <code>cpu_idle</code> in this case, and a set of tag regexs.
 Each tag regex must also match for the window to match the mapping.
 Once a window with its name and tags matches a mapping it will be processed by an instance of a detector with the configured settings.
 The default configuration references some <a href="../..//concepts/fingerprints">fingerprinters</a> etc.
@@ -252,12 +252,12 @@ This gives us a chance to see an anomaly get recorded.</p>
 </code></pre>
 
 <p>Notice that <code>cpu_idle</code> has been converted into a tag now and the measurement we queried was the <code>anomaly</code> measurement.
-The measurement tag and the anomaly measurement name can be configured as well(see <a href="../..//configuration/engine">here</a></p>
+The measurement tag and the anomaly measurement name can be configured as well (see <a href="../..//configuration/engine">here</a>).</p>
 <h2 id="alerting-on-anomalies">Alerting on Anomalies</h2>
-<p>Now that we have a few anomalies Morgoth example configuration should have also queried for the number of anomalies and written a notification to a log (alerts.log based on the example config).
+<p>Now that we have a few anomalies, the Morgoth example configuration should have also queried for the number of anomalies and written a notification to a log (alerts.log based on the example config).
 Check this log now to see if the alert was fired.
-If so everything has worked as expected, you can now play around with the configuration to get alerts for anomalies you care about.
-Just like the scheduled queries above the alert queries will have an time where clause automatically append to them based on their period.</p>
+If so, everything has worked as expected. You can now play around with the configuration to get alerts for anomalies you care about.
+Just like the scheduled queries above, the alert queries will have a time where clause automatically appended to them based on their period.</p>
 
             </div>
           </div>
