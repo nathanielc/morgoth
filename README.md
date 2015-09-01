@@ -5,14 +5,13 @@ Morgoth [![Build Status](https://travis-ci.org/nathanielc/morgoth.svg?branch=mas
 Morgoth is a flexible anomaly detection application.
 It is designed to integrate with many existing technologies
 and provide powerful anomaly detection on top of those systems.
-Namely morgoth currently integrates with graphite, MongoDB and InfluxDB.
-Elasticsearch integration is comming soon.
+Namely morgoth currently integrates with InfluxDB 0.9.x.
+
 
 Getting Started
 ---------------
 
-See the tutorial at http://docs.morgoth.io/docs/overview/getting-started/ for an example
-of detecting anomalies in graphite metrics.
+See the tutorial at http://docs.morgoth.io/docs/overview/getting-started/ for an example.
 
 
 What makes Morgoth different from other similiar projects?
@@ -20,10 +19,6 @@ What makes Morgoth different from other similiar projects?
 Morgoth takes a very modular approach to anomaly detection. There is no single algorithm
 or method to detect anomalies. Morgoth comes built in with several algorithms but can
 easily be extended to add more.
-
-Morgoth also tries to be very simple. It doesn’t have tons of dependencies and most
-of its dependencies can be switched out for a system of your choosing. For example
-it can be run on top of either MongoDB or InfluxDB at the moment.
 
 Morgoth does have one anomaly detection alorithm that is unique and well suited to
 detecting anomalies in system level type metrics (cpu, load, etc). The algorithm is
