@@ -1,7 +1,6 @@
 package morgoth
 
 import (
-	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
 	"github.com/nathanielc/morgoth/counter"
 )
 
@@ -70,8 +69,6 @@ func (self *Detector) IsAnomalous(window *Window) bool {
 
 	vote /= float64(len(self.counters))
 	anomalous := vote >= self.consensus
-
-	glog.V(3).Infof("Window anomalous: %v vote: %f, consensus: %f", anomalous, vote, self.consensus)
 
 	if anomalous {
 		self.Stats.AnomalousCount++
