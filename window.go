@@ -22,7 +22,7 @@ func (self *Window) IsTagsMatch(tags map[string]string) bool {
 	return true
 }
 
-func (self *Window) Copy() Window {
+func (self *Window) Copy() *Window {
 
 	data := make([]float64, len(self.Data))
 	copy(data, self.Data)
@@ -32,7 +32,7 @@ func (self *Window) Copy() Window {
 		tags[k] = v
 	}
 
-	return Window{
+	return &Window{
 		Name:  self.Name,
 		Data:  data,
 		Tags:  tags,

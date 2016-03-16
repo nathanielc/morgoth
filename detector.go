@@ -1,6 +1,8 @@
 package morgoth
 
 import (
+	"log"
+
 	"github.com/nathanielc/morgoth/counter"
 )
 
@@ -53,7 +55,7 @@ func NewDetector(normalCount int, consensus, minSupport, errorTolerance float64,
 }
 
 // Determine if the window is anomalous
-func (self *Detector) IsAnomalous(window *Window) bool {
+func (self *Detector) IsAnomalous(window *Window) (bool, float64) {
 
 	self.Stats.WindowCount++
 	self.Stats.DataPointCount += uint64(len(window.Data))
@@ -62,6 +64,7 @@ func (self *Detector) IsAnomalous(window *Window) bool {
 	for _, fc := range self.counters {
 		fingerprint := fc.fingerprinter.Fingerprint(window.Copy())
 		count := fc.counter.Count(fingerprint)
+		log.Printf("F: %T anomalous? %v count: %d", fc.fingerprinter, count < self.normalCount, count)
 		if count < self.normalCount {
 			vote++
 		}
@@ -74,5 +77,5 @@ func (self *Detector) IsAnomalous(window *Window) bool {
 		self.Stats.AnomalousCount++
 	}
 
-	return anomalous
+	return anomalous, vote
 }

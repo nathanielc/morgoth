@@ -1,16 +1,28 @@
 package jsdiv
 
 import (
-	"github.com/nathanielc/morgoth"
-	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nathanielc/morgoth/counter"
+	"log"
 	"math"
+
+	"github.com/nathanielc/morgoth"
+	"github.com/nathanielc/morgoth/counter"
 )
 
 const iterations = 20
 
 var ln2 = math.Log(2)
 
+// Jensen-Shannon Divergence
+//
+// Fingerprints store the histogram of the window.
+// Fingerprints are compared to see their JS divergence distance is less than a critical threshold.
+//
+// Configuration:
+//  min: Minimum value of the window data.
+//  max: Maximum value of the window data.
+//    NOTE: The JS divergence is symmetrical and I may be able to drop the min/max requirement
+//  nBins: Number of bins to use in the histogram.
+//  pvalue: Standard p-value statistical threshold. Typical value is 0.05
 type JSDiv struct {
 	min    float64
 	max    float64
@@ -18,7 +30,16 @@ type JSDiv struct {
 	pValue float64
 }
 
-func (self *JSDiv) Fingerprint(window morgoth.Window) morgoth.Fingerprint {
+func New(min, max, pValue float64, nBins int) *JSDiv {
+	return &JSDiv{
+		min:    min,
+		max:    max,
+		nBins:  nBins,
+		pValue: pValue,
+	}
+}
+
+func (self *JSDiv) Fingerprint(window *morgoth.Window) morgoth.Fingerprint {
 
 	hist, count := calcHistogram(window.Data, self.min, self.max, self.nBins)
 	return &JSDivFingerprint{
@@ -56,7 +77,7 @@ func (self *JSDivFingerprint) IsMatch(other counter.Countable) bool {
 		return false
 	}
 	if len(self.histogram) != len(othr.histogram) {
-		glog.Error("Unexpected comparision between JSDivFingerprints")
+		log.Println("Unexpected comparision between JSDivFingerprints")
 		return false
 	}
 
@@ -67,7 +88,7 @@ func (self *JSDivFingerprint) IsMatch(other counter.Countable) bool {
 
 func (self *JSDivFingerprint) calcSignificance(other *JSDivFingerprint) float64 {
 	p := self.histogram
-	q := self.histogram
+	q := other.histogram
 	n := len(p)
 	m := make([]float64, n)
 	for i := range p {
