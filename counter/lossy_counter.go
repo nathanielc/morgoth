@@ -5,7 +5,6 @@ import (
 )
 
 type lossyCounter struct {
-	minSupport     float64
 	errorTolerance float64
 	frequencies    []*entry
 	width          int
@@ -19,10 +18,9 @@ type entry struct {
 	delta     int
 }
 
-//Create a new lossycounter with specified minSupport and errorTolerance
-func NewLossyCounter(minSupport, errorTolerance float64) *lossyCounter {
+//Create a new lossycounter with specified errorTolerance
+func NewLossyCounter(errorTolerance float64) *lossyCounter {
 	return &lossyCounter{
-		minSupport:     minSupport,
 		errorTolerance: errorTolerance,
 		width:          int(math.Ceil(1.0 / errorTolerance)),
 		total:          0,
@@ -30,10 +28,8 @@ func NewLossyCounter(minSupport, errorTolerance float64) *lossyCounter {
 	}
 }
 
-// Count a countable and return the number of time that countable has
-// been seen within errorTolerance
-func (self *lossyCounter) Count(countable Countable) int {
-
+// Count a countable and return the support for the countable.
+func (self *lossyCounter) Count(countable Countable) float64 {
 	self.total++
 
 	count := 0
@@ -61,7 +57,7 @@ func (self *lossyCounter) Count(countable Countable) int {
 		self.bucket++
 	}
 
-	return count
+	return float64(count) / float64(self.total)
 }
 
 //Remove infrequent items from the list

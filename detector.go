@@ -7,7 +7,6 @@ import (
 )
 
 type Detector struct {
-	normalCount    int
 	consensus      float64
 	minSupport     float64
 	errorTolerance float64
@@ -21,32 +20,21 @@ type DetectorStats struct {
 	AnomalousCount uint64
 }
 
-type DetectorBuilder func() *Detector
-
 // Pair of fingerprinter and counter
 type fingerprinterCounter struct {
 	fingerprinter Fingerprinter
 	counter       counter.Counter
 }
 
-func NewDetectorBuilder(normalCount int, consensus, minSupport, errorTolerance float64, fingerprinters []Fingerprinter) DetectorBuilder {
-	return func() *Detector {
-		return NewDetector(normalCount, consensus, minSupport, errorTolerance, fingerprinters)
-	}
-}
-
-func NewDetector(normalCount int, consensus, minSupport, errorTolerance float64, fingerprinters []Fingerprinter) *Detector {
-	//TODO perform sanity check on minsupport and normalcount to make sure
-	// its still possible to mark something as anomalous
+func NewDetector(consensus, minSupport, errorTolerance float64, fingerprinters []Fingerprinter) *Detector {
 	counters := make([]fingerprinterCounter, len(fingerprinters))
 	for i, fingerprinter := range fingerprinters {
 		counters[i] = fingerprinterCounter{
 			fingerprinter,
-			counter.NewLossyCounter(minSupport, errorTolerance),
+			counter.NewLossyCounter(errorTolerance),
 		}
 	}
 	return &Detector{
-		normalCount:    normalCount,
 		consensus:      consensus,
 		minSupport:     minSupport,
 		errorTolerance: errorTolerance,
@@ -63,9 +51,9 @@ func (self *Detector) IsAnomalous(window *Window) (bool, float64) {
 	vote := 0.0
 	for _, fc := range self.counters {
 		fingerprint := fc.fingerprinter.Fingerprint(window.Copy())
-		count := fc.counter.Count(fingerprint)
-		log.Printf("F: %T anomalous? %v count: %d", fc.fingerprinter, count < self.normalCount, count)
-		if count < self.normalCount {
+		support := fc.counter.Count(fingerprint)
+		log.Printf("F: %T anomalous? %v support: %f", fc.fingerprinter, support < self.minSupport, support)
+		if support < self.minSupport {
 			vote++
 		}
 	}

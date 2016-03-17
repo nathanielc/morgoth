@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/influxdata/kapacitor/udf"
 	"github.com/influxdata/kapacitor/udf/agent"
@@ -29,9 +28,8 @@ func main() {
 
 const (
 	defaultMinSupport     = 0.05
-	defaultErrorTolerance = 0.1
+	defaultErrorTolerance = 0.01
 	defaultConsensus      = 0.5
-	defaultNormalCount    = 3
 )
 
 type fingerprinterInfo struct {
@@ -102,7 +100,6 @@ type Handler struct {
 	field          string
 	minSupport     float64
 	errorTolerance float64
-	normalCount    int
 	consensus      float64
 	agent          *agent.Agent
 
@@ -117,7 +114,6 @@ func newHandler(a *agent.Agent) *Handler {
 		agent:          a,
 		minSupport:     defaultMinSupport,
 		errorTolerance: defaultErrorTolerance,
-		normalCount:    defaultNormalCount,
 		consensus:      defaultConsensus,
 		detectors:      make(map[string]*morgoth.Detector),
 	}
@@ -129,7 +125,6 @@ func (h *Handler) Info() (*udf.InfoResponse, error) {
 		"field":          {ValueTypes: []udf.ValueType{udf.ValueType_STRING}},
 		"minSupport":     {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
 		"errorTolerance": {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
-		"normalCount":    {ValueTypes: []udf.ValueType{udf.ValueType_INT}},
 		"consensus":      {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
 	}
 	// Add in options from fingerprinters
@@ -159,8 +154,6 @@ func (h *Handler) Init(r *udf.InitRequest) (*udf.InitResponse, error) {
 			h.minSupport = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 		case "errorTolerance":
 			h.errorTolerance = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
-		case "normalCount":
-			h.normalCount = int(opt.Values[0].Value.(*udf.OptionValue_IntValue).IntValue)
 		case "consensus":
 			h.consensus = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 		default:
@@ -190,13 +183,13 @@ func (h *Handler) Init(r *udf.InitRequest) (*udf.InitResponse, error) {
 		init.Success = false
 		errors = append(errors, "errorTolerance must be in the range [0,1)")
 	}
-	if h.normalCount <= 1 {
-		init.Success = false
-		errors = append(errors, "normalCount must be greater than 1")
-	}
 	if h.consensus < 0 || h.consensus > 1 {
 		init.Success = false
 		errors = append(errors, "consensus must be in the range [0,1)")
+	}
+	if h.minSupport <= h.errorTolerance {
+		init.Success = false
+		errors = append(errors, "invalid minSupport or errorTolerance: minSupport > errorTolerance")
 	}
 	init.Error = strings.Join(errors, "\n")
 
@@ -215,10 +208,7 @@ func (h *Handler) Restore(*udf.RestoreRequest) (*udf.RestoreResponse, error) {
 
 // A batch has begun.
 func (h *Handler) BeginBatch(b *udf.BeginBatch) error {
-	h.currentBatch = &morgoth.Window{
-		Name: b.Name,
-		Tags: b.Tags,
-	}
+	h.currentBatch = &morgoth.Window{}
 	return nil
 }
 
@@ -234,20 +224,15 @@ func (h *Handler) Point(p *udf.Point) error {
 			return fmt.Errorf("no field %s is not a float or int", h.field)
 		}
 	}
-	if h.currentBatch.Start.IsZero() {
-		h.currentBatch.Start = time.Unix(0, p.Time).UTC()
-	}
 	h.currentBatch.Data = append(h.currentBatch.Data, value)
 	return nil
 }
 
 // The batch is complete.
 func (h *Handler) EndBatch(b *udf.EndBatch) error {
-	h.currentBatch.Stop = time.Unix(0, b.Tmax).UTC()
 	detector, ok := h.detectors[b.Group]
 	if !ok {
 		detector = morgoth.NewDetector(
-			h.normalCount,
 			h.consensus,
 			h.minSupport,
 			h.errorTolerance,
