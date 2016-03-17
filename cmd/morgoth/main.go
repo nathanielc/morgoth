@@ -72,24 +72,27 @@ var fingerprinters = map[string]fingerprinterInfo{
 		options: &udf.OptionInfo{ValueTypes: []udf.ValueType{
 			udf.ValueType_DOUBLE,
 			udf.ValueType_DOUBLE,
-			udf.ValueType_INT,
+			udf.ValueType_DOUBLE,
 			udf.ValueType_DOUBLE,
 		}},
 		init: func(args []*udf.OptionValue) (createFingerprinterFunc, error) {
 			min := args[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 			max := args[1].Value.(*udf.OptionValue_DoubleValue).DoubleValue
-			nBins := args[2].Value.(*udf.OptionValue_IntValue).IntValue
+			binWidth := args[2].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 			pValue := args[3].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 
-			if nBins <= 0 {
-				return nil, fmt.Errorf("jsdiv: nBins, arg 3, must be > 0, got %d", nBins)
+			if binWidth <= 0 {
+				return nil, fmt.Errorf("jsdiv: binWidth, arg 3, must be > 0, got %f", binWidth)
 			}
 			if pValue <= 0 || pValue > 1 {
 				return nil, fmt.Errorf("jsdiv: pValue, arg 4, must be in range (0,1], got %f", pValue)
 			}
+			if (max-min)/binWidth < 3 {
+				return nil, fmt.Errorf("jsdiv: more than 3 bins should fit in the range [min,max]")
+			}
 
 			return func() morgoth.Fingerprinter {
-				return jsdiv.New(min, max, pValue, int(nBins))
+				return jsdiv.New(min, max, binWidth, pValue)
 			}, nil
 		},
 	},
@@ -103,8 +106,10 @@ type Handler struct {
 	consensus      float64
 	agent          *agent.Agent
 
-	currentBatch *morgoth.Window
-	detectors    map[string]*morgoth.Detector
+	currentWindow *morgoth.Window
+	beginBatch    *udf.BeginBatch
+	batchPoints   []*udf.Point
+	detectors     map[string]*morgoth.Detector
 
 	fingerprinters []createFingerprinterFunc
 }
@@ -133,7 +138,7 @@ func (h *Handler) Info() (*udf.InfoResponse, error) {
 	}
 	info := &udf.InfoResponse{
 		Wants:    udf.EdgeType_BATCH,
-		Provides: udf.EdgeType_STREAM,
+		Provides: udf.EdgeType_BATCH,
 		Options:  options,
 	}
 	return info, nil
@@ -208,12 +213,16 @@ func (h *Handler) Restore(*udf.RestoreRequest) (*udf.RestoreResponse, error) {
 
 // A batch has begun.
 func (h *Handler) BeginBatch(b *udf.BeginBatch) error {
-	h.currentBatch = &morgoth.Window{}
+	h.currentWindow = &morgoth.Window{}
+	h.beginBatch = b
+	h.batchPoints = h.batchPoints[0:0]
 	return nil
 }
 
 // A point has arrived.
 func (h *Handler) Point(p *udf.Point) error {
+	// Keep point around
+	h.batchPoints = append(h.batchPoints, p)
 	var value float64
 	if f, ok := p.FieldsDouble[h.field]; ok {
 		value = f
@@ -224,7 +233,7 @@ func (h *Handler) Point(p *udf.Point) error {
 			return fmt.Errorf("no field %s is not a float or int", h.field)
 		}
 	}
-	h.currentBatch.Data = append(h.currentBatch.Data, value)
+	h.currentWindow.Data = append(h.currentWindow.Data, value)
 	return nil
 }
 
@@ -240,24 +249,23 @@ func (h *Handler) EndBatch(b *udf.EndBatch) error {
 		)
 		h.detectors[b.Group] = detector
 	}
-	if anomalous, value := detector.IsAnomalous(h.currentBatch); anomalous {
-		// Send point back to Kapacitor for anomaly
-		dims := make([]string, 0, len(b.Tags))
-		for t := range b.Tags {
-			dims = append(dims, t)
-		}
-		p := &udf.Point{
-			Name:       b.Name,
-			Time:       b.Tmax,
-			Tags:       b.Tags,
-			Dimensions: dims,
-			FieldsDouble: map[string]float64{
-				"value": value,
+	if anomalous, _ := detector.IsAnomalous(h.currentWindow); anomalous {
+		// Send batch back to Kapacitor since it was anomalous
+		h.agent.Responses <- &udf.Response{
+			Message: &udf.Response_Begin{
+				Begin: h.beginBatch,
 			},
 		}
+		for _, p := range h.batchPoints {
+			h.agent.Responses <- &udf.Response{
+				Message: &udf.Response_Point{
+					Point: p,
+				},
+			}
+		}
 		h.agent.Responses <- &udf.Response{
-			Message: &udf.Response_Point{
-				Point: p,
+			Message: &udf.Response_End{
+				End: b,
 			},
 		}
 	}

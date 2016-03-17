@@ -33,11 +33,13 @@ func (self *lossyCounter) Count(countable Countable) float64 {
 	self.total++
 
 	count := 0
-	for _, existing := range self.frequencies {
+	for i, existing := range self.frequencies {
 		if existing.countable.IsMatch(countable) {
 			//Found match, count it
 			existing.count++
 			count = existing.count
+			// Keep new countable to allow for drift
+			self.frequencies[i].countable = countable
 			break
 		}
 	}
