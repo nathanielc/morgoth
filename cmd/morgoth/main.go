@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/influxdata/kapacitor/udf"
 	"github.com/influxdata/kapacitor/udf/agent"
+	"github.com/influxdata/wlog"
 	"github.com/nathanielc/morgoth"
 	"github.com/nathanielc/morgoth/fingerprinters/jsdiv"
 	"github.com/nathanielc/morgoth/fingerprinters/kstest"
@@ -14,15 +16,20 @@ import (
 )
 
 func main() {
+	// Setup logging
+	wlog.SetLevel(wlog.INFO)
+	log.SetOutput(wlog.NewWriter(os.Stderr))
+	log.SetFlags(0)
+
 	a := agent.New()
 	h := newHandler(a)
 	a.Handler = h
 
-	log.Println("Starting agent")
+	log.Println("I! Starting agent")
 	a.Start()
 	err := a.Wait()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("E!", err)
 	}
 }
 
@@ -49,7 +56,7 @@ var fingerprinters = map[string]fingerprinterInfo{
 		init: func(args []*udf.OptionValue) (createFingerprinterFunc, error) {
 			deviations := args[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 			if deviations <= 0 {
-				return nil, fmt.Errorf("sigma: deviations must be > 0, got %d", deviations)
+				return nil, fmt.Errorf("sigma: deviations must be > 0, got %f", deviations)
 			}
 			return func() morgoth.Fingerprinter {
 				return sigma.New(deviations)
@@ -101,6 +108,7 @@ var fingerprinters = map[string]fingerprinterInfo{
 // A Kapacitor UDF Handler
 type Handler struct {
 	field          string
+	scoreField     string
 	minSupport     float64
 	errorTolerance float64
 	consensus      float64
@@ -128,9 +136,11 @@ func newHandler(a *agent.Agent) *Handler {
 func (h *Handler) Info() (*udf.InfoResponse, error) {
 	options := map[string]*udf.OptionInfo{
 		"field":          {ValueTypes: []udf.ValueType{udf.ValueType_STRING}},
+		"scoreField":     {ValueTypes: []udf.ValueType{udf.ValueType_STRING}},
 		"minSupport":     {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
 		"errorTolerance": {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
 		"consensus":      {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
+		"logLevel":       {ValueTypes: []udf.ValueType{udf.ValueType_STRING}},
 	}
 	// Add in options from fingerprinters
 	for name, info := range fingerprinters {
@@ -155,12 +165,21 @@ func (h *Handler) Init(r *udf.InitRequest) (*udf.InitResponse, error) {
 		switch opt.Name {
 		case "field":
 			h.field = opt.Values[0].Value.(*udf.OptionValue_StringValue).StringValue
+		case "scoreField":
+			h.scoreField = opt.Values[0].Value.(*udf.OptionValue_StringValue).StringValue
 		case "minSupport":
 			h.minSupport = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 		case "errorTolerance":
 			h.errorTolerance = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
 		case "consensus":
 			h.consensus = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
+		case "logLevel":
+			level := opt.Values[0].Value.(*udf.OptionValue_StringValue).StringValue
+			err := wlog.SetLevelFromName(level)
+			if err != nil {
+				init.Success = false
+				errors = append(errors, err.Error())
+			}
 		default:
 			if info, ok := fingerprinters[opt.Name]; ok {
 				createFn, err := info.init(opt.Values)
@@ -177,26 +196,24 @@ func (h *Handler) Init(r *udf.InitRequest) (*udf.InitResponse, error) {
 	}
 
 	if h.field == "" {
-		init.Success = false
 		errors = append(errors, "field must not be empty")
 	}
 	if h.minSupport < 0 || h.minSupport > 1 {
-		init.Success = false
 		errors = append(errors, "minSupport must be in the range [0,1)")
 	}
 	if h.errorTolerance < 0 || h.errorTolerance > 1 {
-		init.Success = false
 		errors = append(errors, "errorTolerance must be in the range [0,1)")
 	}
-	if h.consensus < 0 || h.consensus > 1 {
-		init.Success = false
-		errors = append(errors, "consensus must be in the range [0,1)")
+	if (h.consensus != -1 && h.consensus < 0) || h.consensus > 1 {
+		errors = append(errors, "consensus must be in the range [0,1) or equal to -1")
 	}
 	if h.minSupport <= h.errorTolerance {
-		init.Success = false
-		errors = append(errors, "invalid minSupport or errorTolerance: minSupport > errorTolerance")
+		errors = append(errors, "invalid minSupport or errorTolerance: minSupport must be greater than errorTolerance")
 	}
+	init.Success = len(errors) == 0
 	init.Error = strings.Join(errors, "\n")
+
+	log.Printf("D! %#v", h)
 
 	return init, nil
 }
@@ -241,7 +258,8 @@ func (h *Handler) Point(p *udf.Point) error {
 func (h *Handler) EndBatch(b *udf.EndBatch) error {
 	detector, ok := h.detectors[b.Group]
 	if !ok {
-		detector = morgoth.NewDetector(
+		// We validated the args ourselves, ignore the error here
+		detector, _ = morgoth.NewDetector(
 			h.consensus,
 			h.minSupport,
 			h.errorTolerance,
@@ -249,7 +267,7 @@ func (h *Handler) EndBatch(b *udf.EndBatch) error {
 		)
 		h.detectors[b.Group] = detector
 	}
-	if anomalous, _ := detector.IsAnomalous(h.currentWindow); anomalous {
+	if anomalous, avgSupport := detector.IsAnomalous(h.currentWindow); anomalous {
 		// Send batch back to Kapacitor since it was anomalous
 		h.agent.Responses <- &udf.Response{
 			Message: &udf.Response_Begin{
@@ -257,6 +275,9 @@ func (h *Handler) EndBatch(b *udf.EndBatch) error {
 			},
 		}
 		for _, p := range h.batchPoints {
+			if h.scoreField != "" {
+				p.FieldsDouble[h.scoreField] = 1 - avgSupport
+			}
 			h.agent.Responses <- &udf.Response{
 				Message: &udf.Response_Point{
 					Point: p,
