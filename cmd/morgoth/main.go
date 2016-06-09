@@ -1,10 +1,13 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/influxdata/kapacitor/udf"
 	"github.com/influxdata/kapacitor/udf/agent"
@@ -15,29 +18,88 @@ import (
 	"github.com/nathanielc/morgoth/fingerprinters/sigma"
 )
 
-func main() {
-	// Setup logging
-	wlog.SetLevel(wlog.INFO)
-	log.SetOutput(wlog.NewWriter(os.Stderr))
-	log.SetFlags(0)
-
-	a := agent.New()
-	h := newHandler(a)
-	a.Handler = h
-
-	log.Println("I! Starting agent")
-	a.Start()
-	err := a.Wait()
-	if err != nil {
-		log.Fatal("E!", err)
-	}
-}
-
 const (
 	defaultMinSupport     = 0.05
 	defaultErrorTolerance = 0.01
 	defaultConsensus      = 0.5
 )
+
+var socket = flag.String("socket", "", "Optional listen socket. If set then Morgoth will run in UDF socket mode, otherwise it will expect communication over STDIN/STDOUT.")
+var logLevel = flag.String("log-level", "info", "Default log level, one of debug, info, warn or error.")
+
+func main() {
+	// Parse flags
+	flag.Parse()
+
+	// Setup logging
+	log.SetOutput(wlog.NewWriter(os.Stderr))
+	if err := wlog.SetLevelFromName(*logLevel); err != nil {
+		log.Fatal("E! ", err)
+	}
+
+	if *socket == "" {
+		a := agent.New(os.Stdin, os.Stdout)
+		h := newHandler(a)
+		a.Handler = h
+
+		log.Println("I! Starting agent using STDIN/STDOUT")
+		a.Start()
+		err := a.Wait()
+		if err != nil {
+			log.Fatal("E! ", err)
+		}
+		log.Println("I! Agent finished")
+	} else {
+		// Create unix socket
+		addr, err := net.ResolveUnixAddr("unix", *socket)
+		if err != nil {
+			log.Fatal("E! ", err)
+		}
+		l, err := net.ListenUnix("unix", addr)
+		if err != nil {
+			log.Fatal("E! ", err)
+		}
+
+		// Create server that listens on the socket
+		s := agent.NewServer(l, &accepter{})
+
+		// Setup signal handler to stop Server on various signals
+		s.StopOnSignals(os.Interrupt, syscall.SIGTERM)
+
+		log.Println("I! Socket server listening on", addr.String())
+		err = s.Serve()
+		if err != nil {
+			log.Fatal("E! ", err)
+		}
+		log.Println("I! Socket server stopped")
+	}
+}
+
+// Simple connection accepter
+type accepter struct {
+	count int64
+}
+
+// Create a new agent/handler for each new connection.
+// Count and log each new connection and termination.
+func (acc *accepter) Accept(conn net.Conn) {
+	count := acc.count
+	acc.count++
+	a := agent.New(conn, conn)
+	h := newHandler(a)
+	a.Handler = h
+
+	log.Println("I! Starting agent for connection", count)
+	a.Start()
+	go func() {
+		err := a.Wait()
+		if err != nil {
+			log.Printf("E! Agent for connection %d terminated with error: %s", count, err)
+		} else {
+			log.Printf("I! Agent for connection %d finished", count)
+		}
+	}()
+}
 
 type fingerprinterInfo struct {
 	init    initFingerprinterFunc
