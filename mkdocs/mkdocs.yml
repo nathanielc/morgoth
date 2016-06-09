@@ -6,13 +6,9 @@ docs_dir: src
 repo_url: https://github.com/nathanielc/morgoth/
 pages:
   - index.md
-  - overview/overview.md
-  - overview/getting-started.md
-  - configuration/configuration.md
-  - configuration/engine.md
-  - configuration/schedules.md
-  - configuration/mappings.md
-  - configuration/alerts.md
+  - overview.md
+  - getting-started.md
+  - configuration.md
   - concepts/detection_framework.md
   - concepts/fingerprints.md
 theme: readthedocs
