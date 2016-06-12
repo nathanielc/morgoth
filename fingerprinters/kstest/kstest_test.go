@@ -1,17 +1,11 @@
 package kstest
 
 import (
-	"github.com/nathanielc/morgoth"
-	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/stretchr/testify/assert"
-	"os"
 	"testing"
-)
 
-func TestMain(m *testing.M) {
-	defer glog.Flush()
-	os.Exit(m.Run())
-}
+	"github.com/nathanielc/morgoth"
+	"github.com/stretchr/testify/assert"
+)
 
 func TestCalcDShouldBe0(t *testing.T) {
 	assert := assert.New(t)
@@ -101,11 +95,11 @@ func BenchmarkIsMatch(b *testing.B) {
 		confidence: 4,
 	}
 
-	f1 := ks.Fingerprint(morgoth.Window{
+	f1 := ks.Fingerprint(&morgoth.Window{
 		Data: data1,
 	})
 
-	f2 := ks.Fingerprint(morgoth.Window{
+	f2 := ks.Fingerprint(&morgoth.Window{
 		Data: data2,
 	})
 
@@ -125,7 +119,7 @@ func BenchmarkFingerprint(b *testing.B) {
 		confidence: 4,
 	}
 
-	w := morgoth.Window{
+	w := &morgoth.Window{
 		Data: data,
 	}
 

@@ -1,20 +1,26 @@
 package sigma
 
 import (
-	"github.com/nathanielc/morgoth"
-	"github.com/nathanielc/morgoth/Godeps/_workspace/src/github.com/golang/glog"
-	"github.com/nathanielc/morgoth/counter"
 	"math"
+
+	"github.com/nathanielc/morgoth"
+	"github.com/nathanielc/morgoth/counter"
 )
 
+// Simple fingerprinter that computes both mean and standard deviation of a window.
+// Fingerprints are compared to see if the means are more than n deviations apart.
 type Sigma struct {
 	deviations float64
 }
 
-func (self *Sigma) Fingerprint(window morgoth.Window) morgoth.Fingerprint {
+func New(deviations float64) *Sigma {
+	return &Sigma{
+		deviations: deviations,
+	}
+}
 
+func (self *Sigma) Fingerprint(window *morgoth.Window) morgoth.Fingerprint {
 	mean, std := calcStats(window.Data)
-	glog.V(4).Infof("N: %d Mean: %f Std: %f", len(window.Data), mean, std)
 	return SigmaFingerprint{
 		mean:      mean,
 		threshold: self.deviations * std,

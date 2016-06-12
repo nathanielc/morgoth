@@ -1,9 +1,9 @@
 package counter
 
 type Counter interface {
-	// Count a fingerprint and return the number of times
-	// that fingerprint has been seen
-	Count(Countable) int
+	// Count a fingerprint and return the support for the item.
+	// support = count / total
+	Count(Countable) float64
 }
 
 type Countable interface {

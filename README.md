@@ -2,41 +2,142 @@
 Morgoth [![Build Status](https://travis-ci.org/nathanielc/morgoth.svg?branch=master)](https://travis-ci.org/nathanielc/morgoth)
 =======
 
-Morgoth is a flexible anomaly detection application.
-It is designed to integrate with many existing technologies
-and provide powerful anomaly detection on top of those systems.
-Namely morgoth currently integrates with InfluxDB 0.9.x.
+Morgoth is a framework for flexible anomaly detection algorithms packaged to be used with [Kapacitor](https:/github.com/influxdata/kapacitor)
+
+Morgoth provides a framework via the  for implementing the smaller pieces of an anomaly detection problem.
+
+The basic framework is that Morgoth maintains a dictionary of normal behaviors and compares new windows of data to the normal dictionary.
+If the new window of data is not found in the dictionary then it is considered anomalous.
+
+Morgoth uses algorithms, called fingerprinters, to compare windows of data to determine if they are similar.
+The [Lossy Counting Algorithm](http://www.vldb.org/conf/2002/S10P03.pdf)(LCA) is used to maintain the dictionary of normal windows.
+The LCA is a space efficient algorithm that can account for drift in the normal dictionary, more on LCA below.
+
+Morgoth uses a consensus model where each fingerprinter votes for whether it thinks the current window is anomalous.
+If the total votes percentage is greater than a consensus threshold then the window is considered anomalous.
+
+## Getting started
+
+### Install
+
+Morgoth can be installed via go:
+
+```sh
+go get github.com/nathanielc/morgoth/cmd/morgoth
+```
+
+### Configuring
+
+Morgoth can run as either a child processes of Kapacitor or as a standalone daemon that listens on a socket.
+
+#### Child Process
+
+Morgoth is a UDF for [Kapacitor](https://github.com/influxdata/kapacitor).
+Add this configuration to Kapacitor in order to enable using Morgoth.
+
+```
+[udf]
+[udf.functions]
+    [udf.functions.morgoth]
+        prog = "/path/to/bin/morgoth"
+        timeout = "10s"
+```
+
+Restart Kapacitor and you are ready to start using Morgoth within Kapacitor.
+
+#### Socket
+
+To use Morgoth as a socket UDF start the morgoth process with the `-socket` option.
+
+```
+   morgoth -socket /path/to/morgoth/socket
+```
+
+Next you will need to configure Kapacitor to use the morgoth socket.
+
+```
+   [udf]
+   [udf.functions]
+       [udf.functions.morgoth]
+           socket = "/path/to/morgoth/socket"
+           timeout = "10s"
+```
+
+Restart Kapacitor and you are ready to start using Morgoth within Kapacitor.
 
 
-Getting Started
----------------
+### TICKscript
 
-See the tutorial at http://docs.morgoth.io/docs/overview/getting-started/ for an example.
+Here is an example TICKscript for detecting anomalies in cpu data from [Telegraf](https://github.com/influxdata/telegraf).
+
+```javascript
+stream
+    |from()
+        .measurement('cpu')
+        .where(lambda: "cpu" == 'cpu-total')
+        .groupBy(*)
+    |window()
+        .period(1m)
+        .every(1m)
+    @morgoth()
+        // track the 'usage_idle' field
+        .field('usage_idle')
+        .errorTolernace(0.01)
+        // The window is anomalous if it occurs less the 5% of the time.
+        .minSupport(0.05)
+        // Use the sigma fingerprinter
+        .sigma(3.0)
+        // Multiple fingerprinters can be defined...
+```
 
 
-What makes Morgoth different from other similiar projects?
-----------------------------------------------------------
-Morgoth takes a very modular approach to anomaly detection. There is no single algorithm
-or method to detect anomalies. Morgoth comes built in with several algorithms but can
-easily be extended to add more.
+## Fingerprinters
 
-Morgoth does have one anomaly detection alorithm that is unique and well suited to
-detecting anomalies in system level type metrics (cpu, load, etc). The algorithm is
-called MGOF (Multinomial Goodness of Fit), and has been adapted from this research paper
-(http://www.hpl.hp.com/techreports/2011/HPL-2011-8.html)
+A fingerprinter is a method that can determine if a window of data is similar to a previous window of data.
+In effect the fingerprinters take fingerprints of the incoming data and can compare fingerprints of new data to see if they match.
+These fingerprinting algorithms provide the core of Morgoth as they are the means by which Morgoth determines if a new window of data is new or something already observed.
+
+An example fingerprinting algorithm is a *sigma* algorithm that computes the mean and standard deviation of a window and store them as the fingerprint for the window.
+When a new window arrives it compares the fingerprint (mean, stddev) of the new window to the previous window.
+If the windows are too far apart then they are not considered at match.
+
+By defining several fingerprinting algorithms Morgoth can decide whether new data is anomalous or normal.
+
+## Lossy Counting Algorithm
+
+The LCA counts frequent items in a stream of data.
+It is *lossy* because to conserve space it will drop less frequent items.
+The result is that the algorithm will find frequent items but may loose track of less frequent items.
+More on the specific mathematical properties of the algorithm can be found below.
+
+There are two parameters to the algorithm, error tolerance (e) and minimum support (m).
+First e is in the range [0, 1] and is an error bound, interpreted as a percentage value.
+For example given and e = 0.01 (1%), items less the 1% frequent in the data set can be dropped.
+Decreasing e will require more space but will keep track of less frequent items.
+Increasing e will require less space but will loose track of less frequent items.
+Second m is in the range [0, 1] and is a minimum support such that items that are considered frequent have at least m% frequency.
+For example if m = 0.05 (5%) then if an item has a support less than 5% it is not considered frequent, aka normal.
+The minimum support becomes the threshold for when items are considered anomalous.
+
+Notice that m > e, this is so that we reduce the number of false positives.
+For example say we set e = 5% and m = 5%.
+If a *normal* behavior X, has a true frequency of 6% than based on variations in the true frequency, X might fall below 5% for a small interval and be dropped.
+This will cause X's frequency to be underestimated, which will cause it to be flagged as an anomaly, triggering a false positive.
+By setting e < m we have a buffer to help mitigate creating false positives.
 
 
-What is MGOF?
--------------
+### Properties
 
-In a nutshell MGOF (Multinomial Goodness of Fit, as I am calling it) is a pattern
-learning algorithm adept at detecting anomalies in non Gaussian data.
+The Lossy Counting algorithm has three properties:
 
-Using standard deviations or 3-sigma algorithms is a very common way of detecting anmalies in metric data.
-These techniques assume the data they operate on follows a Gaussian distribution (http://en.wikipedia.org/wiki/Normal_distribution).
+1. there are no false negatives,
+2. false positives are guaranteed to have a frequency of at least (m - e)*N,
+3. the frequency of an item can underestimated by at most e*N,
 
-Unfortunately much metric data is not Gaussian. Take cpu usage for example. Servers perfoming work from a queue tend to be nearly idle then spike to 100% cpu usage and then drop back down. Most of the time the server is either near 0% utilization or 100% following a bimodal distribution, (http://en.wikipedia.org/wiki/Bimodal_distribution). If cpu usage were gaussian then the cpu would spend most of the time around 50% utilized and rarley 10% or 90% utilized.
+where N is the number of items encountered.
 
-The MGOF alorithm assumes no distribution of the data. Rather the way it detects anomalies is to calculate the distribution for different windows of time. Then compare each of those distributions to the distribution of the window in question using a simple chi-squared test (http://en.wikipedia.org/wiki/Chi-squared_test).
+The space requirements for the algorithm are at most (1 / e) * log(e*N).
+It has also been show that if the item with low frequency are uniformly random than the space requirements are no more than 7 / e.
+This means that as Morgoth continues to processes windows of data its memory usage will grow as the log of the number of windows and can reach a stable upper bound.
 
-In summary the MGOF algorithm is well suited for data collected from systems and applications because it doesn't assume a distribution of the data.
+
