@@ -28,6 +28,10 @@ go get github.com/nathanielc/morgoth/cmd/morgoth
 
 ### Configuring
 
+Morgoth can run as either a child processes of Kapacitor or as a standalone daemon that listens on a socket.
+
+#### Child Process
+
 Morgoth is a UDF for [Kapacitor](https://github.com/influxdata/kapacitor).
 Add this configuration to Kapacitor in order to enable using Morgoth.
 
@@ -41,20 +45,41 @@ Add this configuration to Kapacitor in order to enable using Morgoth.
 
 Restart Kapacitor and you are ready to start using Morgoth within Kapacitor.
 
+#### Socket
+
+To use Morgoth as a socket UDF start the morgoth process with the `-socket` option.
+
+```
+   morgoth -socket /path/to/morgoth/socket
+```
+
+Next you will need to configure Kapacitor to use the morgoth socket.
+
+```
+   [udf]
+   [udf.functions]
+       [udf.functions.morgoth]
+           socket = "/path/to/morgoth/socket"
+           timeout = "10s"
+```
+
+Restart Kapacitor and you are ready to start using Morgoth within Kapacitor.
+
+
 ### TICKscript
 
 Here is an example TICKscript for detecting anomalies in cpu data from [Telegraf](https://github.com/influxdata/telegraf).
 
 ```javascript
 stream
-    .from()
+    |from()
         .measurement('cpu')
         .where(lambda: "cpu" == 'cpu-total')
         .groupBy(*)
-    .window()
+    |window()
         .period(1m)
         .every(1m)
-    .morgoth()
+    @morgoth()
         // track the 'usage_idle' field
         .field('usage_idle')
         .errorTolernace(0.01)
