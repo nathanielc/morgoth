@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="author" content="Nathaniel Cook">
+  
+  <title>Getting started - Morgoth - Documentation</title>
+  
+
+  <link rel="shortcut icon" href="../favicon.ico">
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Getting started";
+    var mkdocs_page_input_path = "getting-started.md";
+    var mkdocs_page_url = "/getting-started/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script> 
+
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> Morgoth - Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="..">Home</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../overview/">Overview</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Getting started</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#getting-started">Getting Started</a></li>
+                
+                    <li><a class="toctree-l4" href="#install-morgoth">Install Morgoth</a></li>
+                
+                    <li><a class="toctree-l4" href="#collecting-data">Collecting Data</a></li>
+                
+                    <li><a class="toctree-l4" href="#writing-a-kapacitor-task-using-morgoth">Writing a Kapacitor task using Morgoth</a></li>
+                
+                    <li><a class="toctree-l4" href="#detecting-your-first-anomaly">Detecting your first anomaly</a></li>
+                
+                    <li><a class="toctree-l4" href="#next-steps">Next steps</a></li>
+                
+            
+            </ul>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../configuration/">Configuration</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../detection_framework/">Detection framework</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../fingerprints/">Fingerprints</a>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">Morgoth - Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Getting started</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github"> Edit on GitHub</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="getting-started">Getting Started</h1>
+<p>To get started using morgoth follow the simple exercise below
+or start by reading the configuration section of this documentation
+to learn how to start using Morgoth for your own project.</p>
+<h2 id="install-morgoth">Install Morgoth</h2>
+<p>First install morgoth via <code>go get</code> set your <code>$GOPATH</code> and run:</p>
+<pre><code>$ go get github.com/nathanielc/morgoth/cmd/morgoth
+</code></pre>
+
+<p>The <code>morgoth</code> binary will be in <code>$GOPATH/bin</code>.</p>
+<p>Next you will need to install and configure <a href="https://github.com/influxdata/kapacitor">Kapacitor</a>.</p>
+<p>Generate a default Kapacitor config file:</p>
+<pre><code>$ kapacitord config &gt; kapacitor.conf
+</code></pre>
+
+<p>Finally configure Kapacitor to use Morgoth by adding this section to the default configuration file you just created.</p>
+<pre><code>[udf]
+[udf.functions]
+   [udf.functions.morgoth]
+       prog = &quot;/path/to/bin/morgoth&quot;
+       timeout = &quot;10s&quot;
+</code></pre>
+
+<p>Start Kapacitor and if you do not get any errors you are good to go.</p>
+<pre><code>$ kapacitord -config ./kapacitor.conf
+</code></pre>
+
+<h2 id="collecting-data">Collecting Data</h2>
+<p>For this example we are going to use <a href="https://github/com/influxdata/telegraf">Telegraf</a> to send data to Kapacitor.</p>
+<p><a href="https://github.com/influxdata/telegraf#installation">Install</a> Telegraf and use this simplified configuration.</p>
+<pre><code># Configuration for telegraf agent
+[agent]
+ ## Default data collection interval for all inputs
+ interval = &quot;1s&quot;
+ ## Rounds collection interval to 'interval'
+ ## ie, if interval=&quot;10s&quot; then always collect on :00, :10, :20, etc.
+ round_interval = true
+
+# Configure telegraf to send data to Kapacitor
+# Kapacitor is write compatible with the InfluxDB database so
+# we just configure an InfluxDB output and point it at Kapacitor.
+[[outputs.influxdb]]
+ urls = [&quot;http://localhost:9092&quot;]
+ database = &quot;telegraf&quot; # required
+ retention_policy = &quot;default&quot;
+ precision = &quot;s&quot;
+
+# Read metrics about cpu usage
+[[inputs.cpu]]
+ percpu = false
+ totalcpu = true
+ fielddrop = [&quot;time_*&quot;]
+</code></pre>
+
+<p>Place the above contents in a file <code>./telegraf.conf</code>.</p>
+<p>Start Telegraf running:</p>
+<pre><code>   $ telegraf -config ./telegraf.conf
+</code></pre>
+
+<p>Confirm Kapacitor is receiving Telegraf data.</p>
+<pre><code>   $ kapacitor stats ingress
+</code></pre>
+
+<p>You should see an entry for the telegraf database and cpu measurement.</p>
+<h2 id="writing-a-kapacitor-task-using-morgoth">Writing a Kapacitor task using Morgoth</h2>
+<p>Kapacitor processes data in "tasks".
+To tell Kapacitor what to do for a task we need to write a TICKscript.
+The script will define what data we are going to process and how to process it.
+In our example we are going to use Morgoth with a one sigma fingerprinter.</p>
+<p>Here is a generic template TICKscript for using Morgoth with a single sigma fingerprinter:
+The script uses defaults for the cpu usage_idle data but can easily be modified to work on other datasets.</p>
+<pre><code class="go">// The measurement to analyze
+var measurement = 'cpu'
+
+// Optional group by dimensions
+var groups = [*]
+
+// Optional where filter
+var whereFilter = lambda: TRUE
+
+// The amount of data to window at once
+var window = 1m
+
+// The field to process
+var field = 'usage_idle'
+
+// The name for the anomaly score field
+var scoreField = 'anomalyScore'
+
+// The minimum support
+var minSupport = 0.05
+
+// The error tolerance
+var errorTolerance = 0.01
+
+// The consensus
+var consensus = 0.5
+
+// Number of sigmas allowed for normal window deviation
+var sigmas = 3.0
+
+stream
+  // Select the data we want
+  |from()
+      .measurement(measurement)
+      .groupBy(groups)
+      .where(whereFilter)
+  // Window the data for a certain amount of time
+  |window()
+     .period(window)
+     .every(window)
+     .align()
+  // Send each window to Morgoth
+  @morgoth()
+     .field(field)
+     .scoreField(scoreField)
+     .minSupport(minSupport)
+     .errorTolerance(errorTolerance)
+     .consensus(consensus)
+     // Configure a single Sigma fingerprinter
+     .sigma(sigmas)
+  // Morgoth returns any anomalous windows
+  |alert()
+     .details('')
+     .crit(lamda: TRUE)
+     .log('/tmp/cpu_alert.log')
+</code></pre>
+
+<p>Place the above contents into a file called <code>cpu_alert.tick</code>.
+This script will take the incoming cpu data and window it into 1 minute buckets.
+It will then pass each window to the Morgoth process.
+Morgoth will return any window of data it thinks is anomalous.
+We trigger an alert of all windows received from Morgoth and log the alert in the <code>/tmp/cpu_alert.log</code> file.</p>
+<p>First we must define the task in Kapacitor:</p>
+<pre><code>$ # Define the task with the name cpu_alert
+$ kapacitor define cpu_alert -type stream -dbrp telegraf.default -tick cpu_alert.tick
+$ # Start the task
+$ kapacitor enable cpu_alert
+$ # Get info on the running task
+$ kapacitor show cpu_alert
+</code></pre>
+
+<p>If you didn't get any error you are now successfully sending data to Morgoth via Kapacitor.</p>
+<h2 id="detecting-your-first-anomaly">Detecting your first anomaly</h2>
+<p>To detect our first anomaly we should let at least 1 minute pass so that Morgoth gets at least one window of good data.
+After a minute or two has passed create some cpu activity.
+Run this bash script to spawn two infinite bash loops that spin at 100% cpu.
+We will kill these later.</p>
+<pre><code>$ for i in {1..2}; do { while true; do i=0 ; done &amp; }; done
+</code></pre>
+
+<p>Again wait for a minute or so to pass and watch the alert log for alerts.</p>
+<pre><code>$ tail -F /tmp/cpu_alert.log
+</code></pre>
+
+<p>After a short wait you should see the critical alert triggered.</p>
+<p>Kill the backgrounded jobs:</p>
+<pre><code>$ kill $(jobs -p)
+</code></pre>
+
+<p>After a short wait again you should see an OK alert in the log indicating the CPU usage has recovered.</p>
+<h2 id="next-steps">Next steps</h2>
+<p>At this point you should have a basic grasp of how to use Kapacitor and Morgoth.
+Anomaly detection is not a simple task and requires that you experiment with different methods before you arrive at useful results.
+At this point I would recommend playing around with some of the other fingerprinters and getting a feel for their settings.</p>
+<p>Also Kapacitor is a capable tool for selecting specific sets of data and pre-processing the data as needed.
+As in all machine learning algorithms garbage in equals garbage out, take the time to learn Kapacitor's TICKscript so that
+you can send in clean useful data to the Morgoth algorithms.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../configuration/" class="btn btn-neutral float-right" title="Configuration">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../overview/" class="btn btn-neutral" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/nathanielc/morgoth/" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../overview/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../configuration/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+
+</body>
+</html>

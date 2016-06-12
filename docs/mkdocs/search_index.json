@@ -1,0 +1,129 @@
+{
+    "docs": [
+        {
+            "location": "/",
+            "text": "Morgoth\n\n\nWelcome to the Morgoth documentation. This site is a working document.\nBasic tutorials and examples have been documented but there is still more to do.",
+            "title": "Home"
+        },
+        {
+            "location": "/#morgoth",
+            "text": "Welcome to the Morgoth documentation. This site is a working document.\nBasic tutorials and examples have been documented but there is still more to do.",
+            "title": "Morgoth"
+        },
+        {
+            "location": "/overview/",
+            "text": "Overview\n\n\nMorgoth is an anomaly detection framework.\nIt relies on \nKapacitor\n in order to consume and process data.\n\n\nGetting help\n\n\nThere are several places you can look for help with Morgoth.\n\n\n\n\nMailing List\n -- Search or post a question\n\n\nIRC on freednode in #morgoth -- Come chat\n\n\nGithub\n -- File an issue or submit a PR.",
+            "title": "Overview"
+        },
+        {
+            "location": "/overview/#overview",
+            "text": "Morgoth is an anomaly detection framework.\nIt relies on  Kapacitor  in order to consume and process data.",
+            "title": "Overview"
+        },
+        {
+            "location": "/overview/#getting-help",
+            "text": "There are several places you can look for help with Morgoth.   Mailing List  -- Search or post a question  IRC on freednode in #morgoth -- Come chat  Github  -- File an issue or submit a PR.",
+            "title": "Getting help"
+        },
+        {
+            "location": "/getting-started/",
+            "text": "Getting Started\n\n\nTo get started using morgoth follow the simple exercise below\nor start by reading the configuration section of this documentation\nto learn how to start using Morgoth for your own project.\n\n\nInstall Morgoth\n\n\nFirst install morgoth via \ngo get\n set your \n$GOPATH\n and run:\n\n\n$ go get github.com/nathanielc/morgoth/cmd/morgoth\n\n\n\n\nThe \nmorgoth\n binary will be in \n$GOPATH/bin\n.\n\n\nNext you will need to install and configure \nKapacitor\n.\n\n\nGenerate a default Kapacitor config file:\n\n\n$ kapacitord config > kapacitor.conf\n\n\n\n\nFinally configure Kapacitor to use Morgoth by adding this section to the default configuration file you just created.\n\n\n[udf]\n[udf.functions]\n   [udf.functions.morgoth]\n       prog = \"/path/to/bin/morgoth\"\n       timeout = \"10s\"\n\n\n\n\nStart Kapacitor and if you do not get any errors you are good to go.\n\n\n$ kapacitord -config ./kapacitor.conf\n\n\n\n\nCollecting Data\n\n\nFor this example we are going to use \nTelegraf\n to send data to Kapacitor.\n\n\nInstall\n Telegraf and use this simplified configuration.\n\n\n# Configuration for telegraf agent\n[agent]\n ## Default data collection interval for all inputs\n interval = \"1s\"\n ## Rounds collection interval to 'interval'\n ## ie, if interval=\"10s\" then always collect on :00, :10, :20, etc.\n round_interval = true\n\n# Configure telegraf to send data to Kapacitor\n# Kapacitor is write compatible with the InfluxDB database so\n# we just configure an InfluxDB output and point it at Kapacitor.\n[[outputs.influxdb]]\n urls = [\"http://localhost:9092\"]\n database = \"telegraf\" # required\n retention_policy = \"default\"\n precision = \"s\"\n\n# Read metrics about cpu usage\n[[inputs.cpu]]\n percpu = false\n totalcpu = true\n fielddrop = [\"time_*\"]\n\n\n\n\nPlace the above contents in a file \n./telegraf.conf\n.\n\n\nStart Telegraf running:\n\n\n   $ telegraf -config ./telegraf.conf\n\n\n\n\nConfirm Kapacitor is receiving Telegraf data.\n\n\n   $ kapacitor stats ingress\n\n\n\n\nYou should see an entry for the telegraf database and cpu measurement.\n\n\nWriting a Kapacitor task using Morgoth\n\n\nKapacitor processes data in \"tasks\".\nTo tell Kapacitor what to do for a task we need to write a TICKscript.\nThe script will define what data we are going to process and how to process it.\nIn our example we are going to use Morgoth with a one sigma fingerprinter.\n\n\nHere is a generic template TICKscript for using Morgoth with a single sigma fingerprinter:\nThe script uses defaults for the cpu usage_idle data but can easily be modified to work on other datasets.\n\n\n// The measurement to analyze\nvar measurement = 'cpu'\n\n// Optional group by dimensions\nvar groups = [*]\n\n// Optional where filter\nvar whereFilter = lambda: TRUE\n\n// The amount of data to window at once\nvar window = 1m\n\n// The field to process\nvar field = 'usage_idle'\n\n// The name for the anomaly score field\nvar scoreField = 'anomalyScore'\n\n// The minimum support\nvar minSupport = 0.05\n\n// The error tolerance\nvar errorTolerance = 0.01\n\n// The consensus\nvar consensus = 0.5\n\n// Number of sigmas allowed for normal window deviation\nvar sigmas = 3.0\n\nstream\n  // Select the data we want\n  |from()\n      .measurement(measurement)\n      .groupBy(groups)\n      .where(whereFilter)\n  // Window the data for a certain amount of time\n  |window()\n     .period(window)\n     .every(window)\n     .align()\n  // Send each window to Morgoth\n  @morgoth()\n     .field(field)\n     .scoreField(scoreField)\n     .minSupport(minSupport)\n     .errorTolerance(errorTolerance)\n     .consensus(consensus)\n     // Configure a single Sigma fingerprinter\n     .sigma(sigmas)\n  // Morgoth returns any anomalous windows\n  |alert()\n     .details('')\n     .crit(lamda: TRUE)\n     .log('/tmp/cpu_alert.log')\n\n\n\n\nPlace the above contents into a file called \ncpu_alert.tick\n.\nThis script will take the incoming cpu data and window it into 1 minute buckets.\nIt will then pass each window to the Morgoth process.\nMorgoth will return any window of data it thinks is anomalous.\nWe trigger an alert of all windows received from Morgoth and log the alert in the \n/tmp/cpu_alert.log\n file.\n\n\nFirst we must define the task in Kapacitor:\n\n\n$ # Define the task with the name cpu_alert\n$ kapacitor define cpu_alert -type stream -dbrp telegraf.default -tick cpu_alert.tick\n$ # Start the task\n$ kapacitor enable cpu_alert\n$ # Get info on the running task\n$ kapacitor show cpu_alert\n\n\n\n\nIf you didn't get any error you are now successfully sending data to Morgoth via Kapacitor.\n\n\nDetecting your first anomaly\n\n\nTo detect our first anomaly we should let at least 1 minute pass so that Morgoth gets at least one window of good data.\nAfter a minute or two has passed create some cpu activity.\nRun this bash script to spawn two infinite bash loops that spin at 100% cpu.\nWe will kill these later.\n\n\n$ for i in {1..2}; do { while true; do i=0 ; done & }; done\n\n\n\n\nAgain wait for a minute or so to pass and watch the alert log for alerts.\n\n\n$ tail -F /tmp/cpu_alert.log\n\n\n\n\nAfter a short wait you should see the critical alert triggered.\n\n\nKill the backgrounded jobs:\n\n\n$ kill $(jobs -p)\n\n\n\n\nAfter a short wait again you should see an OK alert in the log indicating the CPU usage has recovered.\n\n\nNext steps\n\n\nAt this point you should have a basic grasp of how to use Kapacitor and Morgoth.\nAnomaly detection is not a simple task and requires that you experiment with different methods before you arrive at useful results.\nAt this point I would recommend playing around with some of the other fingerprinters and getting a feel for their settings.\n\n\nAlso Kapacitor is a capable tool for selecting specific sets of data and pre-processing the data as needed.\nAs in all machine learning algorithms garbage in equals garbage out, take the time to learn Kapacitor's TICKscript so that\nyou can send in clean useful data to the Morgoth algorithms.",
+            "title": "Getting started"
+        },
+        {
+            "location": "/getting-started/#getting-started",
+            "text": "To get started using morgoth follow the simple exercise below\nor start by reading the configuration section of this documentation\nto learn how to start using Morgoth for your own project.",
+            "title": "Getting Started"
+        },
+        {
+            "location": "/getting-started/#install-morgoth",
+            "text": "First install morgoth via  go get  set your  $GOPATH  and run:  $ go get github.com/nathanielc/morgoth/cmd/morgoth  The  morgoth  binary will be in  $GOPATH/bin .  Next you will need to install and configure  Kapacitor .  Generate a default Kapacitor config file:  $ kapacitord config > kapacitor.conf  Finally configure Kapacitor to use Morgoth by adding this section to the default configuration file you just created.  [udf]\n[udf.functions]\n   [udf.functions.morgoth]\n       prog = \"/path/to/bin/morgoth\"\n       timeout = \"10s\"  Start Kapacitor and if you do not get any errors you are good to go.  $ kapacitord -config ./kapacitor.conf",
+            "title": "Install Morgoth"
+        },
+        {
+            "location": "/getting-started/#collecting-data",
+            "text": "For this example we are going to use  Telegraf  to send data to Kapacitor.  Install  Telegraf and use this simplified configuration.  # Configuration for telegraf agent\n[agent]\n ## Default data collection interval for all inputs\n interval = \"1s\"\n ## Rounds collection interval to 'interval'\n ## ie, if interval=\"10s\" then always collect on :00, :10, :20, etc.\n round_interval = true\n\n# Configure telegraf to send data to Kapacitor\n# Kapacitor is write compatible with the InfluxDB database so\n# we just configure an InfluxDB output and point it at Kapacitor.\n[[outputs.influxdb]]\n urls = [\"http://localhost:9092\"]\n database = \"telegraf\" # required\n retention_policy = \"default\"\n precision = \"s\"\n\n# Read metrics about cpu usage\n[[inputs.cpu]]\n percpu = false\n totalcpu = true\n fielddrop = [\"time_*\"]  Place the above contents in a file  ./telegraf.conf .  Start Telegraf running:     $ telegraf -config ./telegraf.conf  Confirm Kapacitor is receiving Telegraf data.     $ kapacitor stats ingress  You should see an entry for the telegraf database and cpu measurement.",
+            "title": "Collecting Data"
+        },
+        {
+            "location": "/getting-started/#writing-a-kapacitor-task-using-morgoth",
+            "text": "Kapacitor processes data in \"tasks\".\nTo tell Kapacitor what to do for a task we need to write a TICKscript.\nThe script will define what data we are going to process and how to process it.\nIn our example we are going to use Morgoth with a one sigma fingerprinter.  Here is a generic template TICKscript for using Morgoth with a single sigma fingerprinter:\nThe script uses defaults for the cpu usage_idle data but can easily be modified to work on other datasets.  // The measurement to analyze\nvar measurement = 'cpu'\n\n// Optional group by dimensions\nvar groups = [*]\n\n// Optional where filter\nvar whereFilter = lambda: TRUE\n\n// The amount of data to window at once\nvar window = 1m\n\n// The field to process\nvar field = 'usage_idle'\n\n// The name for the anomaly score field\nvar scoreField = 'anomalyScore'\n\n// The minimum support\nvar minSupport = 0.05\n\n// The error tolerance\nvar errorTolerance = 0.01\n\n// The consensus\nvar consensus = 0.5\n\n// Number of sigmas allowed for normal window deviation\nvar sigmas = 3.0\n\nstream\n  // Select the data we want\n  |from()\n      .measurement(measurement)\n      .groupBy(groups)\n      .where(whereFilter)\n  // Window the data for a certain amount of time\n  |window()\n     .period(window)\n     .every(window)\n     .align()\n  // Send each window to Morgoth\n  @morgoth()\n     .field(field)\n     .scoreField(scoreField)\n     .minSupport(minSupport)\n     .errorTolerance(errorTolerance)\n     .consensus(consensus)\n     // Configure a single Sigma fingerprinter\n     .sigma(sigmas)\n  // Morgoth returns any anomalous windows\n  |alert()\n     .details('')\n     .crit(lamda: TRUE)\n     .log('/tmp/cpu_alert.log')  Place the above contents into a file called  cpu_alert.tick .\nThis script will take the incoming cpu data and window it into 1 minute buckets.\nIt will then pass each window to the Morgoth process.\nMorgoth will return any window of data it thinks is anomalous.\nWe trigger an alert of all windows received from Morgoth and log the alert in the  /tmp/cpu_alert.log  file.  First we must define the task in Kapacitor:  $ # Define the task with the name cpu_alert\n$ kapacitor define cpu_alert -type stream -dbrp telegraf.default -tick cpu_alert.tick\n$ # Start the task\n$ kapacitor enable cpu_alert\n$ # Get info on the running task\n$ kapacitor show cpu_alert  If you didn't get any error you are now successfully sending data to Morgoth via Kapacitor.",
+            "title": "Writing a Kapacitor task using Morgoth"
+        },
+        {
+            "location": "/getting-started/#detecting-your-first-anomaly",
+            "text": "To detect our first anomaly we should let at least 1 minute pass so that Morgoth gets at least one window of good data.\nAfter a minute or two has passed create some cpu activity.\nRun this bash script to spawn two infinite bash loops that spin at 100% cpu.\nWe will kill these later.  $ for i in {1..2}; do { while true; do i=0 ; done & }; done  Again wait for a minute or so to pass and watch the alert log for alerts.  $ tail -F /tmp/cpu_alert.log  After a short wait you should see the critical alert triggered.  Kill the backgrounded jobs:  $ kill $(jobs -p)  After a short wait again you should see an OK alert in the log indicating the CPU usage has recovered.",
+            "title": "Detecting your first anomaly"
+        },
+        {
+            "location": "/getting-started/#next-steps",
+            "text": "At this point you should have a basic grasp of how to use Kapacitor and Morgoth.\nAnomaly detection is not a simple task and requires that you experiment with different methods before you arrive at useful results.\nAt this point I would recommend playing around with some of the other fingerprinters and getting a feel for their settings.  Also Kapacitor is a capable tool for selecting specific sets of data and pre-processing the data as needed.\nAs in all machine learning algorithms garbage in equals garbage out, take the time to learn Kapacitor's TICKscript so that\nyou can send in clean useful data to the Morgoth algorithms.",
+            "title": "Next steps"
+        },
+        {
+            "location": "/configuration/",
+            "text": "Configuration\n\n\nMorgoth can run as either a standalone daemon that listens on a socket or be invoked as a child process of Kapacitor.\n\n\nSocket UDF\n\n\nTo use Morgoth as a socket UDF start the morgoth process with the \n-socket\n option.\n\n\n$ morgoth -socket /path/to/morgoth/socket\n\n\n\n\nNext you will need to configure Kapacitor to use the morgoth socket.\n\n\n[udf]\n[udf.functions]\n   [udf.functions.morgoth]\n       socket = \"/path/to/morgoth/socket\"\n       timeout = \"10s\"\n\n\n\n\nProcess UDF\n\n\nTo use Morgoth as a child process of Kapacitor all you need to do is configure Kapacitor.\n\n\n[udf]\n[udf.functions]\n   [udf.functions.morgoth]\n       prog = \"/path/to/bin/morgoth\"\n       timeout = \"10s\"\n\n\n\n\nLogging\n\n\nMorgoth allows different logging levels DEBUG, INFO, WARN, ERROR or OFF.\nYou can set the default logging level via the flag \n-log-level\n\n\n$ morgoth -log-level warn",
+            "title": "Configuration"
+        },
+        {
+            "location": "/configuration/#configuration",
+            "text": "Morgoth can run as either a standalone daemon that listens on a socket or be invoked as a child process of Kapacitor.",
+            "title": "Configuration"
+        },
+        {
+            "location": "/configuration/#socket-udf",
+            "text": "To use Morgoth as a socket UDF start the morgoth process with the  -socket  option.  $ morgoth -socket /path/to/morgoth/socket  Next you will need to configure Kapacitor to use the morgoth socket.  [udf]\n[udf.functions]\n   [udf.functions.morgoth]\n       socket = \"/path/to/morgoth/socket\"\n       timeout = \"10s\"",
+            "title": "Socket UDF"
+        },
+        {
+            "location": "/configuration/#process-udf",
+            "text": "To use Morgoth as a child process of Kapacitor all you need to do is configure Kapacitor.  [udf]\n[udf.functions]\n   [udf.functions.morgoth]\n       prog = \"/path/to/bin/morgoth\"\n       timeout = \"10s\"",
+            "title": "Process UDF"
+        },
+        {
+            "location": "/configuration/#logging",
+            "text": "Morgoth allows different logging levels DEBUG, INFO, WARN, ERROR or OFF.\nYou can set the default logging level via the flag  -log-level  $ morgoth -log-level warn",
+            "title": "Logging"
+        },
+        {
+            "location": "/detection_framework/",
+            "text": "Detection Framework\n\n\nThere are two basic components to the detection framework Morgoth employs.\n\n\n\n\nA Lossy Counting strategy for finding anomlous behavior.\n\n\nA fingerprinting mechanism to summarize/fingerprint behaviors.\n\n\n\n\nAt a high level Morgoth fingerprints each window of data it sees and keeps track of which fingerprints it has seen before and marks new/infrequent fingerprints as anomalous.\nThe power of the framework is in which fingerprinting algorithms are used and in the simplicity of configuring how to count frequent fingerprints.\n\n\nLossy Counting\n\n\nThe \nLossy Counting algorithm\n is a way of counting frequent items efficiently.\nThe algorithm is lossy since it will drop infrequent items but does so in such a way that it can guarantee certain behaviors:\n\n\n\n\nThere are no false negatives. The frequency of an item cannot be over estimated.\n\n\nFalse positives are guaranteed to have a frequency of at least \nmN-eN\n, where \nN\n is the number of items processed, \nm\n is the minimum support and \ne\n is the error tolerance.\n\n\nThe frequency of an item can be underestimated by at most \neN\n.\n\n\nThe space requirements of the algorithm are \n1/e log(eN)\n.\n\n\n\n\nThese constraints allow the user to have intuitive control over what is considered an anomaly.\nFor example #3 states that items can be underestimated by at most \neN\n.\nWhat this means given an \ne = 0.10\n, items that are less than 10% frequent could be underestimated to have 0% frequency as a worst case.\nAs result these items would get dropped from the algorithm and when they occur again will be marked as anomalies.\nBy settings the error tolerance and minimum support one can control how lossy the counting alogorithm is for a given use case.\n\n\nNotice that \nm > e\n, this is so that we reduce the number of false positives.\nFor example say we set \ne = 5%\n and \nm = 5%\n.\nIf a \nnormal\n behavior X, has a true frequency of 6% than based on variations in the true frequency, X might fall below 5% for a small interval and be dropped.\nThis will cause X's frequency to be underestimated, which will cause it to be flagged as an anomaly, since its estimated frequency falls below the \nminimum support\n.\nThe anomaly is a false positive because its true frequency is greater then the \nminimum support\n.\nBy setting \ne < m\n we have a buffer to help mitigate creating false positives.\n\n\nWhat is considered anomalous?\n\n\nThe answer is simple; every time the Lossy Counting algorithm is given an fingerprint is checks to see how many times it has seen that fingerprint.\nIf the fingerprint has a frequency less than the \nminimum support\n than it is considered anomalous.\n\n\nConsensus Model\n\n\nEach detector instance can have more than one fingerprinting algorithm.\nIn this case the detector will mark the window as anomalous only of the percentage of fingerprinters that agree is greater than a \nconsensus\n threshold.\n\n\nPutting it all together\n\n\nEach detector instance has five parameters:\n\n\n\n\nMinimum Support\n -- The minimum frequency a fingerprint must have in order to be considered normal.\n\n\nError Tolerance\n -- Controls the maximum error that will be tolerated while counting fingerprints. Controls the resource usage of the algorithm.\n\n\nConsensus\n -- The percentage of fingerprinters that must agree in order to mark a window as anomalous.\n\n\nFingerprinters\n -- List of fingerprinters to be used by the detector.",
+            "title": "Detection framework"
+        },
+        {
+            "location": "/detection_framework/#detection-framework",
+            "text": "There are two basic components to the detection framework Morgoth employs.   A Lossy Counting strategy for finding anomlous behavior.  A fingerprinting mechanism to summarize/fingerprint behaviors.   At a high level Morgoth fingerprints each window of data it sees and keeps track of which fingerprints it has seen before and marks new/infrequent fingerprints as anomalous.\nThe power of the framework is in which fingerprinting algorithms are used and in the simplicity of configuring how to count frequent fingerprints.",
+            "title": "Detection Framework"
+        },
+        {
+            "location": "/detection_framework/#lossy-counting",
+            "text": "The  Lossy Counting algorithm  is a way of counting frequent items efficiently.\nThe algorithm is lossy since it will drop infrequent items but does so in such a way that it can guarantee certain behaviors:   There are no false negatives. The frequency of an item cannot be over estimated.  False positives are guaranteed to have a frequency of at least  mN-eN , where  N  is the number of items processed,  m  is the minimum support and  e  is the error tolerance.  The frequency of an item can be underestimated by at most  eN .  The space requirements of the algorithm are  1/e log(eN) .   These constraints allow the user to have intuitive control over what is considered an anomaly.\nFor example #3 states that items can be underestimated by at most  eN .\nWhat this means given an  e = 0.10 , items that are less than 10% frequent could be underestimated to have 0% frequency as a worst case.\nAs result these items would get dropped from the algorithm and when they occur again will be marked as anomalies.\nBy settings the error tolerance and minimum support one can control how lossy the counting alogorithm is for a given use case.  Notice that  m > e , this is so that we reduce the number of false positives.\nFor example say we set  e = 5%  and  m = 5% .\nIf a  normal  behavior X, has a true frequency of 6% than based on variations in the true frequency, X might fall below 5% for a small interval and be dropped.\nThis will cause X's frequency to be underestimated, which will cause it to be flagged as an anomaly, since its estimated frequency falls below the  minimum support .\nThe anomaly is a false positive because its true frequency is greater then the  minimum support .\nBy setting  e < m  we have a buffer to help mitigate creating false positives.",
+            "title": "Lossy Counting"
+        },
+        {
+            "location": "/detection_framework/#what-is-considered-anomalous",
+            "text": "The answer is simple; every time the Lossy Counting algorithm is given an fingerprint is checks to see how many times it has seen that fingerprint.\nIf the fingerprint has a frequency less than the  minimum support  than it is considered anomalous.",
+            "title": "What is considered anomalous?"
+        },
+        {
+            "location": "/detection_framework/#consensus-model",
+            "text": "Each detector instance can have more than one fingerprinting algorithm.\nIn this case the detector will mark the window as anomalous only of the percentage of fingerprinters that agree is greater than a  consensus  threshold.",
+            "title": "Consensus Model"
+        },
+        {
+            "location": "/detection_framework/#putting-it-all-together",
+            "text": "Each detector instance has five parameters:   Minimum Support  -- The minimum frequency a fingerprint must have in order to be considered normal.  Error Tolerance  -- Controls the maximum error that will be tolerated while counting fingerprints. Controls the resource usage of the algorithm.  Consensus  -- The percentage of fingerprinters that must agree in order to mark a window as anomalous.  Fingerprinters  -- List of fingerprinters to be used by the detector.",
+            "title": "Putting it all together"
+        },
+        {
+            "location": "/fingerprints/",
+            "text": "Fingerprints\n\n\nA \nFingerprint\n is a summary data structure of a given window of data.\nFor example the \nSigma\n fingerprinter stores only the count, mean, and standard deviation of the window.\nFingerprints can be compared to other fingerprints to determine if they are a 'match'.\n\n\nThe \ndetection framework\n explains how fingerprints are used to detect anomalies.",
+            "title": "Fingerprints"
+        },
+        {
+            "location": "/fingerprints/#fingerprints",
+            "text": "A  Fingerprint  is a summary data structure of a given window of data.\nFor example the  Sigma  fingerprinter stores only the count, mean, and standard deviation of the window.\nFingerprints can be compared to other fingerprints to determine if they are a 'match'.  The  detection framework  explains how fingerprints are used to detect anomalies.",
+            "title": "Fingerprints"
+        }
+    ]
+}

@@ -31,9 +31,8 @@ a:hover.icon-home {
 }
 
 a.icon.icon-home {
-    line-height: 0; 
+    line-height: 0;
     font-size: 0;
-    color: transparent; 
 }
 
 

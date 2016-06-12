@@ -1,7 +1,7 @@
 # Overview
 
 Morgoth is an anomaly detection framework.
-It relies on `Kapacitor <https://github.com/influxdata/kapacitor>`_ in order to consume and process data.
+It relies on [Kapacitor](https://github.com/influxdata/kapacitor) in order to consume and process data.
 
 ## Getting help
 

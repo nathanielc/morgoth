@@ -9,7 +9,7 @@ pages:
   - overview.md
   - getting-started.md
   - configuration.md
-  - concepts/detection_framework.md
-  - concepts/fingerprints.md
+  - detection_framework.md
+  - fingerprints.md
 theme: readthedocs
 theme_dir: custom_theme

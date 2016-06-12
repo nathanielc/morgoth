@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    
+    <url>
+     <loc>http://docs.morgoth.io/docs//</loc>
+     <lastmod>2016-06-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://docs.morgoth.io/docs//overview/</loc>
+     <lastmod>2016-06-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://docs.morgoth.io/docs//getting-started/</loc>
+     <lastmod>2016-06-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://docs.morgoth.io/docs//configuration/</loc>
+     <lastmod>2016-06-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://docs.morgoth.io/docs//detection_framework/</loc>
+     <lastmod>2016-06-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>http://docs.morgoth.io/docs//fingerprints/</loc>
+     <lastmod>2016-06-11</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+</urlset>
