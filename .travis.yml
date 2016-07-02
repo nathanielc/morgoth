@@ -1,12 +1,36 @@
 language: go
 sudo: false
 go:
-- 1.6
+  - 1.6
+
+script:
+  - go test -v ./...
+
+before_deploy:
+  # Build binary
+  - go get -u github.com/mitchellh/gox
+  - gox ./cmd/morgoth
+
 deploy:
   provider: releases
   api_key:
     secure: cK0/w0ggcVawInO+b++4qqwMGrVoP7PzNkTxaNq+tbFc9cu8CSUS2+PlgRkdoRYfD+fohri3lqdzHUH0rcC7gOfx/Dvtw7mcs14gzfvuNL+/xMlKn/mBoPkOGPXQeh86qsmGbsrgDzv/BwGNgxqqEimxdiev2ZDlssTD16RQZR8=
-  file: "./morgoth"
+  file:
+    - morgoth_darwin_386
+    - morgoth_darwin_amd64
+    - morgoth_freebsd_386
+    - morgoth_freebsd_amd64
+    - morgoth_freebsd_arm
+    - morgoth_linux_386
+    - morgoth_linux_amd64
+    - morgoth_linux_arm
+    - morgoth_netbsd_386
+    - morgoth_netbsd_amd64
+    - morgoth_netbsd_arm
+    - morgoth_openbsd_386
+    - morgoth_openbsd_amd64
+    - morgoth_windows_386.exe
+    - morgoth_windows_amd64.exe
   skip_cleanup: true
   on:
     tags: true
