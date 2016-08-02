@@ -9,7 +9,7 @@ script:
 before_deploy:
   # Build binary
   - go get -u github.com/mitchellh/gox
-  - gox ./cmd/morgoth
+  - CGO_ENABLED=0 gox ./cmd/morgoth
 
 deploy:
   provider: releases
