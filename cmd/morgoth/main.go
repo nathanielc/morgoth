@@ -129,8 +129,8 @@ var fingerprinters = map[string]fingerprinterInfo{
 		options: &udf.OptionInfo{ValueTypes: []udf.ValueType{udf.ValueType_INT}},
 		init: func(args []*udf.OptionValue) (createFingerprinterFunc, error) {
 			confidence := args[0].Value.(*udf.OptionValue_IntValue).IntValue
-			if confidence < 1 || confidence > 5 {
-				return nil, fmt.Errorf("kstest: confidence must be in range [1,5], got %d", confidence)
+			if confidence < 0 || confidence > 5 {
+				return nil, fmt.Errorf("kstest: confidence must be in range [0,5], got %d", confidence)
 			}
 			return func() morgoth.Fingerprinter {
 				return kstest.New(uint(confidence))
