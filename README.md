@@ -4,7 +4,7 @@ Morgoth [![Build Status](https://travis-ci.org/nathanielc/morgoth.svg?branch=mas
 
 Morgoth is a framework for flexible anomaly detection algorithms packaged to be used with [Kapacitor](https:/github.com/influxdata/kapacitor)
 
-Morgoth provides a framework via the  for implementing the smaller pieces of an anomaly detection problem.
+Morgoth provides a framework for implementing the smaller pieces of an anomaly detection problem.
 
 The basic framework is that Morgoth maintains a dictionary of normal behaviors and compares new windows of data to the normal dictionary.
 If the new window of data is not found in the dictionary then it is considered anomalous.
@@ -28,7 +28,7 @@ go get github.com/nathanielc/morgoth/cmd/morgoth
 
 ### Configuring
 
-Morgoth can run as either a child processes of Kapacitor or as a standalone daemon that listens on a socket.
+Morgoth can run as either a child process of Kapacitor or as a standalone daemon that listens on a socket.
 
 #### Child Process
 
@@ -37,10 +37,10 @@ Add this configuration to Kapacitor in order to enable using Morgoth.
 
 ```
 [udf]
-[udf.functions]
+  [udf.functions]
     [udf.functions.morgoth]
-        prog = "/path/to/bin/morgoth"
-        timeout = "10s"
+      prog = "/path/to/bin/morgoth"
+      timeout = "10s"
 ```
 
 Restart Kapacitor and you are ready to start using Morgoth within Kapacitor.
@@ -56,11 +56,11 @@ To use Morgoth as a socket UDF start the morgoth process with the `-socket` opti
 Next you will need to configure Kapacitor to use the morgoth socket.
 
 ```
-   [udf]
-   [udf.functions]
-       [udf.functions.morgoth]
-           socket = "/path/to/morgoth/socket"
-           timeout = "10s"
+[udf]
+  [udf.functions]
+    [udf.functions.morgoth]
+      socket = "/path/to/morgoth/socket"
+      timeout = "10s"
 ```
 
 Restart Kapacitor and you are ready to start using Morgoth within Kapacitor.
@@ -82,7 +82,7 @@ stream
     @morgoth()
         // track the 'usage_idle' field
         .field('usage_idle')
-        .errorTolernace(0.01)
+        .errorTolerance(0.01)
         // The window is anomalous if it occurs less the 5% of the time.
         .minSupport(0.05)
         // Use the sigma fingerprinter
