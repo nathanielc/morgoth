@@ -210,6 +210,18 @@ $ kill $(jobs -p)
 
 After a short wait again you should see an OK alert in the log indicating the CPU usage has recovered.
 
+## Interpreting the Anomaly Score
+
+Morgoth returns an anomaly score when it detects an anomaly.
+The anomaly score is defined as `1 - averageSuppport`, where `averageSuppport` is the average of the `support` values returned from each fingerprinter.
+Remembering that `support = count / total`, where count is the number of times this event has been seen and total is the total number of events seen, we can interpret the support as a frequency percentage.
+For example a support of 0.05 can be interpreted as: the event has been seen 5% of the time.
+So the anomaly score can be interpreted as the percentage of time the event was not seen.
+
+Specifically using the above script since we have only one fingerprinter `sigma` and assuming we got an anomaly score of 0.98 from Morgoth, we can interpret the score as:
+Windows that are similar to the current window, as defined by the standard deviation and mean of the windows, have only been seen about 2% of the time.
+
+
 ## Next steps
 
 At this point you should have a basic grasp of how to use Kapacitor and Morgoth.

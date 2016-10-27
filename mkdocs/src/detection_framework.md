@@ -36,10 +36,24 @@ By setting `e < m` we have a buffer to help mitigate creating false positives.
 The answer is simple; every time the Lossy Counting algorithm is given an fingerprint is checks to see how many times it has seen that fingerprint.
 If the fingerprint has a frequency less than the `minimum support` than it is considered anomalous.
 
-### Consensus Model
 
-Each detector instance can have more than one fingerprinting algorithm.
-In this case the detector will mark the window as anomalous only of the percentage of fingerprinters that agree is greater than a `consensus` threshold.
+### Multiple Fingerprinters
+
+A detector instance can have more than one fingerprinting algorithm.
+In this case an anomaly is determined via a consensus model or using the average support.
+
+#### Consensus Model
+
+Using a consensus model each fingerprinter votes for whether it thinks the window is ananomalous by comparing its support to the minimum support threshold.
+If the percentage of anomalous votes is greater than a specified `consensus` threshold than the window is considered anomalous.
+
+#### Average Support Model
+
+Alternatively the average support from each of the fingerprinters is compared against the `minimum support` threshold.
+If the average support is less than or equal to the minimum support than the window is considered anomalous.
+By using the average support of the fingerprinters you essentially get a weighted voting system where each fingerprinter instead of voting yes or no gets to vote with a value between 0-1.
+The average of the votes is then compared to the threshold.
+
 
 ## Putting it all together
 
@@ -47,6 +61,6 @@ Each detector instance has five parameters:
 
 1. `Minimum Support` -- The minimum frequency a fingerprint must have in order to be considered normal.
 3. `Error Tolerance` -- Controls the maximum error that will be tolerated while counting fingerprints. Controls the resource usage of the algorithm.
-4. `Consensus` -- The percentage of fingerprinters that must agree in order to mark a window as anomalous.
+4. `Consensus` -- The percentage of fingerprinters that must agree in order to mark a window as anomalous. If the consensus is `-1` then the average support model is used.
 5. `Fingerprinters` -- List of fingerprinters to be used by the detector.
 

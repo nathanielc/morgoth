@@ -85,6 +85,8 @@
                 
                     <li><a class="toctree-l4" href="#detecting-your-first-anomaly">Detecting your first anomaly</a></li>
                 
+                    <li><a class="toctree-l4" href="#interpreting-the-anomaly-score">Interpreting the Anomaly Score</a></li>
+                
                     <li><a class="toctree-l4" href="#next-steps">Next steps</a></li>
                 
             
@@ -178,7 +180,7 @@ to learn how to start using Morgoth for your own project.</p>
 </code></pre>
 
 <h2 id="collecting-data">Collecting Data</h2>
-<p>For this example we are going to use <a href="https://github.com/influxdata/telegraf">Telegraf</a> to send data to Kapacitor.</p>
+<p>For this example we are going to use <a href="https://github/com/influxdata/telegraf">Telegraf</a> to send data to Kapacitor.</p>
 <p><a href="https://github.com/influxdata/telegraf#installation">Install</a> Telegraf and use this simplified configuration.</p>
 <pre><code># Configuration for telegraf agent
 [agent]
@@ -311,6 +313,14 @@ We will kill these later.</p>
 </code></pre>
 
 <p>After a short wait again you should see an OK alert in the log indicating the CPU usage has recovered.</p>
+<h2 id="interpreting-the-anomaly-score">Interpreting the Anomaly Score</h2>
+<p>Morgoth returns an anomaly score when it detects an anomaly.
+The anomaly score is defined as <code>1 - averageSuppport</code>, where <code>averageSuppport</code> is the average of the <code>support</code> values returned from each fingerprinter.
+Remembering that <code>support = count / total</code>, where count is the number of times this event has been seen and total is the total number of events seen, we can interpret the support as a frequency percentage.
+For example a support of 0.05 can be interpreted as: the event has been seen 5% of the time.
+So the anomaly score can be interpreted as the percentage of time the event was not seen.</p>
+<p>Specifically using the above script since we have only one fingerprinter <code>sigma</code> and assuming we got an anomaly score of 0.98 from Morgoth, we can interpret the score as:
+Windows that are similar to the current window, as defined by the standard deviation and mean of the windows, have only been seen about 2% of the time.</p>
 <h2 id="next-steps">Next steps</h2>
 <p>At this point you should have a basic grasp of how to use Kapacitor and Morgoth.
 Anomaly detection is not a simple task and requires that you experiment with different methods before you arrive at useful results.
