@@ -2,7 +2,7 @@
 Morgoth [![Build Status](https://travis-ci.org/nathanielc/morgoth.svg?branch=master)](https://travis-ci.org/nathanielc/morgoth)
 =======
 
-Morgoth is a framework for flexible anomaly detection algorithms packaged to be used with [Kapacitor](https:/github.com/influxdata/kapacitor)
+Morgoth is a framework for flexible anomaly detection algorithms packaged to be used with [Kapacitor](https://github.com/influxdata/kapacitor/)
 
 Morgoth provides a framework for implementing the smaller pieces of an anomaly detection problem.
 
