@@ -67,6 +67,9 @@ type Server struct {
 	keepalive        chan int64
 	keepaliveTimeout time.Duration
 
+	taskID string
+	nodeID string
+
 	in  agent.ByteReadReader
 	out io.WriteCloser
 
@@ -87,6 +90,7 @@ type Server struct {
 }
 
 func NewServer(
+	taskID, nodeID string,
 	in agent.ByteReadReader,
 	out io.WriteCloser,
 	l *log.Logger,
@@ -95,6 +99,8 @@ func NewServer(
 	killCallback func(),
 ) *Server {
 	s := &Server{
+		taskID:           taskID,
+		nodeID:           nodeID,
 		in:               in,
 		out:              out,
 		logger:           l,
@@ -266,6 +272,8 @@ func (s *Server) Init(options []*agent.Option) error {
 	req := &agent.Request{Message: &agent.Request_Init{
 		Init: &agent.InitRequest{
 			Options: options,
+			TaskID:  s.taskID,
+			NodeID:  s.nodeID,
 		},
 	}}
 	resp, err := s.doRequestResponse(req, s.initResponse)

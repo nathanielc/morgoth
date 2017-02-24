@@ -4,6 +4,7 @@ import (
 	"math"
 	"testing"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,10 +18,19 @@ func (self *fp) IsMatch(other Countable) bool {
 	return ok && self.id == fp.id
 }
 
+var metrics = &Metrics{
+	UniqueFingerprints: prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "test",
+			Help: "help",
+		},
+	),
+}
+
 func TestLossyCounterShouldCountAllItems(t *testing.T) {
 	assert := assert.New(t)
 
-	lc := NewLossyCounter(0.01)
+	lc := NewLossyCounter(metrics, 0.01)
 
 	fp1 := &fp{1}
 	fp2 := &fp{2}
@@ -39,7 +49,7 @@ func TestLossyCounterShouldByLossy(t *testing.T) {
 	assert := assert.New(t)
 
 	//Create Lossy Counter that will drop items less than 10% frequent
-	lc := NewLossyCounter(0.10)
+	lc := NewLossyCounter(metrics, 0.10)
 
 	fp1 := &fp{1}
 	fp2 := &fp{2}
@@ -64,7 +74,7 @@ func TestLossyCounterShouldByLossy(t *testing.T) {
 func BenchmarkCounting(b *testing.B) {
 
 	e := 0.01
-	lc := NewLossyCounter(0.01)
+	lc := NewLossyCounter(metrics, 0.01)
 
 	unique := int(math.Ceil(1.0 / e))
 

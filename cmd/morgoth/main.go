@@ -5,26 +5,78 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strings"
-	"syscall"
 
 	"github.com/influxdata/kapacitor/udf/agent"
 	"github.com/influxdata/wlog"
 	"github.com/nathanielc/morgoth"
+	"github.com/nathanielc/morgoth/counter"
 	"github.com/nathanielc/morgoth/fingerprinters/jsdiv"
 	"github.com/nathanielc/morgoth/fingerprinters/kstest"
 	"github.com/nathanielc/morgoth/fingerprinters/sigma"
+	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
-	defaultMinSupport     = 0.05
-	defaultErrorTolerance = 0.01
-	defaultConsensus      = 0.5
+	defaultMinSupport      = 0.05
+	defaultErrorTolerance  = 0.01
+	defaultConsensus       = 0.5
+	defaultMetricsBindAddr = ":6767"
 )
 
 var socket = flag.String("socket", "", "Optional listen socket. If set then Morgoth will run in UDF socket mode, otherwise it will expect communication over STDIN/STDOUT.")
 var logLevel = flag.String("log-level", "info", "Default log level, one of debug, info, warn or error.")
+var metricsBind = flag.String("metrics-bind", defaultMetricsBindAddr, "Bind address of the metrics HTTP server. The metrics server will only start if also using the socket mode of operation.")
+
+var detectorGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	Name: "morgoth_detectors",
+	Help: "Current number of active detectors.",
+})
+
+func init() {
+	prometheus.MustRegister(detectorGauge)
+}
+
+var detectorDims = []string{
+	"task",
+	"node",
+	"group",
+}
+
+var fingerprinterDims = append(detectorDims, "fingerprinter")
+
+var windowCount = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "morgoth_windows_total",
+		Help: "Number of windows processed.",
+	},
+	detectorDims,
+)
+var pointCount = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "morgoth_points_total",
+		Help: "Number of points processed.",
+	},
+	detectorDims,
+)
+var anomalousCount = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "morgoth_anomalies_total",
+		Help: "Number of anomalies detected.",
+	},
+	detectorDims,
+)
+var uniqueFingerpintsGauge = prometheus.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: "morgoth_unique_fingerprints",
+		Help: "Current number of unique fingerprints.",
+	},
+	fingerprinterDims,
+)
 
 func main() {
 	// Parse flags
@@ -36,19 +88,30 @@ func main() {
 		log.Fatal("E! ", err)
 	}
 
+	// Create error channels
+	metricsErr := make(chan error, 1)
+	errC := make(chan error, 1)
 	if *socket == "" {
 		a := agent.New(os.Stdin, os.Stdout)
 		h := newHandler(a)
 		a.Handler = h
+		defer h.Stop()
 
 		log.Println("I! Starting agent using STDIN/STDOUT")
 		a.Start()
-		err := a.Wait()
-		if err != nil {
-			log.Fatal("E! ", err)
-		}
-		log.Println("I! Agent finished")
+
+		go func() {
+			errC <- a.Wait()
+		}()
 	} else {
+		// Start the metrics server.
+		// Only start the metrics server in socket mode or the bind address would conflict with each new process.
+		go func() {
+			log.Println("I! Starting metrics HTTP server on", *metricsBind)
+			http.Handle("/metrics", promhttp.Handler())
+			metricsErr <- http.ListenAndServe(*metricsBind, nil)
+		}()
+
 		// Create unix socket
 		addr, err := net.ResolveUnixAddr("unix", *socket)
 		if err != nil {
@@ -61,17 +124,28 @@ func main() {
 
 		// Create server that listens on the socket
 		s := agent.NewServer(l, &accepter{})
+		defer s.Stop() // this closes the listener
 
 		// Setup signal handler to stop Server on various signals
-		s.StopOnSignals(os.Interrupt, syscall.SIGTERM)
+		s.StopOnSignals(os.Interrupt, os.Kill)
 
-		log.Println("I! Socket server listening on", addr.String())
-		err = s.Serve()
-		if err != nil {
-			log.Fatal("E! ", err)
-		}
-		log.Println("I! Socket server stopped")
+		go func() {
+			log.Println("I! Starting socket server on", addr.String())
+			errC <- s.Serve()
+		}()
 	}
+
+	select {
+	case err := <-metricsErr:
+		if err != nil {
+			log.Println("E!", err)
+		}
+	case err := <-errC:
+		if err != nil {
+			log.Println("E!", err)
+		}
+	}
+	log.Println("I! Stopping")
 }
 
 // Simple connection accepter
@@ -97,6 +171,7 @@ func (acc *accepter) Accept(conn net.Conn) {
 		} else {
 			log.Printf("I! Agent for connection %d finished", count)
 		}
+		h.Close()
 	}()
 }
 
@@ -168,6 +243,9 @@ var fingerprinters = map[string]fingerprinterInfo{
 
 // A Kapacitor UDF Handler
 type Handler struct {
+	taskID string
+	nodeID string
+
 	field          string
 	scoreField     string
 	minSupport     float64
@@ -180,7 +258,12 @@ type Handler struct {
 	batchPoints   []*agent.Point
 	detectors     map[string]*morgoth.Detector
 
-	fingerprinters []createFingerprinterFunc
+	fingerprinters []fingerprinterCreator
+}
+
+type fingerprinterCreator struct {
+	Kind   string
+	Create createFingerprinterFunc
 }
 
 func newHandler(a *agent.Agent) *Handler {
@@ -191,6 +274,16 @@ func newHandler(a *agent.Agent) *Handler {
 		consensus:      defaultConsensus,
 		detectors:      make(map[string]*morgoth.Detector),
 	}
+}
+
+func (h *Handler) Close() {
+	for _, d := range h.detectors {
+		d.Close()
+	}
+}
+
+func (h *Handler) detectorName(group string) string {
+	return fmt.Sprintf("%s:%s,group=%s", h.taskID, h.nodeID, group)
 }
 
 // Return the InfoResponse. Describing the properties of this Handler
@@ -218,6 +311,9 @@ func (h *Handler) Info() (*agent.InfoResponse, error) {
 
 // Initialize the Handler with the provided options.
 func (h *Handler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
+	h.taskID = r.TaskID
+	h.nodeID = r.NodeID
+
 	init := &agent.InitResponse{
 		Success: true,
 	}
@@ -248,7 +344,10 @@ func (h *Handler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 					init.Success = false
 					errors = append(errors, err.Error())
 				} else {
-					h.fingerprinters = append(h.fingerprinters, createFn)
+					h.fingerprinters = append(h.fingerprinters, fingerprinterCreator{
+						Kind:   opt.Name,
+						Create: createFn,
+					})
 				}
 			} else {
 				return nil, fmt.Errorf("received unknown init option %q", opt.Name)
@@ -319,14 +418,20 @@ func (h *Handler) Point(p *agent.Point) error {
 func (h *Handler) EndBatch(b *agent.EndBatch) error {
 	detector, ok := h.detectors[b.Group]
 	if !ok {
+		metrics := h.createDetectorMetrics(b.Group)
+		if err := metrics.Register(); err != nil {
+			return errors.Wrapf(err, "failed to register metrics for group: %q", b.Group)
+		}
 		// We validated the args ourselves, ignore the error here
 		detector, _ = morgoth.NewDetector(
+			metrics,
 			h.consensus,
 			h.minSupport,
 			h.errorTolerance,
 			h.newFingerprinters(),
 		)
 		h.detectors[b.Group] = detector
+		detectorGauge.Inc()
 	}
 	if anomalous, avgSupport := detector.IsAnomalous(h.currentWindow); anomalous {
 		// Send batch back to Kapacitor since it was anomalous
@@ -357,6 +462,32 @@ func (h *Handler) EndBatch(b *agent.EndBatch) error {
 	return nil
 }
 
+func (h *Handler) createDetectorMetrics(group string) *morgoth.DetectorMetrics {
+	labels := prometheus.Labels{
+		"task":  h.taskID,
+		"node":  h.nodeID,
+		"group": group,
+	}
+	metrics := &morgoth.DetectorMetrics{
+		WindowCount:          windowCount.With(labels),
+		PointCount:           pointCount.With(labels),
+		AnomalousCount:       anomalousCount.With(labels),
+		FingerprinterMetrics: make([]*counter.Metrics, len(h.fingerprinters)),
+	}
+	for i, creator := range h.fingerprinters {
+		labels = prometheus.Labels{
+			"task":          h.taskID,
+			"node":          h.nodeID,
+			"group":         group,
+			"fingerprinter": fmt.Sprintf("%s-%d", creator.Kind, i),
+		}
+		metrics.FingerprinterMetrics[i] = &counter.Metrics{
+			UniqueFingerprints: uniqueFingerpintsGauge.With(labels),
+		}
+	}
+	return metrics
+}
+
 // Gracefully stop the Handler.
 // No other methods will be called.
 func (h *Handler) Stop() {
@@ -365,8 +496,8 @@ func (h *Handler) Stop() {
 
 func (h *Handler) newFingerprinters() []morgoth.Fingerprinter {
 	f := make([]morgoth.Fingerprinter, len(h.fingerprinters))
-	for i, create := range h.fingerprinters {
-		f[i] = create()
+	for i, creator := range h.fingerprinters {
+		f[i] = creator.Create()
 	}
 	return f
 }
