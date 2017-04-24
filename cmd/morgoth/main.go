@@ -281,7 +281,7 @@ func (h *Handler) Init(r *udf.InitRequest) (*udf.InitResponse, error) {
 }
 
 // Create a snapshot of the running state of the handler.
-func (h *Handler) Snaphost() (*udf.SnapshotResponse, error) {
+func (h *Handler) Snapshot() (*udf.SnapshotResponse, error) {
 	return &udf.SnapshotResponse{}, nil
 }
 
