@@ -1,0 +1,37 @@
+memo = "db41a7840710452eeabacc972b14a6db3514da799bb108c631cb705bb65a7120"
+
+[[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  revision = "2bba0603135d7d7f5cb73b2125beeda19c09f4ef"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/influxdata/kapacitor"
+  packages = ["udf/agent"]
+  revision = "556792c92b997ece21e1f758d6b6cc34a8d3801b"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/influxdata/wlog"
+  packages = ["."]
+  revision = "7c63b0a71ef8300adc255344d275e10e5c3a71ec"
+
+[[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
+  version = "v1.1.4"
