@@ -9,7 +9,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/influxdata/kapacitor/udf"
 	"github.com/influxdata/kapacitor/udf/agent"
 	"github.com/influxdata/wlog"
 	"github.com/nathanielc/morgoth"
@@ -103,20 +102,20 @@ func (acc *accepter) Accept(conn net.Conn) {
 
 type fingerprinterInfo struct {
 	init    initFingerprinterFunc
-	options *udf.OptionInfo
+	options *agent.OptionInfo
 }
 
 // Function that creates a new instance of a fingerprinter
 type createFingerprinterFunc func() morgoth.Fingerprinter
 
-// Init createFingerprinterFunc from udf.OptionValues
-type initFingerprinterFunc func(opts []*udf.OptionValue) (createFingerprinterFunc, error)
+// Init createFingerprinterFunc from agent.OptionValues
+type initFingerprinterFunc func(opts []*agent.OptionValue) (createFingerprinterFunc, error)
 
 var fingerprinters = map[string]fingerprinterInfo{
 	"sigma": {
-		options: &udf.OptionInfo{ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
-		init: func(args []*udf.OptionValue) (createFingerprinterFunc, error) {
-			deviations := args[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
+		options: &agent.OptionInfo{ValueTypes: []agent.ValueType{agent.ValueType_DOUBLE}},
+		init: func(args []*agent.OptionValue) (createFingerprinterFunc, error) {
+			deviations := args[0].Value.(*agent.OptionValue_DoubleValue).DoubleValue
 			if deviations <= 0 {
 				return nil, fmt.Errorf("sigma: deviations must be > 0, got %f", deviations)
 			}
@@ -126,9 +125,9 @@ var fingerprinters = map[string]fingerprinterInfo{
 		},
 	},
 	"kstest": {
-		options: &udf.OptionInfo{ValueTypes: []udf.ValueType{udf.ValueType_INT}},
-		init: func(args []*udf.OptionValue) (createFingerprinterFunc, error) {
-			confidence := args[0].Value.(*udf.OptionValue_IntValue).IntValue
+		options: &agent.OptionInfo{ValueTypes: []agent.ValueType{agent.ValueType_INT}},
+		init: func(args []*agent.OptionValue) (createFingerprinterFunc, error) {
+			confidence := args[0].Value.(*agent.OptionValue_IntValue).IntValue
 			if confidence < 0 || confidence > 5 {
 				return nil, fmt.Errorf("kstest: confidence must be in range [0,5], got %d", confidence)
 			}
@@ -138,17 +137,17 @@ var fingerprinters = map[string]fingerprinterInfo{
 		},
 	},
 	"jsdiv": {
-		options: &udf.OptionInfo{ValueTypes: []udf.ValueType{
-			udf.ValueType_DOUBLE,
-			udf.ValueType_DOUBLE,
-			udf.ValueType_DOUBLE,
-			udf.ValueType_DOUBLE,
+		options: &agent.OptionInfo{ValueTypes: []agent.ValueType{
+			agent.ValueType_DOUBLE,
+			agent.ValueType_DOUBLE,
+			agent.ValueType_DOUBLE,
+			agent.ValueType_DOUBLE,
 		}},
-		init: func(args []*udf.OptionValue) (createFingerprinterFunc, error) {
-			min := args[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
-			max := args[1].Value.(*udf.OptionValue_DoubleValue).DoubleValue
-			binWidth := args[2].Value.(*udf.OptionValue_DoubleValue).DoubleValue
-			pValue := args[3].Value.(*udf.OptionValue_DoubleValue).DoubleValue
+		init: func(args []*agent.OptionValue) (createFingerprinterFunc, error) {
+			min := args[0].Value.(*agent.OptionValue_DoubleValue).DoubleValue
+			max := args[1].Value.(*agent.OptionValue_DoubleValue).DoubleValue
+			binWidth := args[2].Value.(*agent.OptionValue_DoubleValue).DoubleValue
+			pValue := args[3].Value.(*agent.OptionValue_DoubleValue).DoubleValue
 
 			if binWidth <= 0 {
 				return nil, fmt.Errorf("jsdiv: binWidth, arg 3, must be > 0, got %f", binWidth)
@@ -177,8 +176,8 @@ type Handler struct {
 	agent          *agent.Agent
 
 	currentWindow *morgoth.Window
-	beginBatch    *udf.BeginBatch
-	batchPoints   []*udf.Point
+	beginBatch    *agent.BeginBatch
+	batchPoints   []*agent.Point
 	detectors     map[string]*morgoth.Detector
 
 	fingerprinters []createFingerprinterFunc
@@ -195,22 +194,22 @@ func newHandler(a *agent.Agent) *Handler {
 }
 
 // Return the InfoResponse. Describing the properties of this Handler
-func (h *Handler) Info() (*udf.InfoResponse, error) {
-	options := map[string]*udf.OptionInfo{
-		"field":          {ValueTypes: []udf.ValueType{udf.ValueType_STRING}},
-		"scoreField":     {ValueTypes: []udf.ValueType{udf.ValueType_STRING}},
-		"minSupport":     {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
-		"errorTolerance": {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
-		"consensus":      {ValueTypes: []udf.ValueType{udf.ValueType_DOUBLE}},
-		"logLevel":       {ValueTypes: []udf.ValueType{udf.ValueType_STRING}},
+func (h *Handler) Info() (*agent.InfoResponse, error) {
+	options := map[string]*agent.OptionInfo{
+		"field":          {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+		"scoreField":     {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+		"minSupport":     {ValueTypes: []agent.ValueType{agent.ValueType_DOUBLE}},
+		"errorTolerance": {ValueTypes: []agent.ValueType{agent.ValueType_DOUBLE}},
+		"consensus":      {ValueTypes: []agent.ValueType{agent.ValueType_DOUBLE}},
+		"logLevel":       {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 	}
 	// Add in options from fingerprinters
 	for name, info := range fingerprinters {
 		options[name] = info.options
 	}
-	info := &udf.InfoResponse{
-		Wants:    udf.EdgeType_BATCH,
-		Provides: udf.EdgeType_BATCH,
+	info := &agent.InfoResponse{
+		Wants:    agent.EdgeType_BATCH,
+		Provides: agent.EdgeType_BATCH,
 		Options:  options,
 	}
 	return info, nil
@@ -218,25 +217,25 @@ func (h *Handler) Info() (*udf.InfoResponse, error) {
 }
 
 // Initialize the Handler with the provided options.
-func (h *Handler) Init(r *udf.InitRequest) (*udf.InitResponse, error) {
-	init := &udf.InitResponse{
+func (h *Handler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
+	init := &agent.InitResponse{
 		Success: true,
 	}
 	var errors []string
 	for _, opt := range r.Options {
 		switch opt.Name {
 		case "field":
-			h.field = opt.Values[0].Value.(*udf.OptionValue_StringValue).StringValue
+			h.field = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "scoreField":
-			h.scoreField = opt.Values[0].Value.(*udf.OptionValue_StringValue).StringValue
+			h.scoreField = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "minSupport":
-			h.minSupport = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
+			h.minSupport = opt.Values[0].Value.(*agent.OptionValue_DoubleValue).DoubleValue
 		case "errorTolerance":
-			h.errorTolerance = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
+			h.errorTolerance = opt.Values[0].Value.(*agent.OptionValue_DoubleValue).DoubleValue
 		case "consensus":
-			h.consensus = opt.Values[0].Value.(*udf.OptionValue_DoubleValue).DoubleValue
+			h.consensus = opt.Values[0].Value.(*agent.OptionValue_DoubleValue).DoubleValue
 		case "logLevel":
-			level := opt.Values[0].Value.(*udf.OptionValue_StringValue).StringValue
+			level := opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 			err := wlog.SetLevelFromName(level)
 			if err != nil {
 				init.Success = false
@@ -281,17 +280,17 @@ func (h *Handler) Init(r *udf.InitRequest) (*udf.InitResponse, error) {
 }
 
 // Create a snapshot of the running state of the handler.
-func (h *Handler) Snapshot() (*udf.SnapshotResponse, error) {
-	return &udf.SnapshotResponse{}, nil
+func (h *Handler) Snapshot() (*agent.SnapshotResponse, error) {
+	return &agent.SnapshotResponse{}, nil
 }
 
 // Restore a previous snapshot.
-func (h *Handler) Restore(*udf.RestoreRequest) (*udf.RestoreResponse, error) {
-	return &udf.RestoreResponse{}, nil
+func (h *Handler) Restore(*agent.RestoreRequest) (*agent.RestoreResponse, error) {
+	return &agent.RestoreResponse{}, nil
 }
 
 // A batch has begun.
-func (h *Handler) BeginBatch(b *udf.BeginBatch) error {
+func (h *Handler) BeginBatch(b *agent.BeginBatch) error {
 	h.currentWindow = &morgoth.Window{}
 	h.beginBatch = b
 	h.batchPoints = h.batchPoints[0:0]
@@ -299,7 +298,7 @@ func (h *Handler) BeginBatch(b *udf.BeginBatch) error {
 }
 
 // A point has arrived.
-func (h *Handler) Point(p *udf.Point) error {
+func (h *Handler) Point(p *agent.Point) error {
 	// Keep point around
 	h.batchPoints = append(h.batchPoints, p)
 	var value float64
@@ -317,7 +316,7 @@ func (h *Handler) Point(p *udf.Point) error {
 }
 
 // The batch is complete.
-func (h *Handler) EndBatch(b *udf.EndBatch) error {
+func (h *Handler) EndBatch(b *agent.EndBatch) error {
 	detector, ok := h.detectors[b.Group]
 	if !ok {
 		// We validated the args ourselves, ignore the error here
@@ -331,8 +330,8 @@ func (h *Handler) EndBatch(b *udf.EndBatch) error {
 	}
 	if anomalous, avgSupport := detector.IsAnomalous(h.currentWindow); anomalous {
 		// Send batch back to Kapacitor since it was anomalous
-		h.agent.Responses <- &udf.Response{
-			Message: &udf.Response_Begin{
+		h.agent.Responses <- &agent.Response{
+			Message: &agent.Response_Begin{
 				Begin: h.beginBatch,
 			},
 		}
@@ -340,14 +339,14 @@ func (h *Handler) EndBatch(b *udf.EndBatch) error {
 			if h.scoreField != "" {
 				p.FieldsDouble[h.scoreField] = 1 - avgSupport
 			}
-			h.agent.Responses <- &udf.Response{
-				Message: &udf.Response_Point{
+			h.agent.Responses <- &agent.Response{
+				Message: &agent.Response_Point{
 					Point: p,
 				},
 			}
 		}
-		h.agent.Responses <- &udf.Response{
-			Message: &udf.Response_End{
+		h.agent.Responses <- &agent.Response{
+			Message: &agent.Response_End{
 				End: b,
 			},
 		}

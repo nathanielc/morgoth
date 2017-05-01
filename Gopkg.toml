@@ -1,0 +1,4 @@
+
+[[dependencies]]
+  branch = "master"
+  name = "github.com/influxdata/kapacitor"
