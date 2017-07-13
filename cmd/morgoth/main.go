@@ -308,7 +308,7 @@ func (h *Handler) Point(p *agent.Point) error {
 		if i, ok := p.FieldsInt[h.field]; ok {
 			value = float64(i)
 		} else {
-			return fmt.Errorf("no field %s is not a float or int", h.field)
+			return fmt.Errorf("field %q is not a float or int", h.field)
 		}
 	}
 	h.currentWindow.Data = append(h.currentWindow.Data, value)
@@ -337,6 +337,9 @@ func (h *Handler) EndBatch(b *agent.EndBatch) error {
 		}
 		for _, p := range h.batchPoints {
 			if h.scoreField != "" {
+				if p.FieldsDouble == nil {
+					p.FieldsDouble = make(map[string]float64, 1)
+				}
 				p.FieldsDouble[h.scoreField] = 1 - avgSupport
 			}
 			h.agent.Responses <- &agent.Response{
