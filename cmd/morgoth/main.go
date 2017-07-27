@@ -278,6 +278,7 @@ func newHandler(a *agent.Agent) *Handler {
 
 func (h *Handler) Close() {
 	for _, d := range h.detectors {
+		detectorGauge.Dec()
 		d.Close()
 	}
 }
@@ -484,6 +485,9 @@ func (h *Handler) createDetectorMetrics(group string) *morgoth.DetectorMetrics {
 		metrics.FingerprinterMetrics[i] = &counter.Metrics{
 			UniqueFingerprints: uniqueFingerpintsGauge.With(labels),
 		}
+		// Unregistering a gauge does not forget the last value.
+		// We need to explicitly set the value back down to 0.
+		metrics.FingerprinterMetrics[i].UniqueFingerprints.Set(0)
 	}
 	return metrics
 }
