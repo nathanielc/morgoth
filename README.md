@@ -82,12 +82,17 @@ stream
     @morgoth()
         // track the 'usage_idle' field
         .field('usage_idle')
+        // label output data as anomalous using the 'anomalous' boolean field.
+        .anomalousField('anomalous')
         .errorTolerance(0.01)
         // The window is anomalous if it occurs less the 5% of the time.
         .minSupport(0.05)
         // Use the sigma fingerprinter
         .sigma(3.0)
         // Multiple fingerprinters can be defined...
+    |alert()
+        // Trigger a critical alert when the window is marked as anomalous.
+        .crit(lambda: "anomalous")
 ```
 
 
@@ -139,8 +144,6 @@ where N is the number of items encountered.
 The space requirements for the algorithm are at most (1 / e) * log(e*N).
 It has also been show that if the item with low frequency are uniformly random than the space requirements are no more than 7 / e.
 This means that as Morgoth continues to processes windows of data its memory usage will grow as the log of the number of windows and can reach a stable upper bound.
-
-
 
 ## Metrics
 

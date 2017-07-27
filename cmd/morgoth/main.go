@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/influxdata/kapacitor/udf/agent"
 	"github.com/influxdata/wlog"
@@ -26,6 +27,7 @@ const (
 	defaultErrorTolerance  = 0.01
 	defaultConsensus       = 0.5
 	defaultMetricsBindAddr = ":6767"
+	defaultAnomalousField  = "anomalous"
 )
 
 var socket = flag.String("socket", "", "Optional listen socket. If set then Morgoth will run in UDF socket mode, otherwise it will expect communication over STDIN/STDOUT.")
@@ -48,6 +50,7 @@ var detectorDims = []string{
 }
 
 var fingerprinterDims = append(detectorDims, "fingerprinter")
+var fingerprinterDistDims = append(fingerprinterDims, "fp")
 
 var windowCount = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
@@ -77,6 +80,10 @@ var uniqueFingerpintsGauge = prometheus.NewGaugeVec(
 	},
 	fingerprinterDims,
 )
+var distributionGaugeOpts = prometheus.GaugeOpts{
+	Name: "morgoth_fingerprints_distribution",
+	Help: "Distribution of counts per unique fingerprint. The label \"fp\" is an arbitrary index to identify the fingerprint and it may change.",
+}
 
 func main() {
 	// Parse flags
@@ -127,7 +134,7 @@ func main() {
 		defer s.Stop() // this closes the listener
 
 		// Setup signal handler to stop Server on various signals
-		s.StopOnSignals(os.Interrupt, os.Kill)
+		s.StopOnSignals(os.Interrupt, syscall.SIGTERM)
 
 		go func() {
 			log.Println("I! Starting socket server on", addr.String())
@@ -248,6 +255,7 @@ type Handler struct {
 
 	field          string
 	scoreField     string
+	anomalousField string
 	minSupport     float64
 	errorTolerance float64
 	consensus      float64
@@ -273,6 +281,7 @@ func newHandler(a *agent.Agent) *Handler {
 		errorTolerance: defaultErrorTolerance,
 		consensus:      defaultConsensus,
 		detectors:      make(map[string]*morgoth.Detector),
+		anomalousField: defaultAnomalousField,
 	}
 }
 
@@ -292,6 +301,7 @@ func (h *Handler) Info() (*agent.InfoResponse, error) {
 	options := map[string]*agent.OptionInfo{
 		"field":          {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		"scoreField":     {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
+		"anomalousField": {ValueTypes: []agent.ValueType{agent.ValueType_STRING}},
 		"minSupport":     {ValueTypes: []agent.ValueType{agent.ValueType_DOUBLE}},
 		"errorTolerance": {ValueTypes: []agent.ValueType{agent.ValueType_DOUBLE}},
 		"consensus":      {ValueTypes: []agent.ValueType{agent.ValueType_DOUBLE}},
@@ -325,6 +335,8 @@ func (h *Handler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 			h.field = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "scoreField":
 			h.scoreField = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
+		case "anomalousField":
+			h.anomalousField = opt.Values[0].Value.(*agent.OptionValue_StringValue).StringValue
 		case "minSupport":
 			h.minSupport = opt.Values[0].Value.(*agent.OptionValue_DoubleValue).DoubleValue
 		case "errorTolerance":
@@ -358,6 +370,9 @@ func (h *Handler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 
 	if h.field == "" {
 		errors = append(errors, "field must not be empty")
+	}
+	if h.anomalousField == "" {
+		errors = append(errors, "anomalousField must not be empty")
 	}
 	if h.minSupport < 0 || h.minSupport > 1 {
 		errors = append(errors, "minSupport must be in the range [0,1)")
@@ -434,31 +449,36 @@ func (h *Handler) EndBatch(b *agent.EndBatch) error {
 		h.detectors[b.Group] = detector
 		detectorGauge.Inc()
 	}
-	if anomalous, avgSupport := detector.IsAnomalous(h.currentWindow); anomalous {
-		// Send batch back to Kapacitor since it was anomalous
+	anomalous, avgSupport := detector.IsAnomalous(h.currentWindow)
+
+	// Send batch back to Kapacitor
+	h.agent.Responses <- &agent.Response{
+		Message: &agent.Response_Begin{
+			Begin: h.beginBatch,
+		},
+	}
+	for _, p := range h.batchPoints {
+		if p.FieldsBool == nil {
+			p.FieldsBool = make(map[string]bool, 1)
+		}
+		p.FieldsBool[h.anomalousField] = anomalous
+
+		if h.scoreField != "" {
+			if p.FieldsDouble == nil {
+				p.FieldsDouble = make(map[string]float64, 1)
+			}
+			p.FieldsDouble[h.scoreField] = 1 - avgSupport
+		}
 		h.agent.Responses <- &agent.Response{
-			Message: &agent.Response_Begin{
-				Begin: h.beginBatch,
+			Message: &agent.Response_Point{
+				Point: p,
 			},
 		}
-		for _, p := range h.batchPoints {
-			if h.scoreField != "" {
-				if p.FieldsDouble == nil {
-					p.FieldsDouble = make(map[string]float64, 1)
-				}
-				p.FieldsDouble[h.scoreField] = 1 - avgSupport
-			}
-			h.agent.Responses <- &agent.Response{
-				Message: &agent.Response_Point{
-					Point: p,
-				},
-			}
-		}
-		h.agent.Responses <- &agent.Response{
-			Message: &agent.Response_End{
-				End: b,
-			},
-		}
+	}
+	h.agent.Responses <- &agent.Response{
+		Message: &agent.Response_End{
+			End: b,
+		},
 	}
 	return nil
 }
@@ -476,17 +496,15 @@ func (h *Handler) createDetectorMetrics(group string) *morgoth.DetectorMetrics {
 		FingerprinterMetrics: make([]*counter.Metrics, len(h.fingerprinters)),
 	}
 	for i, creator := range h.fingerprinters {
-		labels = prometheus.Labels{
-			"task":          h.taskID,
-			"node":          h.nodeID,
-			"group":         group,
-			"fingerprinter": fmt.Sprintf("%s-%d", creator.Kind, i),
-		}
+		fingerprinterLabel := fmt.Sprintf("%s-%d", creator.Kind, i)
+		lvs := []string{h.taskID, h.nodeID, group, fingerprinterLabel}
 		metrics.FingerprinterMetrics[i] = &counter.Metrics{
-			UniqueFingerprints: uniqueFingerpintsGauge.With(labels),
+			UniqueFingerprints: uniqueFingerpintsGauge.WithLabelValues(lvs...),
+			Distribution:       prometheus.NewGaugeVec(distributionGaugeOpts, fingerprinterDistDims),
+			LabelValues:        lvs,
 		}
-		// Unregistering a gauge does not forget the last value.
-		// We need to explicitly set the value back down to 0.
+		// Unregistering a metric does not forget the last value.
+		// We need to explicitly reset the value.
 		metrics.FingerprinterMetrics[i].UniqueFingerprints.Set(0)
 	}
 	return metrics

@@ -21,10 +21,18 @@ func (self *fp) IsMatch(other Countable) bool {
 var metrics = &Metrics{
 	UniqueFingerprints: prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Name: "test",
+			Name: "unique",
 			Help: "help",
 		},
 	),
+	Distribution: prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "distribution",
+			Help: "help",
+		},
+		[]string{"l0", "fp"},
+	),
+	LabelValues: []string{"l0"},
 }
 
 func TestLossyCounterShouldCountAllItems(t *testing.T) {

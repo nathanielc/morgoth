@@ -17,15 +17,21 @@ type Countable interface {
 
 type Metrics struct {
 	UniqueFingerprints prometheus.Gauge
-	// TODO(nathanielc): Figure out how to represent
-	// this distribution data as a prometheus.
-	//Distribution []int
+	Distribution       *prometheus.GaugeVec
+	LabelValues        []string
 }
 
 func (m *Metrics) Register() error {
-	return errors.Wrap(prometheus.Register(m.UniqueFingerprints), "unique fingerprints metric")
+	if err := prometheus.Register(m.UniqueFingerprints); err != nil {
+		return errors.Wrap(err, "unique fingerprints metric")
+	}
+	if err := prometheus.Register(m.Distribution); err != nil {
+		return errors.Wrap(err, "distribution metric")
+	}
+	return nil
 }
 
 func (m *Metrics) Unregister() {
 	prometheus.Unregister(m.UniqueFingerprints)
+	prometheus.Unregister(m.Distribution)
 }
