@@ -2,14 +2,18 @@ package counter
 
 import (
 	"math"
+	"sync"
 )
 
 type lossyCounter struct {
+	mu             sync.RWMutex
 	errorTolerance float64
 	frequencies    []*entry
 	width          int
 	total          int
 	bucket         int
+
+	metrics *Metrics
 }
 
 type entry struct {
@@ -19,8 +23,9 @@ type entry struct {
 }
 
 //Create a new lossycounter with specified errorTolerance
-func NewLossyCounter(errorTolerance float64) *lossyCounter {
+func NewLossyCounter(metrics *Metrics, errorTolerance float64) *lossyCounter {
 	return &lossyCounter{
+		metrics:        metrics,
 		errorTolerance: errorTolerance,
 		width:          int(math.Ceil(1.0 / errorTolerance)),
 		total:          0,
@@ -30,6 +35,8 @@ func NewLossyCounter(errorTolerance float64) *lossyCounter {
 
 // Count a countable and return the support for the countable.
 func (self *lossyCounter) Count(countable Countable) float64 {
+	self.mu.Lock()
+	defer self.mu.Unlock()
 	self.total++
 
 	count := 0
@@ -52,6 +59,7 @@ func (self *lossyCounter) Count(countable Countable) float64 {
 			count:     count,
 			delta:     self.bucket - 1,
 		})
+		self.metrics.UniqueFingerprints.Inc()
 	}
 
 	if self.total%self.width == 0 {
@@ -73,4 +81,5 @@ func (self *lossyCounter) prune() {
 			i++
 		}
 	}
+	self.metrics.UniqueFingerprints.Set(float64(len(self.frequencies)))
 }

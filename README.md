@@ -141,3 +141,28 @@ It has also been show that if the item with low frequency are uniformly random t
 This means that as Morgoth continues to processes windows of data its memory usage will grow as the log of the number of windows and can reach a stable upper bound.
 
 
+
+## Metrics
+
+Morgoth exposes metrics about each detector and fingerprinter.
+The metrics are exposed as a promethues `/metrics` endpoint over HTTP.
+By default the metrics HTTP endpoint binds to `:6767`.
+
+>NOTE: Using the metrics HTTP endpoint only makes sense if you are using Morgoth in socket mode as otherwise each new process would collide on the bind port.
+
+Metrics will have some or all of these labels:
+
+* task - the Kapacitor task ID.
+* node - the ID of the morgoth node within the Kapacitor task.
+* group - the Kapacitor group ID.
+* fingerprinter - the unique name for the specific fingerprinter, i.e. `sigma-0`.
+
+
+The most useful metric for debugging why Morgoth is not behaving as expected is likely to be the `morgoth_unique_fingerprints` gauge.
+The metric reports the number of unique fingerprints each fingerprinter is tracking.
+This is useful because if the number is large or growing with each new window its likely that the fingerprinter is erroneously marking every window as anomalous.
+By providing visibility into each fingerprinter, Morgoth can be tuned as needed.
+
+Using Kapacitor's scraping service you can scrape the Morgoth UDF process for these metrics and consume them within Kapacitor.
+See this [tutorial](https://docs.influxdata.com/kapacitor/latest/pull_metrics/scraping-and-discovery/) for more information.
+

@@ -1,30 +1,61 @@
 package morgoth
 
 import (
-	"errors"
 	"log"
+	"sync"
 
 	"github.com/nathanielc/morgoth/counter"
+	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Detector struct {
+	mu             sync.RWMutex
 	consensus      float64
 	minSupport     float64
 	errorTolerance float64
 	counters       []fingerprinterCounter
-	Stats          DetectorStats
+
+	metrics *DetectorMetrics
 }
 
-type DetectorStats struct {
-	WindowCount    uint64
-	DataPointCount uint64
-	AnomalousCount uint64
+type DetectorMetrics struct {
+	WindowCount          prometheus.Counter
+	PointCount           prometheus.Counter
+	AnomalousCount       prometheus.Counter
+	FingerprinterMetrics []*counter.Metrics
+}
+
+func (m *DetectorMetrics) Register() error {
+	if err := prometheus.Register(m.WindowCount); err != nil {
+		return errors.Wrap(err, "window count metric")
+	}
+	if err := prometheus.Register(m.PointCount); err != nil {
+		return errors.Wrap(err, "point count metric")
+	}
+	if err := prometheus.Register(m.AnomalousCount); err != nil {
+		return errors.Wrap(err, "anomalous count metric")
+	}
+	for i, f := range m.FingerprinterMetrics {
+		if err := f.Register(); err != nil {
+			return errors.Wrapf(err, "fingerprinter %d", i)
+		}
+	}
+	return nil
+}
+func (m *DetectorMetrics) Unregister() {
+	prometheus.Unregister(m.WindowCount)
+	prometheus.Unregister(m.PointCount)
+	prometheus.Unregister(m.AnomalousCount)
+	for _, f := range m.FingerprinterMetrics {
+		f.Unregister()
+	}
 }
 
 // Pair of fingerprinter and counter
 type fingerprinterCounter struct {
-	fingerprinter Fingerprinter
-	counter       counter.Counter
+	Fingerprinter
+	counter.Counter
 }
 
 // Create a new Lossy couting based detector
@@ -33,21 +64,25 @@ type fingerprinterCounter struct {
 // The minSupport defines a minimum frequency as a percentage for a window to be considered normal.
 // The errorTolerance defines a frequency as a precentage for the smallest frequency that will be retained in memory.
 // The errorTolerance must be less than the minSupport.
-func NewDetector(consensus, minSupport, errorTolerance float64, fingerprinters []Fingerprinter) (*Detector, error) {
+func NewDetector(metrics *DetectorMetrics, consensus, minSupport, errorTolerance float64, fingerprinters []Fingerprinter) (*Detector, error) {
 	if (consensus != -1 && consensus < 0) || consensus > 1 {
 		return nil, errors.New("consensus must be in the range [0,1) or equal to -1")
 	}
 	if minSupport <= errorTolerance {
 		return nil, errors.New("minSupport must be greater than errorTolerance")
 	}
+	if len(metrics.FingerprinterMetrics) != len(fingerprinters) {
+		return nil, errors.New("must provide the same number of fingerprinter metrics as fingerprinters")
+	}
 	counters := make([]fingerprinterCounter, len(fingerprinters))
 	for i, fingerprinter := range fingerprinters {
 		counters[i] = fingerprinterCounter{
-			fingerprinter,
-			counter.NewLossyCounter(errorTolerance),
+			Fingerprinter: fingerprinter,
+			Counter:       counter.NewLossyCounter(metrics.FingerprinterMetrics[i], errorTolerance),
 		}
 	}
 	return &Detector{
+		metrics:        metrics,
 		consensus:      consensus,
 		minSupport:     minSupport,
 		errorTolerance: errorTolerance,
@@ -57,20 +92,22 @@ func NewDetector(consensus, minSupport, errorTolerance float64, fingerprinters [
 
 // Determine if the window is anomalous
 func (self *Detector) IsAnomalous(window *Window) (bool, float64) {
-	self.Stats.WindowCount++
-	self.Stats.DataPointCount += uint64(len(window.Data))
+	self.mu.Lock()
+	defer self.mu.Unlock()
+	self.metrics.WindowCount.Inc()
+	self.metrics.PointCount.Add(float64(len(window.Data)))
 
 	vote := 0.0
 	avgSupport := 0.0
 	n := 0.0
 	for _, fc := range self.counters {
-		fingerprint := fc.fingerprinter.Fingerprint(window.Copy())
-		support := fc.counter.Count(fingerprint)
+		fingerprint := fc.Fingerprint(window.Copy())
+		support := fc.Count(fingerprint)
 		anomalous := support <= self.minSupport
 		if anomalous {
 			vote++
 		}
-		log.Printf("D! %T anomalous? %v support: %f", fc.fingerprinter, anomalous, support)
+		log.Printf("D! %T anomalous? %v support: %f", fc.Fingerprinter, anomalous, support)
 
 		avgSupport = ((avgSupport * n) + support) / (n + 1)
 		n++
@@ -87,8 +124,12 @@ func (self *Detector) IsAnomalous(window *Window) (bool, float64) {
 	}
 
 	if anomalous {
-		self.Stats.AnomalousCount++
+		self.metrics.AnomalousCount.Inc()
 	}
 
 	return anomalous, avgSupport
+}
+
+func (self *Detector) Close() {
+	self.metrics.Unregister()
 }
