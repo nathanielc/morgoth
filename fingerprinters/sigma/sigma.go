@@ -52,5 +52,5 @@ func (self SigmaFingerprint) IsMatch(other counter.Countable) bool {
 	if !ok {
 		return false
 	}
-	return math.Abs(self.mean-o.mean) < self.threshold
+	return math.Abs(self.mean-o.mean) <= self.threshold
 }
