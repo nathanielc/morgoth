@@ -1,7 +1,12 @@
 
 [[constraint]]
-  branch = "nc-udf-server-stop"
+  branch = "master"
   name = "github.com/influxdata/kapacitor"
+
 [[constraint]]
   branch = "master"
   name = "github.com/prometheus/client_golang"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/prometheus/client_model"

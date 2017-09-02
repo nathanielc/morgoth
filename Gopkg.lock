@@ -17,13 +17,13 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "748d386b5c1ea99658fd69fe9f03991ce86a90c1"
+  revision = "5afd06f9d81a86d6e3bb7dc702d6bd148ea3ff23"
 
 [[projects]]
-  branch = "nc-udf-server-stop"
+  branch = "master"
   name = "github.com/influxdata/kapacitor"
   packages = ["udf/agent"]
-  revision = "b27780e6f9d595b72aed0b5d13458a7662da1c45"
+  revision = "9aea3c39b2967d4ac3846c6fbdd7d29482f8098a"
 
 [[projects]]
   branch = "master"
@@ -50,10 +50,10 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/prometheus/client_golang"
   packages = ["prometheus","prometheus/promhttp"]
-  revision = "94ff84a9a6ebb5e6eb9172897c221a64df3443bc"
+  revision = "967789050ba94deca04a5e84cce8ad472ce313c1"
+  version = "v0.9.0-pre1"
 
 [[projects]]
   branch = "master"
@@ -65,7 +65,7 @@
   branch = "master"
   name = "github.com/prometheus/common"
   packages = ["expfmt","internal/bitbucket.org/ww/goautoneg","model"]
-  revision = "3e6a7635bac6573d43f49f97b47eb9bda195dba8"
+  revision = "bc8b88226a1210b016e9993b1d75f858c9c8f778"
 
 [[projects]]
   branch = "master"
@@ -82,6 +82,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "81588f85ab6d94ba26484ef7aa6c15899f38f30e283287d5e9dd7066392bf32e"
+  inputs-digest = "f703c150ee8a8b57d018948d2999eac58ffa798ad45f908e8b4fa4b09e7544c2"
   solver-name = "gps-cdcl"
   solver-version = 1

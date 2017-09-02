@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/influxdata/kapacitor/edge"
 	"github.com/influxdata/kapacitor/pipeline"
 )
 
@@ -188,7 +189,7 @@ func (et *ExecutingTask) link() error {
 }
 
 // Start the task.
-func (et *ExecutingTask) start(ins []*Edge, snapshot *TaskSnapshot) error {
+func (et *ExecutingTask) start(ins []edge.StatsEdge, snapshot *TaskSnapshot) error {
 
 	for _, in := range ins {
 		et.source.addParentEdge(in)
@@ -498,6 +499,8 @@ func (et *ExecutingTask) createNode(p pipeline.Node, l *log.Logger) (n Node, err
 		n, err = newCombineNode(et, t, l)
 	case *pipeline.K8sAutoscaleNode:
 		n, err = newK8sAutoscaleNode(et, t, l)
+	case *pipeline.SwarmAutoscaleNode:
+		n, err = newSwarmAutoscaleNode(et, t, l)
 	case *pipeline.StateDurationNode:
 		n, err = newStateDurationNode(et, t, l)
 	case *pipeline.StateCountNode:
