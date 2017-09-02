@@ -43,48 +43,6 @@ func init() {
 	prometheus.MustRegister(detectorGauge)
 }
 
-var detectorDims = []string{
-	"task",
-	"node",
-	"group",
-}
-
-var fingerprinterDims = append(detectorDims, "fingerprinter")
-var fingerprinterDistDims = append(fingerprinterDims, "fp")
-
-var windowCount = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "morgoth_windows_total",
-		Help: "Number of windows processed.",
-	},
-	detectorDims,
-)
-var pointCount = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "morgoth_points_total",
-		Help: "Number of points processed.",
-	},
-	detectorDims,
-)
-var anomalousCount = prometheus.NewCounterVec(
-	prometheus.CounterOpts{
-		Name: "morgoth_anomalies_total",
-		Help: "Number of anomalies detected.",
-	},
-	detectorDims,
-)
-var uniqueFingerpintsGauge = prometheus.NewGaugeVec(
-	prometheus.GaugeOpts{
-		Name: "morgoth_unique_fingerprints",
-		Help: "Current number of unique fingerprints.",
-	},
-	fingerprinterDims,
-)
-var distributionGaugeOpts = prometheus.GaugeOpts{
-	Name: "morgoth_fingerprints_distribution",
-	Help: "Distribution of counts per unique fingerprint. The label \"fp\" is an arbitrary index to identify the fingerprint and it may change.",
-}
-
 func main() {
 	// Parse flags
 	flag.Parse()
@@ -389,8 +347,6 @@ func (h *Handler) Init(r *agent.InitRequest) (*agent.InitResponse, error) {
 	init.Success = len(errors) == 0
 	init.Error = strings.Join(errors, "\n")
 
-	log.Printf("D! %#v", h)
-
 	return init, nil
 }
 
@@ -490,18 +446,47 @@ func (h *Handler) createDetectorMetrics(group string) *morgoth.DetectorMetrics {
 		"group": group,
 	}
 	metrics := &morgoth.DetectorMetrics{
-		WindowCount:          windowCount.With(labels),
-		PointCount:           pointCount.With(labels),
-		AnomalousCount:       anomalousCount.With(labels),
+		WindowCount: prometheus.NewCounter(
+			prometheus.CounterOpts{
+				Name:        "morgoth_windows_total",
+				Help:        "Number of windows processed.",
+				ConstLabels: labels,
+			},
+		),
+		PointCount: prometheus.NewCounter(prometheus.CounterOpts{
+			Name:        "morgoth_points_total",
+			Help:        "Number of points processed.",
+			ConstLabels: labels,
+		}),
+		AnomalousCount: prometheus.NewCounter(prometheus.CounterOpts{
+			Name:        "morgoth_anomalies_total",
+			Help:        "Number of anomalies detected.",
+			ConstLabels: labels,
+		}),
 		FingerprinterMetrics: make([]*counter.Metrics, len(h.fingerprinters)),
 	}
 	for i, creator := range h.fingerprinters {
 		fingerprinterLabel := fmt.Sprintf("%s-%d", creator.Kind, i)
-		lvs := []string{h.taskID, h.nodeID, group, fingerprinterLabel}
+		fLabels := prometheus.Labels{
+			"task":          h.taskID,
+			"node":          h.nodeID,
+			"group":         group,
+			"fingerprinter": fingerprinterLabel,
+		}
 		metrics.FingerprinterMetrics[i] = &counter.Metrics{
-			UniqueFingerprints: uniqueFingerpintsGauge.WithLabelValues(lvs...),
-			Distribution:       prometheus.NewGaugeVec(distributionGaugeOpts, fingerprinterDistDims),
-			LabelValues:        lvs,
+			UniqueFingerprints: prometheus.NewGauge(prometheus.GaugeOpts{
+				Name:        "morgoth_unique_fingerprints",
+				Help:        "Current number of unique fingerprints.",
+				ConstLabels: fLabels,
+			}),
+			Distribution: prometheus.NewGaugeVec(
+				prometheus.GaugeOpts{
+					Name:        "morgoth_fingerprints_distribution",
+					Help:        "Distribution of counts per unique fingerprint. The label \"fp\" is an arbitrary index to identify the fingerprint and it may change.",
+					ConstLabels: fLabels,
+				},
+				[]string{"fp"},
+			),
 		}
 		// Unregistering a metric does not forget the last value.
 		// We need to explicitly reset the value.

@@ -30,9 +30,8 @@ var metrics = &Metrics{
 			Name: "distribution",
 			Help: "help",
 		},
-		[]string{"l0", "fp"},
+		[]string{"fp"},
 	),
-	LabelValues: []string{"l0"},
 }
 
 func TestLossyCounterShouldCountAllItems(t *testing.T) {

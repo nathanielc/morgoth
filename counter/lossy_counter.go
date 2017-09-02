@@ -62,8 +62,7 @@ func (self *lossyCounter) Count(countable Countable) float64 {
 		count = 1
 
 		// Create new gauge
-		lvs := append(self.metrics.LabelValues, strconv.Itoa(len(self.distributionGauges)))
-		g := self.metrics.Distribution.WithLabelValues(lvs...)
+		g := self.metrics.Distribution.WithLabelValues(strconv.Itoa(len(self.distributionGauges)))
 		g.Set(float64(count))
 
 		// Count new unique fingerprint
@@ -93,8 +92,7 @@ func (self *lossyCounter) prune() {
 	self.metrics.Distribution.Reset()
 	for i, entry := range self.frequencies {
 		if entry.count+entry.delta > self.bucket {
-			lvs := append(self.metrics.LabelValues, strconv.Itoa(i))
-			g := self.metrics.Distribution.WithLabelValues(lvs...)
+			g := self.metrics.Distribution.WithLabelValues(strconv.Itoa(i))
 			g.Set(float64(entry.count))
 
 			filteredFreqs = append(filteredFreqs, entry)

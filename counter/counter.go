@@ -18,7 +18,6 @@ type Countable interface {
 type Metrics struct {
 	UniqueFingerprints prometheus.Gauge
 	Distribution       *prometheus.GaugeVec
-	LabelValues        []string
 }
 
 func (m *Metrics) Register() error {
